@@ -668,9 +668,6 @@ export default function Index({ params }: any) {
 
 
 
-
-    
-
     // fetch store info by storecode
     const [storeInfo, setStoreInfo] = useState<any>(null);
     const [loadingStoreInfo, setLoadingStoreInfo] = useState(true);
