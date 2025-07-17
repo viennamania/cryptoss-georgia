@@ -1,52 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-/*
-import {
-  getUserByNickname,
-	insertOne,
-} from '@lib/api/user';
-
-import {
-  getStoreByStorecode,
-} from '@lib/api/order';
-
-
-
-import { ethers } from "ethers";
-
-import {
-  createThirdwebClient,
-  eth_getTransactionByHash,
-  getContract,
-  sendAndConfirmTransaction,
-  
-  sendBatchTransaction,
-
-
-} from "thirdweb";
-
-//import { polygonAmoy } from "thirdweb/chains";
-import {
-  polygon,
-  arbitrum,
- } from "thirdweb/chains";
-
-import {
-  privateKeyToAccount,
-  smartWallet,
-  getWalletBalance,
-  
- } from "thirdweb/wallets";
-
-
- if (!process.env.THIRDWEB_ENGINE_URL) {
-  throw new Error("THIRDWEB_ENGINE_URL is not defined");
-}
-
-if (!process.env.THIRDWEB_ENGINE_ACCESS_TOKEN) {
-  throw new Error("THIRDWEB_ENGINE_ACCESS_TOKEN is not defined");
-}
-*/
+import { stableUrl } from "../../../config/stable";
 
 export async function POST(request: NextRequest) {
 
@@ -209,9 +163,8 @@ export async function POST(request: NextRequest) {
 
 
   // call api
-  // https://goodpay.stable.makeup/api/user/getUser
 
-  const apiUrl = `https://goodpay.stable.makeup/api/user/setBuyerWithoutWalletAddressByStorecode`;
+  const apiUrl = `${stableUrl}/api/user/setBuyerWithoutWalletAddressByStorecode`;
   try {
     const response = await fetch(apiUrl, {
       method: 'POST',

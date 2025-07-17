@@ -1,11 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-/*
-import {
-	updateOne,
-} from '@lib/api/user';
-*/
-
+import { stableUrl } from "../../../config/stable";
 
 export async function POST(request: NextRequest) {
 
@@ -32,8 +27,7 @@ export async function POST(request: NextRequest) {
   });
   */
   // call api
-  // api url is 'https://goodpay.stable.makeup/api/user/updateUser'
-  const apiUrl = `https://goodpay.stable.makeup/api/user/updateUser`;
+  const apiUrl = `${stableUrl}/api/user/updateUser`;
   try {
     const response = await fetch(apiUrl, {
       method: 'POST',

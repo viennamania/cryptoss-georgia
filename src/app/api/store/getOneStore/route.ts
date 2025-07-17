@@ -1,11 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-
-/*
-import {
-	getStoreByStorecode ,
-} from '@lib/api/store';
-*/
+import { stableUrl } from "../../../config/stable";
 
 
 export async function POST(request: NextRequest) {
@@ -43,8 +38,7 @@ export async function POST(request: NextRequest) {
   */
 
   // call api
-  // https://goodpay.stable.makeup/api/store/getOneStore
-  const apiUrl = `https://goodpay.stable.makeup/api/store/getOneStore`;
+  const apiUrl = `${stableUrl}/api/store/getOneStore`;
   try {
     const response = await fetch(apiUrl, {
       method: 'POST',

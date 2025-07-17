@@ -1,10 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-/*
-import {
-	insertOneVerified,
-} from '@lib/api/user';
-*/
+import { stableUrl } from "../../../config/stable";
 
 
 export async function POST(request: NextRequest) {
@@ -47,8 +43,7 @@ export async function POST(request: NextRequest) {
   });
   */
   // call api
-  // api url is 'https://goodpay.stable.makeup/api/user/setUserVerified'
-  const apiUrl = `https://goodpay.stable.makeup/api/user/setUserVerified`;
+  const apiUrl = `${stableUrl}/api/user/setUserVerified`;
   try {
     const response = await fetch(apiUrl, {
       method: 'POST',

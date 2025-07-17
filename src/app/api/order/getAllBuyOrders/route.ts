@@ -7,6 +7,8 @@ import {
 */
 
 
+import { stableUrl } from "../../../config/stable";
+
 export async function POST(request: NextRequest) {
 
   const body = await request.json();
@@ -105,8 +107,7 @@ export async function POST(request: NextRequest) {
   */
 
   // call api
-  // https://goodpay.stable.makeup/api/order/getAllBuyOrders
-  const apiUrl = `https://goodpay.stable.makeup/api/order/getAllBuyOrders`;
+  const apiUrl = `${stableUrl}/api/order/getAllBuyOrders`;
   try {
     const response = await fetch(apiUrl, {
       method: 'POST',

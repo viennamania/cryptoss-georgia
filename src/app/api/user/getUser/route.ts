@@ -1,10 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import {
-	///getOneByWalletAddress,
-} from '@lib/api/user';
-
-
+import { stableUrl } from "../../../config/stable";
 
 export async function POST(request: NextRequest) {
 
@@ -39,9 +35,8 @@ export async function POST(request: NextRequest) {
 
 
   // call api
-  // https://goodpay.stable.makeup/api/user/getUser
 
-  const apiUrl = `https://goodpay.stable.makeup/api/user/getUser`;
+  const apiUrl = `${stableUrl}/api/user/getUser`;
 
   try {
     const response = await fetch(apiUrl, {
