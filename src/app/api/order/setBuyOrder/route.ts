@@ -9,7 +9,17 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json();
 
-  const { storecode, walletAddress, nickname, usdtAmount, krwAmount, rate, privateSale, buyer } = body;
+  const {
+    clientid,
+    storecode,
+    walletAddress,
+    nickname,
+    usdtAmount,
+    krwAmount,
+    rate,
+    privateSale,
+    buyer
+  } = body;
 
 
 
@@ -18,7 +28,7 @@ export async function POST(request: NextRequest) {
 
   try {
 
-    const stableUrl = body.clientid === "9ed089930921bfaa1bf65aff9a75fc41" ? stableUrl1 : stableUrl2;
+    const stableUrl = clientid === "9ed089930921bfaa1bf65aff9a75fc41" ? stableUrl1 : stableUrl2;
 
     const apiUrl = `${stableUrl}/api/order/setBuyOrder`;
     const response = await fetch(apiUrl, {

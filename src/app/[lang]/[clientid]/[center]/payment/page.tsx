@@ -684,6 +684,7 @@ export default function Index({ params }: any) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
+            clientid: params.clientid,
             storecode: storecode,
           }),
         });
@@ -706,7 +707,7 @@ export default function Index({ params }: any) {
       };
   
       fetchStoreInfo();
-    }, [storecode]);
+    }, [params.clientid, storecode]);
 
     /*
     {
@@ -934,6 +935,7 @@ export default function Index({ params }: any) {
           },
           body: JSON.stringify(
             {
+              clientid: params.clientid,
               storecode: storecode,
               
               userCode: storeUser,
@@ -994,6 +996,7 @@ export default function Index({ params }: any) {
           },
           body: JSON.stringify({
             lang: params.lang,
+            clientid: params.clientid,
             storecode: storecode,
             nickname: nickname,
           })
@@ -1003,7 +1006,7 @@ export default function Index({ params }: any) {
         if (dataGetBuyOrder.result) {
           const order = dataGetBuyOrder.result;
 
-          router.push('/' + params.lang + '/' + storecode + '/pay-usdt-reverse/' + order._id);
+          router.push('/' + params.lang + '/' + params.clientid + '/' + storecode + '/pay-usdt-reverse/' + order._id);
           return;
         }
 
@@ -1018,7 +1021,9 @@ export default function Index({ params }: any) {
       }
 
 
-    } , [isMyWalletAddress, storecode, storeUser,  depositName, depositBankName, depositBankAccountNumber]);
+    } , [isMyWalletAddress,
+      params.clientid,
+      storecode, storeUser,  depositName, depositBankName, depositBankAccountNumber]);
     
 
 
@@ -1676,6 +1681,7 @@ export default function Index({ params }: any) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+
           walletAddress: address,
           usdtAmount: usdtAmount,
           krwAmount: krwAmount,
@@ -1859,6 +1865,7 @@ export default function Index({ params }: any) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        clientid: params.clientid,
         storecode: storecode,
         nickname: nickname,
         mobile: mobile,
@@ -2021,6 +2028,7 @@ export default function Index({ params }: any) {
           },
           body: JSON.stringify({
             lang: params.lang,
+            clientid: params.clientid,
             storecode: storecode,
             walletAddress: address,
             nickname: nickname,
@@ -2047,7 +2055,7 @@ export default function Index({ params }: any) {
 
           const order = data.result;
 
-          router.push('/' + params.lang + '/' + storecode + '/pay-usdt-reverse/' + order._id);
+          router.push('/' + params.lang + '/' + params.clientid + '/' + storecode + '/pay-usdt-reverse/' + order._id);
 
 
         } else {

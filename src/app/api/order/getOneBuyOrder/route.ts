@@ -9,6 +9,10 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json();
 
+  const{
+    clientid,
+    orderId,
+  } = body;
 
   /*
   const result = await getOneBuyOrder({
@@ -25,7 +29,7 @@ export async function POST(request: NextRequest) {
   });
   */
 
-  const stableUrl = body.clientid === "9ed089930921bfaa1bf65aff9a75fc41" ? stableUrl1 : stableUrl2;
+  const stableUrl = clientid === "9ed089930921bfaa1bf65aff9a75fc41" ? stableUrl1 : stableUrl2;
   
   // api call to get order details
   const apiUrl = `${stableUrl}/api/order/getOneBuyOrder`;
@@ -36,7 +40,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        orderId: body.orderId,
+        orderId: orderId,
         limit: 100,
         page: 1,
       }),

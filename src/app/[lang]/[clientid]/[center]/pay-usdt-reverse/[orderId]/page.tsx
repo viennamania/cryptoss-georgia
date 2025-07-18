@@ -686,6 +686,7 @@ export default function Index({ params }: any) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
+                clientid: params.clientid,
                 storecode: params.center,
                 walletAddress: address,
             }),
@@ -706,7 +707,7 @@ export default function Index({ params }: any) {
 
         setLoadingUser(false);
 
-    } , [address, params.center]);
+    } , [address, params.clientid, params.center]);
 
 
 
@@ -745,6 +746,8 @@ export default function Index({ params }: any) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          clientid: params.clientid,
+          storecode: params.center,
           nickname: paramNickname,
           mobile: mobile,
         }),
@@ -791,6 +794,8 @@ export default function Index({ params }: any) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
+            clientid: params.clientid,
+            storecode: params.center,
             nickname: nickname,
             mobile: mobile,
           }),
@@ -823,7 +828,7 @@ export default function Index({ params }: any) {
       fetchWalletAddress();
 
 
-    } , [nickname]);
+    } , [nickname, params.clientid, params.center]);
 
 
 
@@ -940,7 +945,8 @@ export default function Index({ params }: any) {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                orderId: orderId,
+              clientid: params.clientid,
+              orderId: orderId,
             })
           });
   
@@ -980,7 +986,7 @@ export default function Index({ params }: any) {
         return () => clearInterval(interval);
         
   
-    }, [orderId]);
+    }, [orderId, params.clientid]);
 
 
     //console.log('buyOrders', buyOrders);
@@ -1337,6 +1343,8 @@ export default function Index({ params }: any) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        clientid: params.clientid,
+        storecode: params.center,
         nickname: nickname,
         mobile: mobile,
       }),
