@@ -1576,6 +1576,7 @@ export default function Index({ params }: any) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
+            clientid: params.clientid,
             storecode: params.center,
           }),
         });
@@ -1599,7 +1600,7 @@ export default function Index({ params }: any) {
   
       fetchStoreInfo();
 
-    }, [params.center]);
+    }, [params.clientid, params.center]);
 
 
 
@@ -1646,36 +1647,40 @@ export default function Index({ params }: any) {
         border-opacity-50
         ">
 
-        {loadingStoreInfo ? (
-          <div className="w-full flex flex-row items-center justify-start gap-2">
-            <Image
-              src="/loading.png"
-              alt="Loading"
-              width={24}
-              height={24}
-              className='animate-spin'
-            />
-            <div className="text-sm text-zinc-50">
-              가맹점 정보를 불러오는 중입니다.
-            </div>
-          </div>
-        ) : (
+
           <div className="w-full flex flex-row items-center justify-between gap-2">
 
-            <div className='flex flex-col gap-2 items-center justify-start'>
-              <Image
-                src={storeInfo?.storeLogo || '/logo.png'}
-                alt="Store Logo"
-                width={38}
-                height={38}
-                className='
-                w-10 h-10
-                  rounded-full'
-              />
-              <span className="text-sm text-zinc-100 font-semibold">
-                {storeInfo?.storeName}
-              </span>
-            </div>
+
+            {loadingStoreInfo ? (
+              <div className="w-full flex flex-row items-center justify-start gap-2">
+                <Image
+                  src="/loading.png"
+                  alt="Loading"
+                  width={24}
+                  height={24}
+                  className='animate-spin'
+                />
+                <div className="text-sm text-zinc-50">
+                  가맹점 정보를 불러오는 중입니다.
+                </div>
+              </div>
+            ) : (
+
+                <div className='flex flex-col gap-2 items-center justify-start'>
+                  <Image
+                    src={storeInfo?.storeLogo || '/logo.png'}
+                    alt="Store Logo"
+                    width={38}
+                    height={38}
+                    className='
+                    w-10 h-10
+                      rounded-full'
+                  />
+                  <span className="text-sm text-zinc-100 font-semibold">
+                    {storeInfo?.storeName}
+                  </span>
+                </div>
+            )}
 
             {loadingUser && (
               <div className="flex flex-row items-center justify-center gap-2">
@@ -1748,18 +1753,14 @@ export default function Index({ params }: any) {
 
             )}
 
-
-
-
           </div>
-        )}
-
+      
 
       </div>
 
 
 
-            {/* USDT 가격 binance market price */}
+      {/* USDT 가격 binance market price */}
       <div
         className="binance-widget-marquee
         w-full flex flex-row items-center justify-center gap-2
