@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { stableUrl } from "../../../config/stable";
+import {
+  stableUrl1,
+  stableUrl2
+} from "../../../config/stable";
 
 export async function POST(request: NextRequest) {
 
@@ -8,28 +11,9 @@ export async function POST(request: NextRequest) {
 
   const { storecode, walletAddress, sellerStatus, bankName, accountNumber, accountHolder } = body;
 
-  //console.log("walletAddress", walletAddress);
-  //console.log("sellerStatus", sellerStatus);
-  /*
-  const result = await updateSellerStatus({
-    storecode: storecode,
-    walletAddress: walletAddress,
-    sellerStatus: sellerStatus,
-    bankName: bankName,
-    accountNumber: accountNumber,
-    accountHolder: accountHolder,
-  });
 
 
- 
-  return NextResponse.json({
-
-    result,
-    
-  });
-  */
-
-
+  const stableUrl = body.clientid === "9ed089930921bfaa1bf65aff9a75fc41" ? stableUrl1 : stableUrl2;
 
   // call api
   const apiUrl = `${stableUrl}/api/user/updateSeller`;

@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { stableUrl } from "../../../config/stable";
+import {
+  stableUrl1,
+  stableUrl2
+} from "../../../config/stable";
 
 
 export async function POST(request: NextRequest) {
@@ -10,38 +13,9 @@ export async function POST(request: NextRequest) {
   const { storecode, walletAddress, nickname, mobile, email } = body;
 
 
-  ///console.log("setUserVerified =====  body", body);
 
-  /*
-    setUserVerified =====  body {
-    lang: 'ko',
-    storecode: 'admin',
-    walletAddress: '0x98773aF65AE660Be4751ddd09C4350906e9D88F3',
-    nickname: 'georgia',
-    mobile: ''
-  }
-  */
-  // 최초에 storecode가 admin 인 Document 를 추가해야한다.
-
-
-
-  /*
-  const result = await insertOneVerified({
-    storecode: storecode,
-    walletAddress: walletAddress,
-    nickname: nickname,
-    mobile: mobile,
-    email: email,
-  });
-
-
- 
-  return NextResponse.json({
-    
-    result,
-    
-  });
-  */
+  const stableUrl = body.clientid === "9ed089930921bfaa1bf65aff9a75fc41" ? stableUrl1 : stableUrl2;
+  
   // call api
   const apiUrl = `${stableUrl}/api/user/setUserVerified`;
   try {

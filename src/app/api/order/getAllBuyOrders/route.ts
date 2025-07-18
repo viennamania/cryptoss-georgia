@@ -1,19 +1,18 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-/*
+
 import {
-	getBuyOrders,
-} from '@lib/api/order';
-*/
+  stableUrl1,
+  stableUrl2
+} from "../../../config/stable";
 
-
-import { stableUrl } from "../../../config/stable";
 
 export async function POST(request: NextRequest) {
 
   const body = await request.json();
 
   const {
+    clientid,
     agentcode,
     storecode,
     limit,
@@ -63,51 +62,13 @@ export async function POST(request: NextRequest) {
     body.toDate = date.toISOString().split("T")[0]; // YYYY-MM-DD format
   }
 
-
-  /*
-  const result = await getBuyOrders({
-    limit: limit || 100,
-    page: page || 1,
-    agentcode: agentcode || "",
-    storecode: storecode || "",
-    walletAddress:  walletAddress || "",
-    searchMyOrders:  searchMyOrders || false,
-    searchOrderStatusCancelled,
-    searchOrderStatusCompleted,
-
-    searchStoreName: searchStoreName || "",
-
-    privateSale: privateSale || false,
-
-    searchBuyer: searchBuyer || "",
-    searchDepositName: searchDepositName || "",
-
-    searchStoreBankAccountNumber: searchStoreBankAccountNumber || "",
-
-
-    fromDate: fromDate || "",
-
-    toDate: toDate || "",
-
-  });
-
-
-  //console.log("getAllBuyOrders result", result);
-
-
-
-
-
- 
-  return NextResponse.json({
-
-    result,
-    
-  });
-  */
+  // if clientid is "9ed089930921bfaa1bf65aff9a75fc41", use stableUrl1, otherwise use stableUrl2
+  const stableUrl = clientid === "9ed089930921bfaa1bf65aff9a75fc41" ? stableUrl1 : stableUrl2;
 
   // call api
   const apiUrl = `${stableUrl}/api/order/getAllBuyOrders`;
+
+
   try {
     const response = await fetch(apiUrl, {
       method: 'POST',

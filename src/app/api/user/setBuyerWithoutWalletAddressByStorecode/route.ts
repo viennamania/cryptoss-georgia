@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { stableUrl } from "../../../config/stable";
+import {
+  stableUrl1,
+  stableUrl2
+} from "../../../config/stable";
 
 export async function POST(request: NextRequest) {
 
@@ -17,150 +20,8 @@ export async function POST(request: NextRequest) {
     userType,
   } = body;
 
-  //const { storecode, nickname, mobile, password } = body;
-
-  //console.log("body", body);
-
-
-  /*
-  const nickname = userCode;
-
-  const mobile = "+821012345678";
-  const password = "12345678";
-
-  const buyer = {
-    depositBankName: userBankName,
-    depositBankAccountNumber: userBankAccountNumber,
-    depositName: userName,
-  };
-
-
   
-  try {
-
-
-
-    // find user by nickname
-    const user = await getUserByNickname(
-      storecode,
-      nickname
-    );
-
-
-    ///console.log("user", user);
-
-    if (user) {
-      return NextResponse.json({
-        result: "User already exists",
-        walletAddress: user.walletAddress,
-        storecode: user?.storecode,
-      });
-    }
-
-
-    
-    const userWalletPrivateKey = ethers.Wallet.createRandom().privateKey;
-
-    //console.log("escrowWalletPrivateKey", escrowWalletPrivateKey);
-
-    if (!userWalletPrivateKey) {
-      return NextResponse.json({
-        result: null,
-      });
-    }
-
-
-
-    const client = createThirdwebClient({
-      secretKey: process.env.THIRDWEB_SECRET_KEY || "",
-    });
-
-    if (!client) {
-      return NextResponse.json({
-        result: null,
-      });
-    }
-
-
-    const personalAccount = privateKeyToAccount({
-      client,
-      privateKey: userWalletPrivateKey,
-    });
-  
-
-    if (!personalAccount) {
-      return NextResponse.json({
-        result: null,
-      });
-    }
-
-    const wallet = smartWallet({
-      chain:  polygon ,
-      ///factoryAddress: "0x9Bb60d360932171292Ad2b80839080fb6F5aBD97", // your own deployed account factory address
-      sponsorGas: true,
-    });
-
-
-    // Connect the smart wallet
-    const account = await wallet.connect({
-      client: client,
-      personalAccount: personalAccount,
-    });
-
-    if (!account) {
-      return NextResponse.json({
-        result: null,
-      });
-    }
-
-
-    const userWalletAddress = account.address;
-
-
-
-
-
-
-
-
-
-
-    const result = await insertOne({
-      storecode: storecode,
-      walletAddress: userWalletAddress,
-      walletPrivateKey: userWalletPrivateKey,
-      nickname: nickname,
-      mobile: mobile,
-      password: password,
-      buyer: buyer,
-    });
-
-    // return wallet address to user
-
-    return NextResponse.json({
-
-      result,
-      walletAddress: userWalletAddress,
-      
-    });
-
-
-  } catch (error) {
-    console.log("error", error);
-
-    return NextResponse.json({
-      error,
-      
-    });
-  }
-
-  */
-
-
-
-
-
-
+  const stableUrl = body.clientid === "9ed089930921bfaa1bf65aff9a75fc41" ? stableUrl1 : stableUrl2;
 
   // call api
 

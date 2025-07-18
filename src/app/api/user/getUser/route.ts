@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { stableUrl } from "../../../config/stable";
+import {
+  stableUrl1,
+  stableUrl2
+} from "../../../config/stable";
 
 export async function POST(request: NextRequest) {
 
@@ -11,28 +14,8 @@ export async function POST(request: NextRequest) {
     walletAddress
   } = body;
 
-  //console.log("storecode", storecode);
-  //console.log("walletAddress", walletAddress);
 
-  /*
-  console.log("getUser storecode", storecode);
-  console.log("getUser walletAddress", walletAddress);
-
-
-  const result = await getOneByWalletAddress(
-    storecode,
-    walletAddress
-  );
-
-
- 
-  return NextResponse.json({
-
-    result,
-    
-  });
-  */
-
+  const stableUrl = body.clientid === "9ed089930921bfaa1bf65aff9a75fc41" ? stableUrl1 : stableUrl2;
 
   // call api
 

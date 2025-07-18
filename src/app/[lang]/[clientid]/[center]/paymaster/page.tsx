@@ -10,7 +10,7 @@ import { useState, useEffect, use } from "react";
 
 import { toast } from 'react-hot-toast';
 
-import { client } from "../../../client";
+import { client } from "../../../../client";
 
 import {
     getContract,
@@ -57,7 +57,7 @@ import Modal from '@/components/modal';
 import { useRouter }from "next//navigation";
 
 import AppBarComponent from "@/components/Appbar/AppBar";
-import { getDictionary } from "../../../dictionaries";
+import { getDictionary } from "../../../../dictionaries";
 import { Pay } from 'twilio/lib/twiml/VoiceResponse';
 
 
@@ -253,9 +253,10 @@ export default function Index({ params }: any) {
 
     console.log("storecode", storecode);
 
-    const memberid = storeUser;
-  
-    console.log("memberid", memberid);
+    const paramStoreUser = storeUser;
+
+ 
+    //console.log("memberid", memberid);
 
   
 
@@ -267,8 +268,7 @@ export default function Index({ params }: any) {
     const paramDepositBankAccountNumber = searchParams.get('depositBankAccountNumber');
     
 
-    const paramDepositAmountKrw = searchParams.get('depositAmountKrw');
-
+    
 
     useEffect(() => {
       // Dynamically load the Binance widget script
@@ -282,6 +282,10 @@ export default function Index({ params }: any) {
         document.body.removeChild(script);
       };
     }, []);
+
+
+
+
 
 
 
@@ -613,7 +617,7 @@ export default function Index({ params }: any) {
 
   const orderId = "0";
   
-  console.log('orderId', orderId);
+  ///console.log('orderId', orderId);
 
 
  
@@ -668,9 +672,12 @@ export default function Index({ params }: any) {
 
 
 
+
+    
+
     // fetch store info by storecode
     const [storeInfo, setStoreInfo] = useState<any>(null);
-    const [loadingStoreInfo, setLoadingStoreInfo] = useState(true);
+    const [loadingStoreInfo, setLoadingStoreInfo] = useState(false);
     useEffect(() => {
       const fetchStoreInfo = async () => {
         if (!storecode) {
@@ -696,7 +703,7 @@ export default function Index({ params }: any) {
   
         const data = await response?.json();
   
-        //console.log('data', data);
+        console.log('data', data);
   
         if (data.result) {
           setStoreInfo(data.result);
@@ -724,79 +731,6 @@ export default function Index({ params }: any) {
 
 
 
-
-
-
-    /*
-    const [totalSummary, setTotalSummary] = useState<any>(null);
-    const [loadingSummary, setLoadingSummary] = useState(true);
-  
-   
-  
-    useEffect(() => {
-  
-      const fetchTotalSummary = async () => {
-  
-        console.log('fetchTotalSummary=======>');
-  
-        try {
-    
-          setLoadingSummary(true);
-          const response = await fetch('/api/summary/getTotalSummary', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(
-              {
-                //searchStore: searchStore,
-              }
-            ),
-          });
-  
-  
-  
-  
-          if (!response.ok) {
-            setLoadingSummary(false);
-            toast.error('Failed to fetch total summary');
-            console.log('Failed to fetch total summary');
-            return;
-          }
-          const data = await response.json();
-          
-          console.log('getStoreSummary data', data);
-      
-          setTotalSummary(data.result);
-  
-        } catch (error) {
-          console.error('Error fetching total summary:', error);
-          toast.error('Error fetching total summary');
-        } finally {
-      
-          setLoadingSummary(false);
-  
-        }
-    
-      }
-  
-      fetchTotalSummary();
-  
-      // interval
-      const interval = setInterval(() => {
-        fetchTotalSummary();
-      }, 10000);
-      return () => clearInterval(interval);
-  
-  
-      
-    }, []);
-
-    */
-
-
-
-
    
 
 
@@ -813,19 +747,16 @@ export default function Index({ params }: any) {
    const [selectedKrwAmount, setSelectedKrwAmount] = useState(0);
 
 
-   useEffect(() => {
-      if (paramDepositAmountKrw) {
-        setSelectedKrwAmount(Number(paramDepositAmountKrw));
-      } else {
-        setSelectedKrwAmount(0);
-      }
-   }, [paramDepositAmountKrw]);
 
 
 
 
 
+    // user walletAddress is auto generated or not
+    const [isMyWalletAddress, setIsMyWalletAddress] = useState(false);
+    const [memberid, setMemberId] = useState("");
 
+    const [userPassword, setUserPassword] = useState('');
 
 
 
@@ -843,268 +774,15 @@ export default function Index({ params }: any) {
      paramDepositBankAccountNumber
    );
 
-   const [depositAmountKrw, setDepositAmountKrw] = useState(
-      paramDepositAmountKrw
-    );
-
 
 
     const [loadingUser, setLoadingUser] = useState(false);
     const [user, setUser] = useState<any>(null);
 
 
-   /*
-    const fetchWalletAddress = async (
-      paramNickname: string
-    ) => {
 
-      if (nickname) {
-        return;
-      }
-
-
-      const mobile = '010-1234-5678';
-
-
-      const response = await fetch('/api/user/setUserWithoutWalletAddress', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          storecode: storecode,
-          nickname: paramNickname,
-          mobile: mobile,
-        }),
-      });
-  
-      const data = await response?.json();
-  
-      console.log('setUserWithoutWalletAddress data', data);
-
-      if (!data.walletAddress) {
-
-        toast.error('User registration has been failed');
-        return;
-      }
-
-      const walletAddress = data.walletAddress;
-
-      setAddress(walletAddress);
-
-      setNickname(paramNickname);
-
-
-    }
-    */
-
- 
-
-    // user walletAddress is auto generated or not
-    const [isMyWalletAddress, setIsMyWalletAddress] = useState(false);
-    const [userPassword, setUserPassword] = useState('');
-
-    
-    useEffect(() => {
-
-      const fetchWalletAddress = async ( ) => {
-
-        setLoadingUser(true);
-  
-        const mobile = '010-1234-5678';
-  
-        /*
-        const response = await fetch('/api/user/setUserWithoutWalletAddress', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            storecode: storecode,
-            nickname: nickname,
-            mobile: mobile,
-          }),
-        });
-        */
-
-        const response = await fetch('/api/user/setBuyerWithoutWalletAddressByStorecode', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(
-            {
-              storecode: storecode,
-              
-              userCode: storeUser,
-              mobile: mobile,
-    
-              userName: depositName,
-              userBankName: depositBankName,
-              userBankAccountNumber: depositBankAccountNumber,
-              userType: 'abc',
-            }
-          ),
-        });
-
-        if (!response) {
-          setLoadingUser(false);
-          toast.error('회원등록에 실패했습니다.');
-          console.log('회원등록에 실패했습니다.');
-          return;
-        }
-
-    
-        const data = await response?.json();
-    
-        console.log('setBuyerWithoutWalletAddressByStorecode data', data);
-  
-        if (!data.walletAddress) {
-          setLoadingUser(false);
-          toast.error('회원등록에 실패했습니다.');
-          return;
-        }
-  
-   
-  
-        setAddress(data.walletAddress);
-        
-
-
-        setUser({
-          storecode: storecode,
-          walletAddress: data.walletAddress,
-          nickname: storeUser,
-          avatar: '',
-          mobile: mobile,
-
-          buyOrderStatus: data.buyOrderStatus,
-        });
-
-
-
-
-
-        // check if user buy order by nickname and storecode
-           // get one buy order by nickname and storecode
-        const responseGetOneBuyOrder = await fetch('/api/order/getOneBuyOrderByNicknameAndStorecode', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            lang: params.lang,
-            storecode: storecode,
-            nickname: nickname,
-          })
-        });
-        const dataGetBuyOrder = await responseGetOneBuyOrder.json();
-        //console.log('acceptSellOrderRandom dataGetBuyOrder', dataGetBuyOrder);
-        if (dataGetBuyOrder.result) {
-          const order = dataGetBuyOrder.result;
-
-          router.push('/' + params.lang + '/' + storecode + '/pay-usdt-reverse/' + order._id);
-          return;
-        }
-
-        setLoadingUser(false);
-      }
-  
-
-      if (isMyWalletAddress === false) {
-
-        fetchWalletAddress();
-        
-      }
-
-
-    } , [isMyWalletAddress, storecode, storeUser,  depositName, depositBankName, depositBankAccountNumber]);
-    
-
-
-    ///console.log('isMyWalletAddress', isMyWalletAddress);
-
-
-
-
-
-
-
-
-
-
-    // set user wallet address
-    // /api/user/setUserWithoutWalletAddress
-    const setUserWalletAddress = async () => {
-        
-      if (!nickname) {
-        toast.error('Please enter your nickname');
-        return;
-      }
-
-      if (!userPassword) {
-        toast.error('Please enter your password');
-        return;
-      }
-
-      const mobile = '010-1234-5678';
-
-      const response = await fetch('/api/user/setUserWithoutWalletAddress', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          storecode: storecode,
-          nickname: nickname,
-          mobile: mobile,
-          password: userPassword,
-        }),
-      });
-
-      const data = await response?.json();
-
-      console.log('setUserWithoutWalletAddress data', data);
-
-      if (!data.walletAddress) {
-
-        toast.error('User registration has been failed');
-        return;
-      }
-
-      const walletAddress = data.walletAddress;
-
-      console.log('walletAddress', walletAddress);
-
-      setAddress(walletAddress);
-
-      setUser({
-        walletAddress: address,
-        nickname: nickname,
-        avatar: '',
-        mobile: '010-1234-5678',
-      });
-
-    }
-
-
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
+    // userLogin
+    const [userLogining, setUserLogin] = useState(false);
 
 
  
@@ -1112,74 +790,6 @@ export default function Index({ params }: any) {
     const [sellOrders, setSellOrders] = useState<SellOrder[]>([]);
 
 
-    /*
-    useEffect(() => {
-
-      const fetchSellOrders = async () => {
-
-        if (orderId !== '0') {
-          return;
-        }
-        
-
-        if (!selectedKrwAmount) {
-          return;
-        }
-
-
-
-
-
-        // api call
-        const responseGetAllSellOrders = await fetch('/api/order/getAllSellOrders', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            lang: params.lang,
-            chain: params.center,
-          })
-        });
-
-        const dataGetAllSellOrders = await responseGetAllSellOrders.json();
-
-        
-        //console.log('data', data);
-
-
-
-        if (dataGetAllSellOrders.result) {
-
-          // find one of sell order which is krwAmount is selectedKrwAmount and status is ordered
-          
-
-          const order = dataGetAllSellOrders.result.orders.find((item: any) => {
-            return item.krwAmount === selectedKrwAmount && item.status === 'ordered';
-          });
-
-          if (order) {
-            setSellOrders([order]);
-          } else {
-            toast.error('Sell order not found');
-          }
-
-        }
-
-      }
-
-      fetchSellOrders();
-
-    } , [selectedKrwAmount, params.lang, params.center, orderId]);
-    */
-    
-
-    
-
-  
-    
-
-    
 
 
 
@@ -1208,7 +818,7 @@ export default function Index({ params }: any) {
   
           const data = await response?.json();
   
-          console.log('getOneSellOrder data', data);
+          console.log('data', data);
   
           if (data.result) {
 
@@ -1290,6 +900,7 @@ export default function Index({ params }: any) {
 
     const closeModal = () => setModalOpen(false);
     const openModal = () => setModalOpen(true);
+
 
 
 
@@ -2038,7 +1649,7 @@ export default function Index({ params }: any) {
 
         const data = await response.json();
 
-        ///console.log('setBuyOrder data.result', data.result);
+        //console.log('setBuyOrder data.result', data.result);
 
 
 
@@ -2098,15 +1709,6 @@ export default function Index({ params }: any) {
 
 
 
-
-
-
-
-
-
-
-
-
   if (orderId !== '0') {
       
       return (
@@ -2118,7 +1720,7 @@ export default function Index({ params }: any) {
     }
 
 
-
+    /*
   if (orderId === '0' && !storeUser) {
     return (
       <div>
@@ -2126,6 +1728,7 @@ export default function Index({ params }: any) {
       </div>
     );
   }
+    */
 
 
   /*
@@ -2138,7 +1741,7 @@ export default function Index({ params }: any) {
   }
     */
   
-
+    /*
   if (orderId === '0' && !paramDepositName) {
     return (
       <div>
@@ -2146,7 +1749,8 @@ export default function Index({ params }: any) {
       </div>
     );
   }
-
+    */
+   /*
   if (orderId === '0' && !paramDepositBankName) {
     return (
       <div>
@@ -2154,52 +1758,53 @@ export default function Index({ params }: any) {
       </div>
     );
   }
+    */
 
 
 
-  // check storeInfo
-  if (loadingStoreInfo) {
-    return (
-      <div className="w-full h-screen flex items-center justify-center">
+  
+  const userLogin = async () => {
+    if (!memberid) {
+      toast.error('회원아이디를 입력해주세요');
+      return;
+    }
+    if (!userPassword) {
+      toast.error('비밀번호를 입력해주세요');
+      return;
+    }
+    const mobile = '010-1234-5678';
 
-        <div className='flex flex-col items-center justify-center gap-2'>
+    try {
+      setUserLogin(true);
+      const response = await fetch('/api/user/userLogin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          storecode: storecode,
+          nickname: nickname,
+          mobile: mobile,
+          password: userPassword,
+        }),
+      });
+      const data = await response?.json();
+      console.log('userLogin data', data);
+      if (data.walletAddress) {
+        setAddress(data.walletAddress);
 
-          <Image
-            src="/banner-loading.gif"
-            alt="Loading"
-            width={200}
-            height={200}
-            className="w-32 h-32"
-          />
-          <div className="text-sm text-zinc-500">
-            가맹점 정보를 불러오는 중입니다...
-          </div>
-        </div>
-      </div>
-    );
+        toast.success('로그인 성공');
+      } else {
+        toast.error('로그인 실패');
+      }
+    } catch (error) {
+      console.error('userLogin error', error);
+      toast.error('로그인 실패');
+    } finally {
+
+      setUserLogin(false);
+    }
   }
-
-  if (!loadingStoreInfo && !storeInfo) {
-    return (
-      <div className="w-full h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center justify-center gap-2">
-          <Image
-            src="/banner-404.gif"
-            alt="Error"
-            width={200}
-            height={200}
-            className="w-32 h-32"
-          />
-          <div className="text-sm text-zinc-500">
-            가맹점 정보를 찾을 수 없습니다.
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-
-
 
     
   return (
@@ -2207,7 +1812,7 @@ export default function Index({ params }: any) {
     <main className="
       pl-2 pr-2
       pb-10 min-h-[100vh] flex flex-col items-center justify-start container
-      max-w-screen-sm
+      max-w-screen-lg
       mx-auto
       bg-zinc-50
       text-zinc-500
@@ -2243,7 +1848,7 @@ export default function Index({ params }: any) {
         ) : (
           <div className="w-full flex flex-row items-center justify-between gap-2">
 
-            <div className='flex flex-col gap-2 items-center justify-start'>
+            <div className='flex flex-col xl:flex-row gap-2 items-center justify-start'>
               <Image
                 src={storeInfo?.storeLogo || '/logo.png'}
                 alt="Store Logo"
@@ -2271,7 +1876,17 @@ export default function Index({ params }: any) {
               </div>
             )}
 
-            {!loadingUser && user && (
+            {!loadingUser && !user && (
+              <div className="flex flex-row items-center justify-center gap-2">
+                <span className="text-sm text-zinc-50">
+                  로그인을 해주세요.
+                </span>
+              </div>
+            )}
+
+            {/* user info */}
+
+            {!loadingUser &&  user && (
 
               <div className="flex flex-col items-start justify-center gap-2">
 
@@ -2331,9 +1946,6 @@ export default function Index({ params }: any) {
 
       </div>
 
-
-
-
       {/* USDT 가격 binance market price */}
       <div
         className="binance-widget-marquee
@@ -2353,6 +1965,7 @@ export default function Index({ params }: any) {
 
 
 
+
       <div className="
         mt-5
         p-4  w-full
@@ -2368,598 +1981,154 @@ export default function Index({ params }: any) {
  
 
 
+          {!loadingUser && (
+            <div className="w-full flex flex-col items-start justify-between gap-2">
 
+              {/* my usdt balance */}
+              <div className='hidden w-full  flex-row items-between justify-start gap-5'>
 
+                <div className=" flex flex-col gap-2 items-start">
+                  <div className="text-5xl font-semibold text-zinc-500">
+                    {Number(balance).toFixed(2)} <span className="text-lg">USDT</span>
+                  </div>
+                </div>
 
-        {!address && (
-
-          <div className="w-full mt-5 flex flex-row items-center justify-center gap-2 mb-4">
-
-
-
-            {orderId === '0' && (
-              <div className='hidden w-full flex-col xl:flex-row gap-2 items-center xl:items-end justify-center'>
-
-              
-                  <span className="text-sm text-zinc-500">
-                    {You_must_have_a_wallet_address_to_buy_USDT}
-                  </span>
-
-                  <div className='flex flex-col gap-2 items-center justify-center'>
-
-                    <span className="text-sm text-zinc-500">
-                      {Nickname_should_be_5_10_characters}
-                    </span>
-
-                    <input
-                      type="text"
-
-                      value={nickname || ''}
-
-                      /*
-                      value={inputNickname}
-
-                      
-                      onChange={(e) => {
-
-
-                        // check alphabet and number 5-10 characters
-
-                        //e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, '');
-
-
-
-
-                        setInputNickname(
-
-                          e.target.value.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10)
-                        );
-
-
-
-                      } }
-                        */
-
-
-
-                      placeholder={Enter_your_nickname}
-                      className="text-lg bg-black text-zinc-500 px-4 py-2 rounded-md border border-zinc-100"
+                <div className="hidden flex-row gap-2 items-center justify-center">
+                  
+                    <Image
+                      src={user?.avatar || "/profile-default.png"}
+                      alt="Avatar"
+                      width={20}
+                      height={20}
+                      priority={true} // Added priority property
+                      className="rounded-full"
+                      style={{
+                          objectFit: 'cover',
+                          width: '20px',
+                          height: '20px',
+                      }}
                     />
+                    <div className="text-lg font-semibold text-zinc-500 ">{
+                      user?.nickname ? user.nickname : Anonymous
+                    }</div>
 
-
-                  </div>
-
-
-
-
-              </div>
-
-            )}
-
-
-
-
-          </div>
-
-        )}
-
-
-
-              {!loadingUser && (
-                <div className="w-full flex flex-col items-start justify-between gap-2">
-
-                  {/* my usdt balance */}
-                  <div className='hidden w-full  flex-row items-between justify-start gap-5'>
-
-                    <div className=" flex flex-col gap-2 items-start">
-                      <div className="text-5xl font-semibold text-zinc-500">
-                        {Number(balance).toFixed(2)} <span className="text-lg">USDT</span>
-                      </div>
-                    </div>
-
-                    <div className="hidden flex-row gap-2 items-center justify-center">
-                      
+                    {user?.seller && (
+                      <div className="flex flex-row items-center gap-2">
                         <Image
-                          src={user?.avatar || "/profile-default.png"}
-                          alt="Avatar"
-                          width={20}
-                          height={20}
-                          priority={true} // Added priority property
-                          className="rounded-full"
-                          style={{
-                              objectFit: 'cover',
-                              width: '20px',
-                              height: '20px',
-                          }}
+                          src="/verified.png"
+                          alt="Verified"
+                          width={24}
+                          height={24}
                         />
-                        <div className="text-lg font-semibold text-zinc-500 ">{
-                          user?.nickname ? user.nickname : Anonymous
-                        }</div>
-
-                        {user?.seller && (
-                          <div className="flex flex-row items-center gap-2">
-                            <Image
-                              src="/verified.png"
-                              alt="Verified"
-                              width={24}
-                              height={24}
-                            />
-                            <Image
-                              src="/best-seller.png"
-                              alt="Best Seller"
-                              width={24}
-                              height={24}
-                            />
-                          </div>
-                        )}
-                      
-                    </div>
-                  </div>
-
-                  {/* check box for isMyWalletAddress */}
-                  {/*
-                  <div className="w-full flex flex-col gap-2 items-center justify-start">
-
-                      
-                    <div className='flex flex-row gap-2 items-center justify-center'>
-                      <input
-                        type="checkbox"
-                        checked={isMyWalletAddress}
-                        onChange={(e) => setIsMyWalletAddress(e.target.checked)}
-                      />
-                      <span className="text-lg text-zinc-500">
-                        내 USDT통장번호
-                      </span>
-                    </div>
-
-
-                    {isMyWalletAddress && (
-                      <div className="w-full flex flex-col xl:flex-row gap-2 items-start justify-start">
-
-                        <input
-                          disabled
-                          type="text"
-                          value={memberid || ''}
-                          placeholder="아이디"
-                          className="text-lg bg-black text-zinc-500 px-4 py-2 rounded-md border border-zinc-100"
+                        <Image
+                          src="/best-seller.png"
+                          alt="Best Seller"
+                          width={24}
+                          height={24}
                         />
-
-                        <input
-                          type="password"
-                          value={userPassword}
-                          onChange={(e) => setUserPassword(e.target.value)}
-                          placeholder="비밀번호"
-                          className="text-lg bg-black text-zinc-500 px-4 py-2 rounded-md border border-zinc-100"
-                        />
-
-
-                        <button
-                          onClick={setUserWalletAddress}
-                          className="text-lg bg-green-500 text-zinc-500 px-4 py-2 rounded-md"
-                        >
-                          USDT통장번호 설정
-                        </button>
-
                       </div>
                     )}
-
-                  </div>
-                  */}
-
-        
+                  
+                </div>
+              </div>
 
 
-                  {/* select one of krw amounts combo box */}
-                  {/* combo box */}
+              {/* select one of krw amounts combo box */}
+              {/* combo box */}
 
-                  {/* 10000, 50000, 100000, 300000, 500000, 1000000, 5000000, 10000000 */}
+              {/* 10000, 50000, 100000, 300000, 500000, 1000000, 5000000, 10000000 */}
 
-                  {orderId === '0' && (
+              {orderId === '0' && (
 
-                    <div className='w-full flex flex-col gap-2 items-center justify-start'>
-                      {/* user?.buyOrderStatus */}
-                      {/*
+                <div className='w-full flex flex-col gap-2 items-center justify-start'>
+
+
+
+
+                  {/* if nickname is not empty, login form */}
+                  {/* 아이디, 비밀번호 입력란, 로그인 버튼 */}
+                  {!loadingUser && !user && (
+                    <div className='w-full flex flex-col gap-2 items-center justify-center'>
+
                       <div className='flex flex-row gap-2 items-center justify-center'>
-                        <span className="text-sm text-zinc-500">
-                          상태:
-                        </span>
-                        <span className="text-sm text-zinc-500 font-semibold">
-                          {user?.buyOrderStatus}
+                        <Image
+                          src="/icon-info.png"
+                          alt="Info"
+                          width={24}
+                          height={24}
+                          className='rounded-full'
+                        />
+                        <span className="text-sm text-green-800">
+                          USDT를 구매하기 위해서는 로그인을 해야합니다.
                         </span>
                       </div>
-                      */}
 
-
-                      
-                      {
-                      user && user?.buyOrderStatus === 'ordered'
-                      || user?.buyOrderStatus === 'paymentRequested' ? (
-                        <div className='flex flex-row gap-2 items-center justify-center'>
-                          <Image
-                            src="/icon-info.png"
-                            alt="Info"
-                            width={20}
-                            height={20}
-                            className="w-6 h-6"
-                          />
-                          <span className="text-lg text-zinc-500 font-semibold">
-                            {user?.buyOrderStatus === 'ordered' ? '구매 주문이 진행 중입니다.' : '결제 요청이 진행 중입니다.'}
+                      <div className='mt-5 flex flex-col xl:flex-row gap-2 items-center justify-center'>
+                        <div className='flex flex-col gap-2 items-center justify-center'>
+                          <span className="text-sm text-zinc-500">
+                            아아디는 5-10자 영문, 숫자 조합으로 입력해주세요.
                           </span>
 
-                        </div>
-                      ) : (
-                      
+                          <input
+                            type="text"
+                            value={memberid || ''}
+                            onChange={(e) => {
+                              setMemberId(
+                                e.target.value.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10)
+                              );
+                            }}
+                            placeholder="아이디"
+                            className="text-lg bg-zinc-200 text-zinc-500 px-4 py-2 rounded-md border border-zinc-100"
+                          />
 
+                        </div>
                         <div className='flex flex-col gap-2 items-center justify-center'>
 
+                          <span className="text-sm text-zinc-500">
+                            비밀번호는 8-16자 영문, 숫자 조합으로 입력해주세요.
+                          </span>
 
-                          <div className="flex flex-row gap-2 items-center justify-center
-                            border-b-2 border-zinc-200 border-opacity-50
-                            pb-2 mb-2
-                            ">
-                              <span className="text-sm text-zinc-500">
-                                구매수량
-                              </span>
-                              <Image
-                                src="/logo-tether.png"
-                                alt="USDT"
-                                width={24}
-                                height={24}
-                                className="rounded-full w-6 h-6"
-                              />
-
-                              <div className="text-2xl font-semibold text-zinc-500">
-                                {
-                                  (selectedKrwAmount / rate)?.toLocaleString('us-US', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })  
-                                } USDT
-                              </div>
-                          </div>
-
-                          <div className='flex flex-row gap-2 items-center justify-center'>
-                            <Image
-                              src="/icon-info.png"
-                              alt="Info"
-                              width={16}
-                              height={16}
-                              className="rounded-full w-4 h-4"
-                            />
-                            <span className="text-sm text-zinc-500">
-                              구매한 수량은 자동으로 가맹점 결제에 반영됩니다.
-                            </span>
-                          </div>
-
-                          <div className="flex flex-col xl:flex-row gap-2 items-center justify-center
-                            border-b-2 border-zinc-200 border-opacity-50
-                            pb-2 mb-2
-                            ">
-                            <div className="flex flex-row gap-2 items-center justify-center">
-                                <span className="text-sm text-zinc-500">
-                                  구매금액
-                                </span>
-                                <div className="text-2xl font-semibold text-zinc-500">
-                                  {
-                                    selectedKrwAmount?.toLocaleString('ko-KR')
-                                  } 원
-                                </div>
-
-
-                                {/* reset button */}
-                                {(!depositAmountKrw || depositAmountKrw === "0") && (
-
-                                  <button
-                                    onClick={() => setSelectedKrwAmount(0)}
-                                    className={`${loadingStoreInfo ? 'bg-[#f472b6]' : 'bg-green-500'
-                                      }
-                                      text-sm text-zinc-100
-                                      px-4 py-2 rounded-md border border-zinc-100
-                                      hover:bg-[#f472b6] hover:text-zinc-50
-                                      `}
-                                    disabled={loadingStoreInfo}
-                                  >
-                                    초기화
-                                  </button>
-                                )}
-
-                            </div>
-
-                            {/* 시세 */}
-                            <div className="flex flex-row gap-2 items-center justify-center">
-    
-                                <span className="text-sm text-zinc-500">
-                                  시세
-                                </span>
-                                <div className="text-2xl font-semibold text-zinc-500">
-                                  {
-                                    rate?.toLocaleString('ko-KR')
-                                  } 원
-                                </div>
-
-                              {/* new window for upbit site */}
-                                <a
-                                  href="https://upbit.com/exchange?code=CRIX.UPBIT.KRW-USDT"
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex flex-row gap-2 items-center justify-center"
-                                >
-                                  <div className='flex flex-row gap-2 items-center justify-center'>
-                                    <span className="text-sm text-zinc-500">
-                                      시세제공
-                                    </span>
-                                    <Image
-                                      src="/logo-upbit.jpg"
-                                      alt="upbit"
-                                      width={100}
-                                      height={100}
-                                      className="rounded-full w-12 h-12"
-                                    />
-                                  </div>
-                                </a>
-
-
-                            </div>
-
-
-
-                          </div>
-
-
-
-                          {(!depositAmountKrw || depositAmountKrw === "0") && (
-
-                            <div className="mt-4 grid grid-cols-2 xl:grid-cols-3 gap-4 w-full text-sm text-zinc-200">
-
-
-
-                                {/* when mouse over, background color is green */}
-
-                                <button
-                                  onClick={() => setSelectedKrwAmount(
-                                    selectedKrwAmount + 5000
-                                  )}
-                                  className={`${loadingStoreInfo ? 'bg-zinc-800' : 'bg-green-500'
-                                  }
-                                    text-lg text-zinc-100
-                                    px-4 py-2 rounded-md border border-zinc-100
-                                    hover:bg-[#f472b6] hover:text-zinc-50
-                                    `}
-                                  disabled={loadingStoreInfo}
-                                >
-                                  5,000원
-                                </button>
-
-
-                                <button
-                                  onClick={() => setSelectedKrwAmount(
-                                    selectedKrwAmount + 10000
-                                  )}
-                                  className={`${loadingStoreInfo ? 'bg-[#f472b6]' : 'bg-green-500'
-                                  }
-                                    text-lg text-zinc-100
-                                    px-4 py-2 rounded-md border border-zinc-100
-                                    hover:bg-[#f472b6] hover:text-zinc-50
-                                    `}
-                                >
-                                  10,000원
-                                </button>
-
-                                <button
-                                  onClick={() => setSelectedKrwAmount(
-                                    selectedKrwAmount + 50000
-                                  )}
-                                  className={`${loadingStoreInfo ? 'bg-[#f472b6]' : 'bg-green-500'
-                                  }
-                                    text-lg text-zinc-100
-                                    px-4 py-2 rounded-md border border-zinc-100
-                                    hover:bg-[#f472b6] hover:text-zinc-50
-                                    `}
-                                >
-                                  50,000원
-                                </button>
-
-                                <button
-                                  onClick={() => setSelectedKrwAmount(
-                                    selectedKrwAmount + 100000
-                                  )}
-                                  className={`${loadingStoreInfo ? 'bg-[#f472b6]' : 'bg-green-500'
-                                  }
-                                    text-lg text-zinc-100
-                                    px-4 py-2 rounded-md border border-zinc-100
-                                    hover:bg-[#f472b6] hover:text-zinc-50
-                                    `}
-                                >
-                                  100,000원
-                                </button>
-
-                                <button
-                                  onClick={() => setSelectedKrwAmount(
-                                    selectedKrwAmount + 500000
-                                  )}
-                                  className={`${loadingStoreInfo ? 'bg-[#f472b6]' : 'bg-green-500'
-                                  }
-                                    text-lg text-zinc-100
-                                    px-4 py-2 rounded-md border border-zinc-100
-                                    hover:bg-[#f472b6] hover:text-zinc-50
-                                    `}
-                                >
-                                  500,000원
-                                </button>
-
-                                <button
-                                  onClick={() => setSelectedKrwAmount(
-                                    selectedKrwAmount + 1000000
-                                  )}
-                                  className={`${loadingStoreInfo ? 'bg-[#f472b6]' : 'bg-green-500'
-                                  }
-                                    text-lg text-zinc-100
-                                    px-4 py-2 rounded-md border border-zinc-100
-                                    hover:bg-[#f472b6] hover:text-zinc-50
-                                    `}
-                                >
-                                  1,000,000원
-                                </button>
-
-
-                            </div>
-
-                          )}
-
-
-                          <div className='mt-5 flex flex-col xl:flex-row gap-2 items-center justify-center'>
-
-                            <div className="felex flex-col gap-2 items-center justify-center">
-
-                              {/* deposit bank name */}
-                              <div className='flex flex-row gap-2 items-center justify-center'>
-                                <span className="w-24 text-sm text-zinc-500">
-                                  입금자은행명
-                                </span>
-                                <input
-                                  //disabled={!address || !selectedKrwAmount || acceptingSellOrderRandom}
-                                  disabled={true}
-                                  type="text"
-                                  value={depositBankName || ''}
-                                  onChange={(e) => setDepositBankName(e.target.value)}
-                                  placeholder="입금자은행명"
-                                  className=" text-sm font-semibold bg-zinc-200 text-zinc-600 px-4 py-2 rounded-md border border-zinc-100"
-                                />
-                              </div>
-
-
-                              {/* deposit bank account number */}
-                              <div className='mt-2 flex flex-row gap-2 items-center justify-center'>
-                                <span className=" w-24 text-sm text-zinc-500">
-                                  입금자계좌번호
-                                </span>
-                                <input
-                                  //disabled={!address || !selectedKrwAmount || acceptingSellOrderRandom}
-                                  disabled={true}
-                                  type="text"
-                                  value={depositBankAccountNumber || ''}
-                                  onChange={(e) => setDepositBankAccountNumber(e.target.value)}
-                                  placeholder="입금자계좌번호"
-                                  className=" text-sm font-semibold bg-zinc-200 text-zinc-600 px-4 py-2 rounded-md border border-zinc-100"
-                                />
-                              </div>
-
-                              
-
-
-                              {/* input deposit name */}
-                              <div className='mt-2 flex flex-row gap-2 items-center justify-center'>
-                                
-                                <span className=" w-24 text-sm text-zinc-500">
-                                  입금자명
-                                </span>
-
-                                <input
-                                  //disabled={!address || !selectedKrwAmount || acceptingSellOrderRandom}
-                                  disabled={true}
-                                  type="text"
-                                  value={depositName || ''}
-                                  onChange={(e) => setDepositName(e.target.value)}
-                                  placeholder={Deposit_Name}
-                                  className=" text-sm font-semibold bg-zinc-200 text-zinc-600 px-4 py-2 rounded-md border border-zinc-100"
-                                />
-                              </div>
-
-
-                            </div>
-                            
-
-
-
-                            <button
-                              disabled={!address || !user || !selectedKrwAmount || acceptingSellOrderRandom}
-                              className={`
-                              ${!user || !selectedKrwAmount || acceptingSellOrderRandom ? 'bg-zinc-200' : 'bg-[#f472b6]'
-                              }
-                                w-full
-                                text-lg text-zinc-50 px-4 py-2 rounded-md border border-zinc-100
-                                hover:bg-[#f472b6] hover:text-zinc-50
-                                `}
-
-                              onClick={() => {
-
-                                  // check deposit name is empty
-                                  if (!depositName) {
-                                    toast.error(Please_enter_deposit_name);
-                                    return;
-                                  }
-
-                                  acceptSellOrderRandom(
-                                    selectedKrwAmount,
-                                    depositName,
-                                    depositBankName || '',
-                                    depositBankAccountNumber || ''
-                                  );
-                            
-
-                              }}
-                            >
-                              <div className="flex flex-row items-center justify-center gap-2">
-                                {/* loaaing icon */}
-                                {acceptingSellOrderRandom ? (
-                                  <Image
-                                    src="/loading.png"
-                                    alt="Loading"
-                                    width={24}
-                                    height={24}
-                                    className='animate-spin'
-                                  />
-                                ) : (
-                                  <Image
-                                    src="/icon-buy.webp"
-                                    alt="Check"
-                                    width={24}
-                                    height={24}
-                                  />
-                                )}
-                              
-                                <div className="flex flex-row items-center justify-center gap-2">
-                                  {acceptingSellOrderRandom ? (
-                                    <span className="text-sm text-zinc-800">
-                                      {/* 구매주문 중입니다. */}
-                                      구매주문 중입니다.
-                                    </span>
-                                  ) : (
-                                    <span className="text-sm text-zinc-800
-                                      hover:underline
-                                      hover:text-zinc-50
-                                      ">
-                                      구매하기
-                                    </span>
-                                  )}
-                                </div>
-
-                              </div>
-
-                            </button>
-
-                          </div>
-
-
-                          <div className='
-                            mt-2 w-full flex flex-row items-center justify-start gap-2
-                            '>
-                            <Image
-                              src="/icon-info.png"
-                              alt="Info"
-                              width={24}
-                              height={24}
-                            />
-                            <span className="text-sm text-zinc-500">
-                              입금 시 반드시 사전 등록한 은행과 이름, 계좌번호로 송금해야 합니다. 이와 다를 시에는 입금 처리가 안될 수 있습니다.
-                            </span>
-                          </div>
-
+                          <input
+                            type="password"
+                            value={userPassword || ''}
+                            onChange={(e) => setUserPassword(e.target.value)}
+                            placeholder="비밀번호"
+                            className="text-lg bg-zinc-200 text-zinc-500 px-4 py-2 rounded-md border border-zinc-100"
+                          />
                         </div>
 
-                      
-                      )}
-                      
+                        <button
+                          onClick={() => {
+                            if (!memberid || !userPassword) {
+                              toast.error('아이디와 비밀번호를 입력해주세요.');
+                              return;
+                            }
+
+                            userLogin(
+
+                            );
+                          } }
+                          disabled={loadingStoreInfo
+                            || !memberid
+                            || !userPassword
+                            || userLogining
+                          }
+                          className={`${loadingStoreInfo || !memberid || !userPassword || userLogining
+                            ? 'bg-[#f472b6]'
+                            : 'bg-black'
+                            
+                          }
+                            text-sm text-zinc-100
+                            px-4 py-2 rounded-md border border-zinc-100
+                            hover:bg-[#f472b6] hover:text-zinc-50
+
+                            `}
+                        >
+  
+                          로그인
+                        </button>
+                      </div>
+
 
                     </div>
                   )}
@@ -2969,8 +2138,339 @@ export default function Index({ params }: any) {
 
 
 
+                <div className='mt-5 w-full flex flex-col gap-2 items-center justify-center
+                  p-4
+                  bg-zinc-50
+                  rounded-2xl
+                  shadow-lg
+                  shadow-zinc-200
+                  border-2 border-zinc-200
+                  border-opacity-50
+                  '>
+
+                    {/* selected krw amount */}
+
+                    <div className='w-full flex flex-col xl:flex-row gap-5 items-center justify-center'>
+                      <div className="flex flex-row gap-2 items-center justify-center">
+                          <span className="text-sm text-zinc-500">
+                            구매금액
+                          </span>
+                          <div className="text-2xl font-semibold text-zinc-500">
+                            {
+                              selectedKrwAmount?.toLocaleString('ko-KR')
+                            } 원
+                          </div>
+
+
+                          {/* reset button */}
+                          <button
+                            onClick={() => setSelectedKrwAmount(0)}
+                            className={`${loadingStoreInfo ? 'bg-zinc-800' : 'bg-black'
+                            }
+                              text-sm text-zinc-100
+                              px-4 py-2 rounded-md border border-zinc-100
+                              hover:bg-[#f472b6] hover:text-zinc-50
+                              `}
+                          >
+                            초기화
+                          </button>
+
+                      </div>
+
+                      {/* 시세 */}
+                      <div className="flex flex-row gap-2 items-center justify-center">
+                          <span className="text-sm text-zinc-500">
+                            시세
+                          </span>
+                          <div className="text-2xl font-semibold text-zinc-500">
+                            {
+                              rate?.toLocaleString('ko-KR')
+                            } 원
+                          </div>
+                      </div>
+
+                      {/* usdtAmount */}
+                      {/* 구매수량 */}
+                      <div className="flex flex-row gap-2 items-center justify-center">
+                          <span className="text-sm text-zinc-500">
+                            구매수량
+                          </span>
+                       
+                          <div className="text-2xl font-semibold text-zinc-500">
+                            {
+                              (selectedKrwAmount / rate)?.toLocaleString('ko-KR')
+                            } USDT
+                          </div>
+                      </div>
+                    </div>
+
+                    {/* krw amount buttons */}
+
+
+                    <div className="mt-4 grid grid-cols-2 xl:grid-cols-3 gap-4 w-full text-sm text-zinc-200">
+
+
+
+                        {/* when mouse over, background color is green */}
+
+                        <button
+                          onClick={() => setSelectedKrwAmount(
+                            selectedKrwAmount + 1000
+                          )}
+                          className={`${loadingStoreInfo ? 'bg-zinc-800' : 'bg-black'
+                          }
+                            text-lg text-zinc-100
+                            px-4 py-2 rounded-md border border-zinc-100
+                            hover:bg-[#f472b6] hover:text-zinc-50
+                            `}
+                          disabled={loadingStoreInfo}
+                        >
+                          1,000원
+                        </button>
+
+
+                        <button
+                          onClick={() => setSelectedKrwAmount(
+                            selectedKrwAmount + 10000
+                          )}
+                          className={`${loadingStoreInfo ? 'bg-zinc-800' : 'bg-black'
+                          }
+                            text-lg text-zinc-100
+                            px-4 py-2 rounded-md border border-zinc-100
+                            hover:bg-[#f472b6] hover:text-zinc-50
+                            `}
+                        >
+                          10,000원
+                        </button>
+
+                        <button
+                          onClick={() => setSelectedKrwAmount(
+                            selectedKrwAmount + 50000
+                          )}
+                          className={`${loadingStoreInfo ? 'bg-zinc-800' : 'bg-black'
+                          }
+                            text-lg text-zinc-100
+                            px-4 py-2 rounded-md border border-zinc-100
+                            hover:bg-[#f472b6] hover:text-zinc-50
+                            `}
+                        >
+                          50,000원
+                        </button>
+
+                        <button
+                          onClick={() => setSelectedKrwAmount(
+                            selectedKrwAmount + 100000
+                          )}
+                          className={`${loadingStoreInfo ? 'bg-zinc-800' : 'bg-black'
+                          }
+                            text-lg text-zinc-100
+                            px-4 py-2 rounded-md border border-zinc-100
+                            hover:bg-[#f472b6] hover:text-zinc-50
+                            `}
+                        >
+                          100,000원
+                        </button>
+
+                        <button
+                          onClick={() => setSelectedKrwAmount(
+                            selectedKrwAmount + 500000
+                          )}
+                          className={`${loadingStoreInfo ? 'bg-zinc-800' : 'bg-black'
+                          }
+                            text-lg text-zinc-100
+                            px-4 py-2 rounded-md border border-zinc-100
+                            hover:bg-[#f472b6] hover:text-zinc-50
+                            `}
+                        >
+                          500,000원
+                        </button>
+
+                        <button
+                          onClick={() => setSelectedKrwAmount(
+                            selectedKrwAmount + 1000000
+                          )}
+                          className={`${loadingStoreInfo ? 'bg-zinc-800' : 'bg-black'
+                          }
+                            text-lg text-zinc-100
+                            px-4 py-2 rounded-md border border-zinc-100
+                            hover:bg-[#f472b6] hover:text-zinc-50
+                            `}
+                        >
+                          1,000,000원
+                        </button>
+
+
+                    </div>
+
+
+                    <div className='mt-5 flex flex-col xl:flex-row gap-2 items-center justify-center'>
+
+                      <div className="felex flex-col gap-2 items-center justify-center">
+
+                        {/* deposit bank name */}
+                        <div className='flex flex-row gap-2 items-center justify-center'>
+                          <span className="w-24 text-sm text-zinc-500">
+                            입금자은행명
+                          </span>
+                          <input
+                            //disabled={!address || !selectedKrwAmount || acceptingSellOrderRandom}
+                            disabled={true}
+                            type="text"
+                            value={depositBankName || ''}
+                            onChange={(e) => setDepositBankName(e.target.value)}
+                            placeholder="입금자은행명"
+                            className=" text-sm font-semibold bg-zinc-200 text-zinc-600 px-4 py-2 rounded-md border border-zinc-100"
+                          />
+                        </div>
+
+
+                        {/* deposit bank account number */}
+                        <div className='mt-2 flex flex-row gap-2 items-center justify-center'>
+                          <span className=" w-24 text-sm text-zinc-500">
+                            입금자계좌번호
+                          </span>
+                          <input
+                            //disabled={!address || !selectedKrwAmount || acceptingSellOrderRandom}
+                            disabled={true}
+                            type="text"
+                            value={depositBankAccountNumber || ''}
+                            onChange={(e) => setDepositBankAccountNumber(e.target.value)}
+                            placeholder="입금자계좌번호"
+                            className=" text-sm font-semibold bg-zinc-200 text-zinc-600 px-4 py-2 rounded-md border border-zinc-100"
+                          />
+                        </div>
+
+                        
+
+
+                        {/* input deposit name */}
+                        <div className='mt-2 flex flex-row gap-2 items-center justify-center'>
+                          
+                          <span className=" w-24 text-sm text-zinc-500">
+                            입금자명
+                          </span>
+
+                          <input
+                            //disabled={!address || !selectedKrwAmount || acceptingSellOrderRandom}
+                            disabled={true}
+                            type="text"
+                            value={depositName || ''}
+                            onChange={(e) => setDepositName(e.target.value)}
+                            placeholder="입금자명"
+                            className=" text-sm font-semibold bg-zinc-200 text-zinc-600 px-4 py-2 rounded-md border border-zinc-100"
+                          />
+                        </div>
+
+
+                      </div>
+                      
+
+
+
+                      <button
+                        disabled={!address || !nickname || !selectedKrwAmount || acceptingSellOrderRandom}
+                        className={`
+                        ${!address || !nickname || !selectedKrwAmount || acceptingSellOrderRandom
+                        ? 'bg-zinc-100' : 'bg-[#f472b6]'
+                        }
+                          w-full
+                          text-lg text-zinc-50 px-4 py-2 rounded-md border border-zinc-100
+                          hover:bg-[#f472b6] hover:text-zinc-50
+                          `}
+
+                        onClick={() => {
+
+                            // check deposit name is empty
+                            if (!depositName) {
+                              toast.error(Please_enter_deposit_name);
+                              return;
+                            }
+                            if (!depositBankName) {
+                              toast.error("입금자 은행명을 입력해주세요");
+                              return;
+                            }
+                            if (!depositBankAccountNumber) {
+                              toast.error("입금자 계좌번호를 입력해주세요");
+                              return;
+                            }
+
+                            acceptSellOrderRandom(
+                              selectedKrwAmount,
+                              depositName,
+                              depositBankName || '',
+                              depositBankAccountNumber || ''
+                            );
+                      
+
+                        }}
+                      >
+                        <div className="flex flex-row items-center justify-center gap-2">
+                          {/* loaaing icon */}
+                          {acceptingSellOrderRandom ? (
+                            <Image
+                              src="/loading.png"
+                              alt="Loading"
+                              width={24}
+                              height={24}
+                              className='animate-spin'
+                            />
+                          ) : (
+                            <Image
+                              src="/icon-buy.webp"
+                              alt="Check"
+                              width={24}
+                              height={24}
+                            />
+                          )}
+                        
+                          <div className="flex flex-row items-center justify-center gap-2">
+                            {acceptingSellOrderRandom ? (
+                              <span className="text-sm text-zinc-500">
+                                구매주문 중입니다.
+                              </span>
+                            ) : (
+                              <span className="text-sm text-zinc-500
+                                hover:text-zinc-50
+                                ">
+                                
+                                구매하기
+                              </span>
+                            )}
+                          </div>
+
+                        </div>
+
+                      </button>
+
+                    </div>
+
+                    {/* deposit name description */}
+                    <div className='
+                      mt-2 w-full flex flex-row items-center justify-start gap-2
+                      '>
+                      <Image
+                        src="/icon-info.png"
+                        alt="Info"
+                        width={24}
+                        height={24}
+                      />
+                      <span className="text-sm text-zinc-500">
+                        입금 시 반드시 사전 등록한 은행과 이름, 계좌번호로 송금해야 합니다. 이와 다를 시에는 입금 처리가 안될 수 있습니다.
+                      </span>
+                    </div>
+
+                  </div>
+
                 </div>
               )}
+
+
+
+
+
+
+            </div>
+          )}
 
 
 
@@ -4356,7 +3856,6 @@ export default function Index({ params }: any) {
             )}
 
 
-
           {/*
           📌 필독 안내사항
               1.	대행 신청 전 유의사항을 반드시 확인해 주세요.
@@ -4393,6 +3892,9 @@ export default function Index({ params }: any) {
               </ul>
             </div>
           </div>
+
+
+              
             
 
 
@@ -4440,12 +3942,7 @@ export default function Index({ params }: any) {
 
 
 
-        <Modal isOpen={isModalOpen} onClose={closeModal}>
-            <TradeDetail
-                closeModal={closeModal}
-                //goChat={goChat}
-            />
-        </Modal>
+
 
             
 
@@ -4458,122 +3955,5 @@ export default function Index({ params }: any) {
 
 
 
-
-
-
-// close modal
-
-const TradeDetail = (
-    {
-        closeModal = () => {},
-        goChat = () => {},
-        
-    }
-) => {
-
-
-    const [amount, setAmount] = useState(1000);
-    const price = 91.17; // example price
-    const receiveAmount = (amount / price).toFixed(2);
-    const commission = 0.01; // example commission
-  
-    return (
-
-      <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-6">
-        <div className="flex items-center">
-          <span className="inline-block w-4 h-4 rounded-full bg-green-500 mr-2"></span>
-          <h2 className="text-lg font-semibold text-black ">Iskan9</h2>
-          <span className="ml-2 text-blue-500 text-sm">318 trades</span>
-        </div>
-        <p className="text-gray-600 mt-2">The offer is taken from another source. You can only use chat if the trade is open.</p>
-        
-        <div className="mt-4">
-          <div className="flex justify-between text-gray-700">
-            <span>Price</span>
-            <span>{price} KRW</span>
-          </div>
-          <div className="flex justify-between text-gray-700 mt-2">
-            <span>Limit</span>
-            <span>40680.00 KRW - 99002.9 KRW</span>
-          </div>
-          <div className="flex justify-between text-gray-700 mt-2">
-            <span>Available</span>
-            <span>1085.91 USDT</span>
-          </div>
-          <div className="flex justify-between text-gray-700 mt-2">
-            <span>Seller&apos;s payment method</span>
-            <span className="bg-yellow-100 text-yellow-800 px-2 rounded-full">Tinkoff</span>
-          </div>
-          <div className="mt-4 text-gray-700">
-            <p>24/7</p>
-          </div>
-        </div>
-  
-        <div className="mt-6 border-t pt-4 text-gray-700">
-          <div className="flex flex-col space-y-4">
-            <div>
-              <label className="block text-gray-700">I want to pay</label>
-              <input 
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(
-                    e.target.value === '' ? 0 : parseInt(e.target.value)
-                ) }
-
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700">I will receive</label>
-              <input 
-                type="text"
-                value={`${receiveAmount} USDT`}
-                readOnly
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700">Commission</label>
-              <input 
-                type="text"
-                value={`${commission} USDT`}
-                readOnly
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              />
-            </div>
-          </div>
-          
-          <div className="mt-6 flex space-x-4">
-            <button
-                className="bg-green-500 text-zinc-500 px-4 py-2 rounded-lg"
-                onClick={() => {
-                    console.log('Buy USDT');
-                    // go to chat
-                    // close modal
-                    closeModal();
-                    goChat();
-
-                }}
-            >
-                Buy USDT
-            </button>
-            <button
-                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg"
-                onClick={() => {
-                    console.log('Cancel');
-                    // close modal
-                    closeModal();
-                }}
-            >
-                Cancel
-            </button>
-          </div>
-
-        </div>
-
-
-      </div>
-    );
-  };
 
 

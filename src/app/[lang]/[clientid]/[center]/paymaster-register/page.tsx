@@ -10,7 +10,7 @@ import { useState, useEffect, use } from "react";
 
 import { toast } from 'react-hot-toast';
 
-import { client } from "../../../client";
+import { client } from "../../../../client";
 
 import {
     getContract,
@@ -57,7 +57,7 @@ import Modal from '@/components/modal';
 import { useRouter }from "next//navigation";
 
 import AppBarComponent from "@/components/Appbar/AppBar";
-import { getDictionary } from "../../../dictionaries";
+import { getDictionary } from "../../../../dictionaries";
 import { Pay } from 'twilio/lib/twiml/VoiceResponse';
 
 

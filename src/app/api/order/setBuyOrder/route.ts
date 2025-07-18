@@ -1,66 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import {
-	insertBuyOrder,
-} from '@lib/api/order';
-
-/*
-import {
-  getAgentByStorecode,
-} from '@lib/api/agent';
-*/
-
+  stableUrl1,
+  stableUrl2
+} from "../../../config/stable";
 
 export async function POST(request: NextRequest) {
 
   const body = await request.json();
 
   const { storecode, walletAddress, nickname, usdtAmount, krwAmount, rate, privateSale, buyer } = body;
-
-  console.log("setBuyOrder =====  body", body);
-
-  
-
-  /*
-  const result = await insertBuyOrder({
-    //agentcode: agentcode,
-    storecode: storecode,
-    
-    walletAddress: walletAddress,
-
-
-    nickname: nickname,
-    usdtAmount: usdtAmount,
-    krwAmount: krwAmount,
-    rate: rate,
-    privateSale: privateSale,
-    buyer: buyer
-  });
-
-  ///console.log("setBuyOrder =====  result", result);
-
-  if (!result) {
-
-    return NextResponse.json({
-      result: null,
-      error: "Failed to insert buy order",
-    }
-    , { status: 500 });
-
-  }
-
-
-
-
- 
-  return NextResponse.json({
-
-    result,
-    
-  });
-  */
-
-
 
 
 
@@ -69,7 +18,9 @@ export async function POST(request: NextRequest) {
 
   try {
 
-    const apiUrl = `${process.env.STABLE_API_URL}/api/order/setBuyOrder`;
+    const stableUrl = body.clientid === "9ed089930921bfaa1bf65aff9a75fc41" ? stableUrl1 : stableUrl2;
+
+    const apiUrl = `${stableUrl}/api/order/setBuyOrder`;
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
