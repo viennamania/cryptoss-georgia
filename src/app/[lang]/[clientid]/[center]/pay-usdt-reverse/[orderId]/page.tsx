@@ -116,6 +116,8 @@ interface SellOrder {
   transactionHash: string;
 
   store: any;
+
+  paymentMethod: string; // 'bank' or 'crypto'
 }
 
 
@@ -1823,7 +1825,12 @@ export default function Index({ params }: any) {
               )}
 
 
-              {orderId && buyOrders.length > 0 && buyOrders[0].status === 'paymentConfirmed' && balance === 0 && (
+              {
+              orderId && buyOrders.length > 0
+              && buyOrders[0]?.paymentMethod === 'bank'
+              && buyOrders[0].status === 'paymentConfirmed'
+              && balance === 0
+              && (
 
                 <div className='flex flex-row gap-2 items-center justify-center'>
                   <Image
@@ -1837,7 +1844,6 @@ export default function Index({ params }: any) {
                     당신의 USDT가 상점으로 전송되었습니다. 상점에서 충전 상태를 확인할 수 있습니다.
                   </span>
                 </div>
-
 
               )}
 
@@ -2880,51 +2886,57 @@ export default function Index({ params }: any) {
 
 
                                 {item.status === 'paymentConfirmed' && (
+                                  <>
+                                  {item?.paymentMethod === 'bank' && (
 
-                                  <div className="mt-4 flex flex-col items-start gap-2
-                                  bg-white px-2 py-3 rounded-md  border border-zinc-100
-                                  
-                                  ">
+                                    <div className="mt-4 flex flex-col items-start gap-2
+                                    bg-white px-2 py-3 rounded-md  border border-zinc-100
+                                    
+                                    ">
 
-                                    <p className="mt-4 text-sm text-zinc-500">
-                                      계좌이체:{' '}
-                                      {/*item.seller?.bankInfo.bankName} {item.seller?.bankInfo.accountNumber} {item.seller?.bankInfo.accountHolder*/}
+                                      <p className="mt-4 text-sm text-zinc-500">
+                                        계좌이체:{' '}
+                                        {/*item.seller?.bankInfo.bankName} {item.seller?.bankInfo.accountNumber} {item.seller?.bankInfo.accountHolder*/}
 
-                                      {item.store?.bankInfo?.bankName}
-                                      {' '}
-                                      {item.store?.bankInfo?.accountNumber}
-                                      {' '}
-                                      {item.store?.bankInfo?.accountHolder}
+                                        {item.store?.bankInfo?.bankName}
+                                        {' '}
+                                        {item.store?.bankInfo?.accountNumber}
+                                        {' '}
+                                        {item.store?.bankInfo?.accountHolder}
 
-                                    </p> 
-                                    <p className="text-sm text-zinc-500">
-                                      이체금액: {
-                                      item.krwAmount?.toLocaleString('ko-KR', {
-                                        style: 'currency',
-                                        currency: 'KRW',
-                                      })
-                                      }
-                                    </p>
-                                    <p className="text-sm text-zinc-500">
-                                      입금자명: {
-                                        item.buyer?.depositName ? item.buyer?.depositName : item.tradeId
-                                      }
-                                    </p>                        
-
-                                    {/* 판매자가 입급을 확인였습니다. */}
-                                    <div className="flex flex-row items-center gap-2">
-                                      <Image
-                                        src="/icon-info.png"
-                                        alt="Info"
-                                        width={32}
-                                        height={32}
-                                      />
-                                      <p className="text-lg text-green-500">
-                                        판매자가 입금을 확인하고 USDT를 전송했습니다.
+                                      </p> 
+                                      <p className="text-sm text-zinc-500">
+                                        이체금액: {
+                                        item.krwAmount?.toLocaleString('ko-KR', {
+                                          style: 'currency',
+                                          currency: 'KRW',
+                                        })
+                                        }
                                       </p>
-                                    </div>
+                                      <p className="text-sm text-zinc-500">
+                                        입금자명: {
+                                          item.buyer?.depositName ? item.buyer?.depositName : item.tradeId
+                                        }
+                                      </p>                        
 
-                                  </div>
+                                      {/* 판매자가 입급을 확인였습니다. */}
+                                      <div className="flex flex-row items-center gap-2">
+                                        <Image
+                                          src="/icon-info.png"
+                                          alt="Info"
+                                          width={32}
+                                          height={32}
+                                        />
+                                        <p className="text-lg text-green-500">
+                                          판매자가 입금을 확인하고 USDT를 전송했습니다.
+                                        </p>
+                                      </div>
+
+                                    </div>
+                                    
+                                  )}
+
+                                  </>
                                 )}
                                 
 
