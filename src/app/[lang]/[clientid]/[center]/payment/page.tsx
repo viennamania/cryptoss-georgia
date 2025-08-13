@@ -1022,6 +1022,7 @@ export default function Index({ params }: any) {
 
 
     } , [isMyWalletAddress,
+      params.lang,
       params.clientid,
       storecode, storeUser,  depositName, depositBankName, depositBankAccountNumber]);
     
