@@ -2,8 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { 
   stableUrl1,
-  stableUrl2
- } from "../../../config/stable";
+  stableUrl2,
+  stableUrl3,
+} from "../../../config/stable";
 
 export async function POST(request: NextRequest) {
 
@@ -14,7 +15,13 @@ export async function POST(request: NextRequest) {
   console.log("walletAddress", walletAddress);
   console.log("nickname", nickname);
 
-  const stableUrl = clientid === "9ed089930921bfaa1bf65aff9a75fc41" ? stableUrl1 : stableUrl2;
+  const stableUrl = clientid === "9ed089930921bfaa1bf65aff9a75fc41" ? stableUrl1
+    : clientid === "e44dd15d66fc317d1cc7e3f71975373d" ? stableUrl2
+    : clientid === "421a733ddd491ddc0c2a7a8c4040d782" ? stableUrl3
+    : stableUrl1; // default to stableUrl1 if no match
+
+
+    
   // call api
   const apiUrl = `${stableUrl}/api/user/updateUser`;
   try {
