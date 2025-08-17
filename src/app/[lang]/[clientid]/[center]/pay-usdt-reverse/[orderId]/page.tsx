@@ -1,11 +1,6 @@
 'use client';
 
-import type { GetStaticProps, InferGetStaticPropsType } from 'next';
-
-
-
 import { useState, useEffect, use } from "react";
-
 
 
 import { toast } from 'react-hot-toast';
