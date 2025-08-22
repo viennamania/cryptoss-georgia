@@ -668,6 +668,9 @@ export default function Index({ params }: any) {
 
 
 
+    const [agentcode, setAgentcode] = useState<string>("");
+
+
     // fetch store info by storecode
     const [storeInfo, setStoreInfo] = useState<any>(null);
     const [loadingStoreInfo, setLoadingStoreInfo] = useState(true);
@@ -701,6 +704,9 @@ export default function Index({ params }: any) {
   
         if (data.result) {
           setStoreInfo(data.result);
+
+          setAgentcode(data.result.agentcode);
+
         }
   
         setLoadingStoreInfo(false);
@@ -708,6 +714,34 @@ export default function Index({ params }: any) {
   
       fetchStoreInfo();
     }, [params.clientid, storecode]);
+
+
+
+
+
+    // api/agent/getAgentUsdtKRWRate
+    useEffect(() => {
+      const fetchRate = async () => {
+        const response = await fetch('/api/agent/getAgentUsdtKRWRate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            clientid: params.clientid,
+            agentcode: agentcode,
+          }),
+        });
+
+        const data = await response.json();
+        if (data.result) {
+          setRate(data.result);
+        }
+      };
+
+      fetchRate();
+    }, [agentcode, params.clientid]);
+
 
     /*
     {
@@ -1314,6 +1348,8 @@ export default function Index({ params }: any) {
 
 
     const [rate, setRate] = useState(1380);
+
+
 
 
 
@@ -2107,10 +2143,67 @@ export default function Index({ params }: any) {
 
 
 
+  // /api/order/getAllBuyOrders
+  // my buyOrders
+  const [buyOrders, setBuyOrders] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loadingBuyOrders, setLoadingBuyOrders] = useState(false);
+  useEffect(() => {
+
+    const fetchBuyOrders = async () => {
+      setLoadingBuyOrders(true);
+
+      const response = await fetch('/api/order/getAllBuyOrders', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            storecode: params.center,
+            //limit: Number(limitValue),
+            //page: Number(pageValue),
+            walletAddress: address,
+            searchMyOrders: true,
+
+            //searchOrderStatusCancelled: searchOrderStatusCancelled,
+            //searchOrderStatusCompleted: searchOrderStatusCompleted,
+
+            //searchStoreName: searchStoreName,
+
+
+            //searchBuyer: searchBuyer,
+            //searchDepositName: searchDepositName,
+
+            //searchStoreBankAccountNumber: searchStoreBankAccountNumber,
+
+
+            //fromDate: searchFromDate,
+            //toDate: searchToDate,
 
 
 
+        })
 
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        console.log('getAllBuyOrders data', data);
+
+        setBuyOrders(data.result.orders);
+
+        setTotalCount(data.result.totalCount);
+        
+      }
+
+      setLoadingBuyOrders(false);
+    }
+
+    fetchBuyOrders();
+
+
+  }, [address, params.center]);
 
 
 
