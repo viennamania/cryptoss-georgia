@@ -4495,10 +4495,6 @@ export default function Index({ params }: any) {
               </ul>
             </div>
           </div>
-            
-
-
-
           
       </div>
 
