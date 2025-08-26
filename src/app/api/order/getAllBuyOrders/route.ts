@@ -7,6 +7,7 @@ import {
   stableUrl3,
   stableUrl4,
   stableUrl5,
+  stableUrl6,
 } from "../../../config/stable";
 
 
@@ -71,6 +72,7 @@ export async function POST(request: NextRequest) {
     : clientid === "421a733ddd491ddc0c2a7a8c4040d782" ? stableUrl3
     : clientid === "213e1813510d42bf66a4136dcc90b032" ? stableUrl4
     : clientid === "150b53f165222304af7c45dc45c73863" ? stableUrl5
+    : clientid === "48c74c35d9afd606ea0329c61898fa00" ? stableUrl6
     : stableUrl1; // default to stableUrl1 if no match
 
 
