@@ -72,9 +72,6 @@ import { parse } from 'path';
 
 
 
-
-
-
 interface SellOrder {
   _id: string;
   createdAt: string;
@@ -2314,6 +2311,11 @@ export default function Index({ params }: any) {
       bg-zinc-50
       text-zinc-500
       ">
+
+
+
+
+        
 
 
       <div className="
