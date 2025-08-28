@@ -2355,9 +2355,18 @@ export default function Index({ params }: any) {
                 height={38}
                 className='rounded-full w-10 h-10'
               />
+              {/* storeName */}
+              {/*
               <span className="text-sm text-zinc-100 font-semibold">
                 {storeInfo?.storeName}
               </span>
+              */}
+
+              {/* storeDescription */}
+              <span className="text-sm text-zinc-100">
+                {storeInfo?.storeDescription}
+              </span>
+
             </div>
 
             {loadingUser && (

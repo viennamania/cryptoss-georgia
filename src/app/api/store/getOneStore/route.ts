@@ -44,6 +44,8 @@ export async function POST(request: NextRequest) {
 
     //console.log("API response:", data);
 
+
+
     return NextResponse.json({
       result: data.result,
     });
