@@ -829,8 +829,7 @@ export default function Index({ params }: any) {
 
 
 
-   
-
+    const [maxKrwAmount, setMaxKrwAmount] = useState(3000000);
 
     const [nickname, setNickname] = useState(storeUser);
 
@@ -848,10 +847,16 @@ export default function Index({ params }: any) {
    useEffect(() => {
       if (paramDepositAmountKrw) {
         setSelectedKrwAmount(Number(paramDepositAmountKrw));
+
+        // if paramDepositAmountKrw > maxKrwAmount, then setSelectedKrwAmount(maxKrwAmount)
+        if (Number(paramDepositAmountKrw) > maxKrwAmount) {
+          setSelectedKrwAmount(maxKrwAmount);
+        }
+
       } else {
         setSelectedKrwAmount(0);
       }
-   }, [paramDepositAmountKrw]);
+   }, [paramDepositAmountKrw, maxKrwAmount]);
 
 
 
@@ -2711,7 +2716,7 @@ export default function Index({ params }: any) {
                             pb-2 mb-2
                             ">
                               <span className="text-sm text-zinc-500">
-                                구매수량
+                                테더 구매량(USDT)
                               </span>
                               <Image
                                 src="/logo-tether.png"
@@ -2721,13 +2726,14 @@ export default function Index({ params }: any) {
                                 className="rounded-full w-6 h-6"
                               />
 
-                              <div className="text-2xl font-semibold text-zinc-500">
+                              <div className="text-4xl font-bold text-green-600"
+                                style={{
+                                  fontFamily: 'monospace',
+                                }}
+                              >
                                 {
-                                  (selectedKrwAmount / rate)?.toLocaleString('us-US', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })  
-                                } USDT
+                                  Number(selectedKrwAmount / rate).toFixed(3).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                                }
                               </div>
                           </div>
 
@@ -2744,6 +2750,25 @@ export default function Index({ params }: any) {
                             </span>
                           </div>
 
+                          {/* maxKrwAmount */}
+                          <div className='flex flex-row gap-2 items-center justify-center'>
+                            <Image
+                              src="/icon-info.png"
+                              alt="Info"
+                              width={16}
+                              height={16}
+                              className="rounded-full w-4 h-4"
+                            />
+                            <span className="text-sm text-zinc-500">
+                              한번에 구매할 수 있는 최대 금액은
+                            </span>
+                            <div className="text-sm text-zinc-500">
+                              {
+                                maxKrwAmount?.toLocaleString('ko-KR')
+                              }원 입니다.
+                            </div>
+                          </div>
+
                           <div className="flex flex-col xl:flex-row gap-2 items-center justify-center
                             border-b-2 border-zinc-200 border-opacity-50
                             pb-2 mb-2
@@ -2757,7 +2782,6 @@ export default function Index({ params }: any) {
                                     selectedKrwAmount?.toLocaleString('ko-KR')
                                   } 원
                                 </div>
-
 
                                 {/* reset button */}
                                 {(!depositAmountKrw || depositAmountKrw === "0") && (
