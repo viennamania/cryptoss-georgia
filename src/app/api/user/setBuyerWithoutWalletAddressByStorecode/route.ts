@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
 
     
-    console.log("API response:", data);
+    //console.log("API response:", data);
 
 
     return NextResponse.json(data);
