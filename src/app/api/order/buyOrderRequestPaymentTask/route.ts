@@ -230,12 +230,21 @@ export async function POST(request: NextRequest) {
     }
 
 
+    // if buyOrder?.mobile is +82, remove +82
+    let mobile = buyOrder?.mobile || "";
+    if (mobile.startsWith("+82")) {
+      mobile = "0" + mobile.substring(3);
+    } else if (mobile.startsWith("82")) {
+      mobile = "0" + mobile.substring(2);
+    }
+
+
     const order_number = buyOrder.tradeId;
     const order_amount = buyOrder.krwAmount;
     const order_date = new Date().toISOString();
     const billing_name = buyOrder.buyer.depositName;
     const orderer_name = buyOrder.buyer.depositName;
-    const orderer_phone_number = buyOrder?.mobile;
+    const orderer_phone_number = mobile;
     const orderer_email = buyOrder.buyer?.email;
     const trade_usage = "USDT구매";
     const identity_number = buyOrder.walletAddress;

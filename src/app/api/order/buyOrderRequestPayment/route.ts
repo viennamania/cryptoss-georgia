@@ -112,6 +112,18 @@ export async function POST(request: NextRequest) {
 
 
   const tradeId = buyOrder.tradeId;
+
+
+
+  // if buyOrder?.mobile is +82, remove +82
+  let mobile = buyOrder?.mobile || "";
+  if (mobile.startsWith("+82")) {
+    mobile = "0" + mobile.substring(3);
+  } else if (mobile.startsWith("82")) {
+    mobile = "0" + mobile.substring(2);
+  }
+
+
   
   const payactionUrl = "https://api.payaction.app/order";
   const payactionBody = {
@@ -120,7 +132,7 @@ export async function POST(request: NextRequest) {
     order_date: new Date().toISOString(),
     billing_name: buyOrder.buyer.depositName,
     orderer_name: buyOrder.buyer.depositName,
-    orderer_phone_number: buyOrder?.mobile,
+    orderer_phone_number: mobile,
     orderer_email: buyOrder.buyer?.email,
     trade_usage: "USDT구매",
     identity_number: buyOrder.walletAddress,
