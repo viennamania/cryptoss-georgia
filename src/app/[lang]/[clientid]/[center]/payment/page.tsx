@@ -704,6 +704,8 @@ export default function Index({ params }: any) {
 
           setAgentcode(data.result.agentcode);
 
+          data.result?.maxPaymentAmountKRW && setMaxKrwAmount(data.result?.maxPaymentAmountKRW);
+
         }
   
         setLoadingStoreInfo(false);
@@ -2760,11 +2762,14 @@ export default function Index({ params }: any) {
                             <span className="text-sm text-zinc-500">
                               한번에 구매할 수 있는 최대 금액은
                             </span>
-                            <div className="text-sm text-zinc-500">
+                            <div className="text-lg font-semibold text-zinc-500">
                               {
                                 maxKrwAmount?.toLocaleString('ko-KR')
-                              }원 입니다.
+                              }
                             </div>
+                            <span className="text-sm text-zinc-500">
+                              원 입니다.
+                            </span>
                           </div>
 
                           <div className="flex flex-col xl:flex-row gap-2 items-center justify-center
