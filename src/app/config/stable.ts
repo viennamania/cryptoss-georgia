@@ -7,3 +7,4 @@ export const stableUrl5 = process.env.STABLE_API_URL5;
 export const stableUrl6 = process.env.STABLE_API_URL6;
 export const stableUrl7 = process.env.STABLE_API_URL7;
 export const stableUrl8 = process.env.STABLE_API_URL8;
+export const stableUrl9 = process.env.STABLE_API_URL9;
