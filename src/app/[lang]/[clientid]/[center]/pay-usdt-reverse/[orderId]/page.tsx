@@ -1042,50 +1042,6 @@ export default function Index({ params }: any) {
 
 
 
-    const  goChat = async (
-
-      orderId: string,
-      tradeId: string
-    ) => {
-
-
-      const url = 'https://api-CC1B09FC-0FEF-4C9C-96D0-E5D464ADF155.sendbird.com/v3/open_channels';
-
-
-
-      const result = await fetch(url, {
-        method: 'POST',
-
-        headers: {
-          'Content-Type': 'application/json',
-          'Api-Token': 'd5e9911aa317c4ee9a3be4fce38b878941f11c68',
-        },
-
-        body: JSON.stringify({
-          name: tradeId,
-          channel_url: orderId,
-          cover_url: 'https://gold.goodtether.com/icon-trade.png',
-          custom_type: 'trade',
-
-        }),
-      });
-
-      const data = await result.json();
-
-      console.log('data', data);
-          
-
-      console.log('Go Chat');
-
-      //router.push(`/chat?channel=${orderId}`);
-
-      //router.push(`/${params.lang}/chat/${orderId}`);
-
-
-
-    }
-
-
     useEffect(() => {
 
 
@@ -1586,7 +1542,7 @@ export default function Index({ params }: any) {
   
         const data = await response?.json();
   
-        console.log('getOneStore data', data);
+        //console.log('getOneStore data', data);
   
         if (data.result) {
           setStoreInfo(data.result);
@@ -1703,7 +1659,18 @@ export default function Index({ params }: any) {
 
                     아이디:{' '}{
                       user?.nickname ? (
-                        user?.nickname
+                        user?.nickname + (user?.userType === 'AAA'
+                          ? ' (AAA회원)'
+                          : user?.userType === 'BBB'
+                          ? ' (BBB회원)'
+                          : user?.userType === 'CCC'
+                          ? ' (CCC회원)'
+                          : user?.userType === 'DDD'
+                          ? ' (DDD회원)'
+                          : user?.userType === 'EEE'
+                          ? ' (EEE회원)'
+                          : ' (일반회원)'
+                        )
                       ) : (
                         <span className="text-sm text-zinc-500">
                           회원아이디가 없습니다.
@@ -2893,11 +2860,30 @@ export default function Index({ params }: any) {
                                         계좌이체:{' '}
                                         {/*item.seller?.bankInfo.bankName} {item.seller?.bankInfo.accountNumber} {item.seller?.bankInfo.accountHolder*/}
 
-                                        {item.store?.bankInfo?.bankName}
+                                        
+                                        {
+                                          user?.userType === 'AAA'
+                                          ? item.store?.bankInfoAAA?.bankName
+                                          : user?.userType === 'BBB'
+                                          ? item.store?.bankInfoBBB?.bankName
+                                          : item.store?.bankInfo?.bankName
+                                        }
                                         {' '}
-                                        {item.store?.bankInfo?.accountNumber}
+                                        {
+                                          user?.userType === 'AAA'
+                                          ? item.store?.bankInfoAAA?.accountNumber
+                                          : user?.userType === 'BBB'
+                                          ? item.store?.bankInfoBBB?.accountNumber
+                                          : item.store?.bankInfo?.accountNumber
+                                        }
                                         {' '}
-                                        {item.store?.bankInfo?.accountHolder}
+                                        {
+                                          user?.userType === 'AAA'
+                                          ? item.store?.bankInfoAAA?.accountHolder
+                                          : user?.userType === 'BBB'
+                                          ? item.store?.bankInfoBBB?.accountHolder
+                                          : item.store?.bankInfo?.accountHolder
+                                        }
 
                                       </p> 
                                       <p className="text-sm text-zinc-500">
@@ -3271,24 +3257,46 @@ export default function Index({ params }: any) {
                                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
                                           <div className="text-sm ">
                                           {/*item.seller?.bankInfo.bankName*/}
-                                          {item.store?.bankInfo?.bankName}
+                                          {
+                                            user?.userType === 'AAA'
+                                            ? item.store?.bankInfoAAA?.bankName
+                                            : user?.userType === 'BBB'
+                                            ? item.store?.bankInfoBBB?.bankName
+                                            : item.store?.bankInfo?.bankName
+                                          }
                                           {' '}
                                           <button
                                             onClick={() => {
-                                                navigator.clipboard.writeText(item.seller?.bankInfo.accountNumber);
+                                                navigator.clipboard.writeText(
+                                                  user?.userType === 'AAA'
+                                                  ? item.store?.bankInfoAAA?.accountNumber
+                                                  : user?.userType === 'BBB'
+                                                  ? item.store?.bankInfoBBB?.accountNumber
+                                                  : item.store?.bankInfo?.accountNumber
+                                                );
                                                 toast.success("계좌번호가 복사되었습니다.");
                                             } }
                                             className='text-lg font-semibold'
                                           >
                                             {/*item.seller?.bankInfo.accountNumber*/}
-                                            {item.store?.bankInfo?.accountNumber}
+                                            {
+                                              user?.userType === 'AAA'
+                                              ? item.store?.bankInfoAAA?.accountNumber
+                                              : user?.userType === 'BBB'
+                                              ? item.store?.bankInfoBBB?.accountNumber
+                                              : item.store?.bankInfo?.accountNumber
+                                            }
                                           </button>
                                           {' '}
                                           <button
                                             onClick={() => {
                                                 navigator.clipboard.writeText(
                                                   //item.seller?.bankInfo.accountNumber
-                                                  item.store?.bankInfo?.accountNumber
+                                                  user?.userType === 'AAA'
+                                                  ? item.store?.bankInfoAAA?.accountNumber
+                                                  : user?.userType === 'BBB'
+                                                  ? item.store?.bankInfoBBB?.accountNumber
+                                                  : item.store?.bankInfo?.accountNumber
                                                 );
                                                 toast.success("계좌번호가 복사되었습니다.");
                                             } }
@@ -3299,7 +3307,13 @@ export default function Index({ params }: any) {
                                           </button>
                                           {' '}
                                           {/*item.seller?.bankInfo.accountHolder*/}
-                                          {item.store?.bankInfo?.accountHolder}
+                                          {
+                                            user?.userType === 'AAA'
+                                            ? item.store?.bankInfoAAA?.accountHolder
+                                            : user?.userType === 'BBB'
+                                            ? item.store?.bankInfoBBB?.accountHolder
+                                            : item.store?.bankInfo?.accountHolder
+                                          }
                                           
                                           </div>
                                         </div>

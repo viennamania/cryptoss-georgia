@@ -267,6 +267,9 @@ export default function Index({ params }: any) {
     const paramDepositAmountKrw = searchParams.get('depositAmountKrw');
 
 
+    const paramAccessToken = searchParams.get('accessToken');
+
+
     useEffect(() => {
       // Dynamically load the Binance widget script
       const script = document.createElement("script");
@@ -2259,6 +2262,27 @@ export default function Index({ params }: any) {
     );
   }
 
+
+
+
+  /*
+
+  // CS: georgia(9ed089930921bfaa1bf65aff9a75fc41), center: 라이징(crluonsn)
+
+  if (orderId === '0'
+    && params.clientid === '9ed089930921bfaa1bf65aff9a75fc41'
+    && params.center === 'crluonsn'
+    && !paramAccessToken) {
+    return (
+      <div>
+        Access token is invalid
+      </div>
+    );
+  }
+
+  */
+
+  
 
 
   // check storeInfo
