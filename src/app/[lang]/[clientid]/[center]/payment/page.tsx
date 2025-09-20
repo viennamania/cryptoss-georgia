@@ -2265,22 +2265,28 @@ export default function Index({ params }: any) {
 
 
 
-  /*
+  
 
   // CS: georgia(9ed089930921bfaa1bf65aff9a75fc41), center: 라이징(crluonsn)
 
   if (orderId === '0'
-    && params.clientid === '9ed089930921bfaa1bf65aff9a75fc41'
-    && params.center === 'crluonsn'
-    && !paramAccessToken) {
+    && storeInfo?.accessToken
+    && storeInfo?.accessToken !== paramAccessToken) {
+
     return (
-      <div>
-        Access token is invalid
+      <div className="w-full h-screen flex items-center justify-center
+      flex-col
+      bg-zinc-50
+      text-zinc-500
+      ">
+        <h1 className="text-2xl font-bold mb-4">Error</h1>
+        <p>Access token is invalid</p>
       </div>
     );
+
   }
 
-  */
+
 
   
 
