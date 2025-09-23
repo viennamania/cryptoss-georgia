@@ -1660,15 +1660,15 @@ export default function Index({ params }: any) {
                     아이디:{' '}{
                       user?.nickname ? (
                         user?.nickname + (user?.userType === 'AAA'
-                          ? ' (AAA회원)'
+                          ? ' (1등급)'
                           : user?.userType === 'BBB'
-                          ? ' (BBB회원)'
+                          ? ' (2등급)'
                           : user?.userType === 'CCC'
-                          ? ' (CCC회원)'
+                          ? ' (3등급)'
                           : user?.userType === 'DDD'
-                          ? ' (DDD회원)'
+                          ? ' (4등급)'
                           : user?.userType === 'EEE'
-                          ? ' (EEE회원)'
+                          ? ' (5등급)'
                           : ' (일반회원)'
                         )
                       ) : (
@@ -2866,6 +2866,10 @@ export default function Index({ params }: any) {
                                           ? item.store?.bankInfoAAA?.bankName
                                           : user?.userType === 'BBB'
                                           ? item.store?.bankInfoBBB?.bankName
+                                          : user?.userType === 'CCC'
+                                          ? item.store?.bankInfoCCC?.bankName
+                                          : user?.userType === 'DDD'
+                                          ? item.store?.bankInfoDDD?.bankName
                                           : item.store?.bankInfo?.bankName
                                         }
                                         {' '}
@@ -2874,6 +2878,10 @@ export default function Index({ params }: any) {
                                           ? item.store?.bankInfoAAA?.accountNumber
                                           : user?.userType === 'BBB'
                                           ? item.store?.bankInfoBBB?.accountNumber
+                                          : user?.userType === 'CCC'
+                                          ? item.store?.bankInfoCCC?.accountNumber
+                                          : user?.userType === 'DDD'
+                                          ? item.store?.bankInfoDDD?.accountNumber
                                           : item.store?.bankInfo?.accountNumber
                                         }
                                         {' '}
@@ -2882,6 +2890,10 @@ export default function Index({ params }: any) {
                                           ? item.store?.bankInfoAAA?.accountHolder
                                           : user?.userType === 'BBB'
                                           ? item.store?.bankInfoBBB?.accountHolder
+                                          : user?.userType === 'CCC'
+                                          ? item.store?.bankInfoCCC?.accountHolder
+                                          : user?.userType === 'DDD'
+                                          ? item.store?.bankInfoDDD?.accountHolder
                                           : item.store?.bankInfo?.accountHolder
                                         }
 
@@ -3262,6 +3274,10 @@ export default function Index({ params }: any) {
                                             ? item.store?.bankInfoAAA?.bankName
                                             : user?.userType === 'BBB'
                                             ? item.store?.bankInfoBBB?.bankName
+                                            : user?.userType === 'CCC'
+                                            ? item.store?.bankInfoCCC?.bankName
+                                            : user?.userType === 'DDD'
+                                            ? item.store?.bankInfoDDD?.bankName
                                             : item.store?.bankInfo?.bankName
                                           }
                                           {' '}
@@ -3272,6 +3288,10 @@ export default function Index({ params }: any) {
                                                   ? item.store?.bankInfoAAA?.accountNumber
                                                   : user?.userType === 'BBB'
                                                   ? item.store?.bankInfoBBB?.accountNumber
+                                                  : user?.userType === 'CCC'
+                                                  ? item.store?.bankInfoCCC?.accountNumber
+                                                  : user?.userType === 'DDD'
+                                                  ? item.store?.bankInfoDDD?.accountNumber
                                                   : item.store?.bankInfo?.accountNumber
                                                 );
                                                 toast.success("계좌번호가 복사되었습니다.");
@@ -3284,6 +3304,10 @@ export default function Index({ params }: any) {
                                               ? item.store?.bankInfoAAA?.accountNumber
                                               : user?.userType === 'BBB'
                                               ? item.store?.bankInfoBBB?.accountNumber
+                                              : user?.userType === 'CCC'
+                                              ? item.store?.bankInfoCCC?.accountNumber
+                                              : user?.userType === 'DDD'
+                                              ? item.store?.bankInfoDDD?.accountNumber
                                               : item.store?.bankInfo?.accountNumber
                                             }
                                           </button>
@@ -3296,6 +3320,10 @@ export default function Index({ params }: any) {
                                                   ? item.store?.bankInfoAAA?.accountNumber
                                                   : user?.userType === 'BBB'
                                                   ? item.store?.bankInfoBBB?.accountNumber
+                                                  : user?.userType === 'CCC'
+                                                  ? item.store?.bankInfoCCC?.accountNumber
+                                                  : user?.userType === 'DDD'
+                                                  ? item.store?.bankInfoDDD?.accountNumber
                                                   : item.store?.bankInfo?.accountNumber
                                                 );
                                                 toast.success("계좌번호가 복사되었습니다.");
@@ -3312,6 +3340,10 @@ export default function Index({ params }: any) {
                                             ? item.store?.bankInfoAAA?.accountHolder
                                             : user?.userType === 'BBB'
                                             ? item.store?.bankInfoBBB?.accountHolder
+                                            : user?.userType === 'CCC'
+                                            ? item.store?.bankInfoCCC?.accountHolder
+                                            : user?.userType === 'DDD'
+                                            ? item.store?.bankInfoDDD?.accountHolder
                                             : item.store?.bankInfo?.accountHolder
                                           }
                                           
