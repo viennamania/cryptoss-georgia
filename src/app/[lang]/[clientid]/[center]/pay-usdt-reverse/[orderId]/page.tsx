@@ -1658,26 +1658,39 @@ export default function Index({ params }: any) {
                   <span className="text-sm text-zinc-100">
 
                     아이디:{' '}{
-                      user?.nickname ? (
-                        user?.nickname + (user?.userType === 'AAA'
-                          ? ' (1등급)'
-                          : user?.userType === 'BBB'
-                          ? ' (2등급)'
-                          : user?.userType === 'CCC'
-                          ? ' (3등급)'
-                          : user?.userType === 'DDD'
-                          ? ' (4등급)'
-                          : user?.userType === 'EEE'
-                          ? ' (5등급)'
-                          : ' (일반회원)'
-                        )
-                      ) : (
-                        <span className="text-sm text-zinc-500">
-                          회원아이디가 없습니다.
-                        </span>
-                      )
+                      user?.nickname
                     }
                   </span>
+
+
+                  {user?.userType === '' && (
+                    <span className="text-xs text-white bg-gray-500 px-2 py-1 rounded-full">
+                      일반
+                    </span>
+                  )}
+
+                  {user?.userType === 'AAA' && (
+                    <span className="text-xs text-white bg-blue-500 px-2 py-1 rounded-full">
+                      1등급
+                    </span>
+                  )}
+                  {user?.userType === 'BBB' && (
+                    <span className="text-xs text-white bg-blue-500 px-2 py-1 rounded-full">
+                      2등급
+                    </span>
+                  )}
+                  {user?.userType === 'CCC' && (
+                    <span className="text-xs text-white bg-blue-500 px-2 py-1 rounded-full">
+                      3등급
+                    </span>
+                  )}
+                  {user?.userType === 'DDD' && (
+                    <span className="text-xs text-white bg-blue-500 px-2 py-1 rounded-full">
+                      4등급
+                    </span>
+                  )}
+
+
                 </div>
 
                 <div className='flex flex-row gap-2 items-center justify-center'>

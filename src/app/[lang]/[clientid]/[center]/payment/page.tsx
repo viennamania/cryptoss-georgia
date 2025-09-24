@@ -983,7 +983,7 @@ export default function Index({ params }: any) {
               userName: depositName,
               userBankName: depositBankName,
               userBankAccountNumber: depositBankAccountNumber,
-              userType: 'abc',
+              userType: '',
             }
           ),
         });
@@ -1020,6 +1020,8 @@ export default function Index({ params }: any) {
           mobile: mobile,
 
           buyOrderStatus: data.buyOrderStatus,
+
+          userType: data.userType,
         });
 
 
@@ -2431,6 +2433,33 @@ export default function Index({ params }: any) {
                       : user?.nickname
                     }
                   </span>
+                  {user?.userType === '' && (
+                    <span className="text-xs text-white bg-gray-500 px-2 py-1 rounded-full">
+                      일반
+                    </span>
+                  )}
+
+                  {user?.userType === 'AAA' && (
+                    <span className="text-xs text-white bg-blue-500 px-2 py-1 rounded-full">
+                      1등급
+                    </span>
+                  )}
+                  {user?.userType === 'BBB' && (
+                    <span className="text-xs text-white bg-blue-500 px-2 py-1 rounded-full">
+                      2등급
+                    </span>
+                  )}
+                  {user?.userType === 'CCC' && (
+                    <span className="text-xs text-white bg-blue-500 px-2 py-1 rounded-full">
+                      3등급
+                    </span>
+                  )}
+                  {user?.userType === 'DDD' && (
+                    <span className="text-xs text-white bg-blue-500 px-2 py-1 rounded-full">
+                      4등급
+                    </span>
+                  )}
+
                 </div>
 
                 <div className='flex flex-row gap-2 items-center justify-center'>
