@@ -3058,7 +3058,7 @@ export default function Index({ params }: any) {
                               {/* deposit bank name */}
                               <div className='flex flex-row gap-2 items-center justify-center'>
                                 <span className="w-24 text-sm text-zinc-500">
-                                  입금자은행명
+                                  입금자 은행명
                                 </span>
                                 <input
                                   //disabled={!address || !selectedKrwAmount || acceptingSellOrderRandom}
@@ -3066,7 +3066,7 @@ export default function Index({ params }: any) {
                                   type="text"
                                   value={depositBankName || ''}
                                   onChange={(e) => setDepositBankName(e.target.value)}
-                                  placeholder="입금자은행명"
+                                  placeholder="입금자 은행명"
                                   className=" text-sm font-semibold bg-zinc-200 text-zinc-600 px-4 py-2 rounded-md border border-zinc-100"
                                 />
                               </div>
@@ -3075,15 +3075,21 @@ export default function Index({ params }: any) {
                               {/* deposit bank account number */}
                               <div className='mt-2 flex flex-row gap-2 items-center justify-center'>
                                 <span className=" w-24 text-sm text-zinc-500">
-                                  입금자계좌번호
+                                  입금자 계좌번호
                                 </span>
                                 <input
                                   //disabled={!address || !selectedKrwAmount || acceptingSellOrderRandom}
                                   disabled={true}
                                   type="text"
-                                  value={depositBankAccountNumber || ''}
+                                  value={
+                                    depositBankAccountNumber
+                                    ? depositBankAccountNumber.length > 8
+                                      ? depositBankAccountNumber.slice(0, 4) + '****' + depositBankAccountNumber.slice(-4)
+                                      : depositBankAccountNumber
+                                    : ''
+                                  }
                                   onChange={(e) => setDepositBankAccountNumber(e.target.value)}
-                                  placeholder="입금자계좌번호"
+                                  placeholder="입금자 계좌번호"
                                   className=" text-sm font-semibold bg-zinc-200 text-zinc-600 px-4 py-2 rounded-md border border-zinc-100"
                                 />
                               </div>
@@ -3095,7 +3101,7 @@ export default function Index({ params }: any) {
                               <div className='mt-2 flex flex-row gap-2 items-center justify-center'>
                                 
                                 <span className=" w-24 text-sm text-zinc-500">
-                                  입금자명
+                                  입금자 이름
                                 </span>
 
                                 <input
@@ -3104,7 +3110,7 @@ export default function Index({ params }: any) {
                                   type="text"
                                   value={depositName || ''}
                                   onChange={(e) => setDepositName(e.target.value)}
-                                  placeholder={Deposit_Name}
+                                  placeholder="입금자 이름"
                                   className=" text-sm font-semibold bg-zinc-200 text-zinc-600 px-4 py-2 rounded-md border border-zinc-100"
                                 />
                               </div>
