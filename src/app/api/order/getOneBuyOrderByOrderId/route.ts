@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json();
 
-  console.log("getOneBuyOrderByOrderId body", body);
+  //console.log("getOneBuyOrderByOrderId body", body);
 
   const{
     clientid,

@@ -998,28 +998,6 @@ export default function Index({ params }: any) {
 
   const [contract, setContract] = useState<any>(null);
 
-  /*
-  const contract = getContract({
-    // the client you have created via `createThirdwebClient()`
-    client,
-    // the chain the contract is deployed on
-    
-    
-    //chain: polygon,
-    chain: arbitrum,
-
-
-
-    // the contract's address
-    ///address: contractAddressArbitrum,
-
-    address: contractAddressArbitrum,
-
-
-    // OPTIONAL: the contract's abi
-    //abi: [...],
-  });
-  */
   useEffect(() => {
     const getUSDTContract = async () => {
       const contract = getContract({
@@ -1047,42 +1025,42 @@ export default function Index({ params }: any) {
 
 
 
+  const [balance, setBalance] = useState(0);
+  useEffect(() => {
 
+    if (!address) {
+      return;
+    }
 
-
-    const [balance, setBalance] = useState(0);
-    useEffect(() => {
-
-      if (!address) {
-        return;
+    // get the balance
+    const getBalance = async () => {
+      const result = await balanceOf({
+        contract,
+        address: address,
+      });
+  
+      //console.log(result);
+  
+      if (orderChain === 'bsc') {
+        setBalance( Number(result) / 10 ** 18 );
+      } else {
+        setBalance( Number(result) / 10 ** 6 );
       }
-  
-      // get the balance
-      const getBalance = async () => {
-        const result = await balanceOf({
-          contract,
-          address: address,
-        });
-    
-        //console.log(result);
-    
-        if (orderChain === 'bsc') {
-          setBalance( Number(result) / 10 ** 18 );
-        } else {
-          setBalance( Number(result) / 10 ** 6 );
-        }
-  
-      };
-  
-      if (address) getBalance();
-  
-      const interval = setInterval(() => {
-        if (address) getBalance();
-      } , 1000);
 
-      return () => clearInterval(interval);
+    };
+
+    if (address) getBalance();
+
+    const interval = setInterval(() => {
+      if (address) getBalance();
+    } , 1000);
+
+    return () => clearInterval(interval);
+
+  } , [address, contract, orderChain]);
+
+
   
-    } , [address, contract, orderChain]);
 
 
     // array of escrowing
@@ -1875,14 +1853,13 @@ export default function Index({ params }: any) {
 
                 <div className='flex flex-row gap-2 items-center justify-center'>
                   <Image
-                    src="/icon-info.png"
-                    alt="Info"
-                    width={24}
-                    height={24}
+                    src="/icon-payment.png"
+                    alt="Payment"
+                    width={32}
+                    height={32}
                   />
-
                   <span className="text-lg text-zinc-500">
-                    당신의 USDT가 상점으로 전송되었습니다. 상점에서 충전 상태를 확인할 수 있습니다.
+                    당신이 구매한 USDT가 상점으로 전송되었습니다. 상점에서 충전 상태를 확인할 수 있습니다.
                   </span>
                 </div>
 
@@ -1952,7 +1929,8 @@ export default function Index({ params }: any) {
                       )}
 
                       <div className="
-                        w-full flex flex-col gap-2 items-center justify-start">
+                        w-full flex flex-col gap-2 items-start justify-center
+                        ">
 
 
                         {address && oneBuyOrder.buyer && oneBuyOrder?.buyer?.walletAddress === address && (
@@ -2393,34 +2371,54 @@ export default function Index({ params }: any) {
 
                             <div className="mt-4 flex flex-col items-start gap-2 p-2">
 
+                              <div className="flex flex-row items-center gap-2 mb-2">
+                                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+                                <span className="text-sm text-zinc-500">
+                                  테더 구매량(USDT)
+                                </span>
+                                <Image
+                                  src="/logo-tether.png"
+                                  alt="USDT"
+                                  width={24}
+                                  height={24}
+                                  className="rounded-full w-6 h-6"
+                                />
 
-                              <p className="text-lg text-zinc-500">
-                                구매금액:{' '}
-                                {
-                                  // currency
-
-                                  Number(oneBuyOrder.krwAmount)?.toLocaleString() + ' 원'
-
-
-                                }
-                              </p>
-
-
-                              
-                              <div className="mt-2 flex flex-row items-center justify-between gap-2">
+                                <div className="text-4xl font-bold text-green-600"
+                                  style={{
+                                    fontFamily: 'monospace',
+                                  }}
+                                >
+                                  {
+                                    Number(oneBuyOrder.usdtAmount).toFixed(3).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                                  }
+                                </div>
+                              </div>
 
 
+                              <div className="w-full h-1 bg-green-200 rounded-full mb-4">
+                                <div
+                                  className="h-1 bg-green-500 rounded-full animate-pulse"
+                                  style={{
+                                    width: '100%',
+                                  }}
+                                ></div>
+                              </div>
+                              <div className="w-full flex flex-col items-start gap-2">
                                 <p className="text-lg text-zinc-500">
-                                  구매량:{' '}{oneBuyOrder.usdtAmount}{' '}USDT
+                                  구매금액:{' '}
+                                  {
+                                    // currency
+
+                                    Number(oneBuyOrder.krwAmount)?.toLocaleString() + ' 원'
+
+
+                                  }
                                 </p>
                                 <p className="text-sm text-zinc-500">
-                                  환율:{' '}{
-
-                                  Number(oneBuyOrder.krwAmount / oneBuyOrder.usdtAmount).toFixed(2)
-
-                                }</p>
+                                  결제수단:{' '}{oneBuyOrder.paymentMethod === 'bank' ? '계좌이체' : oneBuyOrder.paymentMethod === 'card' ? '신용카드' : '기타'}
+                                </p>
                               </div>
-                              
 
 
                             </div>

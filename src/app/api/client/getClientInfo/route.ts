@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
   const {
     clientid,
-    storecode,
+    //storecode,
   } = body;
 
 
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        storecode,
+        //storecode,
       }),
     });
     const data = await response.json();

@@ -20,8 +20,10 @@ import {
 
 
 import {
-    polygon,
-    arbitrum,
+  ethereum,
+  polygon,
+  arbitrum,
+  bsc,
 } from "thirdweb/chains";
 
 import {
@@ -126,8 +128,10 @@ const wallets = [
 const recipientWalletAddress = "0x2111b6A49CbFf1C8Cc39d13250eF6bd4e1B59cF6";
 
 
-const contractAddress = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"; // USDT on Polygon
+const contractAddressEthereum = "0xdAC17F958D2ee523a2206206994597C13D831ec7"; // USDT on Ethereum
+const contractAddressPolygon = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"; // USDT on Polygon
 const contractAddressArbitrum = "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"; // USDT on Arbitrum
+const contractAddressBSC = "0x55d398326f99059fF775485246999027B3197955"; // USDT on BSC
 
 
 
@@ -229,6 +233,11 @@ const koreanBankName = [
  
 
 
+
+
+
+
+
 export default function Index({ params }: any) {
 
     //console.log('params', params);
@@ -285,22 +294,91 @@ export default function Index({ params }: any) {
 
 
 
+
+    /*
+      result: {
+        chain: 'ethereum',
+        clientId: '48c74c35d9afd606ea0329c61898fa00',
+        clientInfo: {
+          _id: '68d4c39ae74381109dd2c88c',
+          clientId: '48c74c35d9afd606ea0329c61898fa00',
+          description: '크립토스 포에버',
+          exchangeRateUSDT: [Object],
+          name: 'CRYPTOSS',
+          avatar: 'https://t0gqytzvlsa2lapo.public.blob.vercel-storage.com/cLIugLK-J5jBvxgsktHigbbH9w9Dj9ivyaAhls.png',
+          exchangeRateUSDTSell: [Object]
+        }
+      }
+    */
+
+
+    // /api/client/getClientInfo
+
+    const [rate, setRate] = useState(1400);
+    const [clientChain, setClientChain] = useState('ethereum');
+
+
+
+    const [clientInfo, setClientInfo] = useState<any>(null);
+    useEffect(() => {
+      const fetchClientInfo = async () => {
+        try {
+          const response = await fetch('/api/client/getClientInfo', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              clientid: params.clientid,
+            }),
+          });
+          console.log('getClientInfo response', response);
+
+          const data = await response?.json();
+          console.log('getClientInfo data', data);
+
+
+          if (data.result) {
+            setClientInfo(data.result);
+            setRate(data.result.clientInfo.exchangeRateUSDT.KRW);
+            setClientChain(data.result.chain);
+          }
+        } catch (error) {
+          console.error('Error fetching client info:', error);
+        }
+      };
+      fetchClientInfo();
+    }, [params.clientid]);
+
+
+    ///console.log('clientInfo', clientInfo);
+
+
+
+
     const contract = getContract({
       // the client you have created via `createThirdwebClient()`
       client,
       // the chain the contract is deployed on
       
       
-      chain: polygon,
+      chain: clientChain === 'ethereum' ? ethereum
+        : clientChain === 'polygon' ? polygon
+        : clientChain === 'arbitrum' ? arbitrum
+        : clientChain === 'bsc' ? bsc
+        : arbitrum,
     
     
     
       // the contract's address
       ///address: contractAddressArbitrum,
   
-      address: contractAddressArbitrum,
-  
-  
+      address: clientChain === 'ethereum' ? contractAddressEthereum
+        : clientChain === 'polygon' ? contractAddressPolygon
+        : clientChain === 'arbitrum' ? contractAddressArbitrum
+        : clientChain === 'bsc' ? contractAddressBSC
+        : contractAddressArbitrum,
+
       // OPTIONAL: the contract's abi
       //abi: [...],
     });
@@ -651,11 +729,13 @@ export default function Index({ params }: any) {
         });
     
         //console.log(result);
-    
-        setBalance( Number(result) / 10 ** 6 );
-  
+        if (clientChain === 'bsc') {
+          setBalance( Number(result) / 10 ** 18 );
+        } else {
+          setBalance( Number(result) / 10 ** 6 );
+        }
       };
-  
+
       if (address) getBalance();
   
       const interval = setInterval(() => {
@@ -664,7 +744,7 @@ export default function Index({ params }: any) {
 
       return () => clearInterval(interval);
   
-    } , [address, contract]);
+    } , [address, contract, clientChain] );
 
 
 
@@ -726,6 +806,7 @@ export default function Index({ params }: any) {
 
 
     // api/agent/getAgentUsdtKRWRate
+    /*
     useEffect(() => {
       const fetchRate = async () => {
         const response = await fetch('/api/agent/getAgentUsdtKRWRate', {
@@ -747,6 +828,7 @@ export default function Index({ params }: any) {
 
       fetchRate();
     }, [agentcode, params.clientid]);
+    */
 
 
     /*
@@ -1085,155 +1167,9 @@ export default function Index({ params }: any) {
 
 
 
-
-    // set user wallet address
-    // /api/user/setUserWithoutWalletAddress
-    const setUserWalletAddress = async () => {
-        
-      if (!nickname) {
-        toast.error('Please enter your nickname');
-        return;
-      }
-
-      if (!userPassword) {
-        toast.error('Please enter your password');
-        return;
-      }
-
-      const mobile = '010-1234-5678';
-
-      const response = await fetch('/api/user/setUserWithoutWalletAddress', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          storecode: storecode,
-          nickname: nickname,
-          mobile: mobile,
-          password: userPassword,
-        }),
-      });
-
-      const data = await response?.json();
-
-      console.log('setUserWithoutWalletAddress data', data);
-
-      if (!data.walletAddress) {
-
-        toast.error('User registration has been failed');
-        return;
-      }
-
-      const walletAddress = data.walletAddress;
-
-      console.log('walletAddress', walletAddress);
-
-      setAddress(walletAddress);
-
-      setUser({
-        walletAddress: address,
-        nickname: nickname,
-        avatar: '',
-        mobile: '010-1234-5678',
-      });
-
-    }
-
-
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
  
-
-    const [sellOrders, setSellOrders] = useState<SellOrder[]>([]);
-
-
     /*
-    useEffect(() => {
-
-      const fetchSellOrders = async () => {
-
-        if (orderId !== '0') {
-          return;
-        }
-        
-
-        if (!selectedKrwAmount) {
-          return;
-        }
-
-
-
-
-
-        // api call
-        const responseGetAllSellOrders = await fetch('/api/order/getAllSellOrders', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            lang: params.lang,
-            chain: params.center,
-          })
-        });
-
-        const dataGetAllSellOrders = await responseGetAllSellOrders.json();
-
-        
-        //console.log('data', data);
-
-
-
-        if (dataGetAllSellOrders.result) {
-
-          // find one of sell order which is krwAmount is selectedKrwAmount and status is ordered
-          
-
-          const order = dataGetAllSellOrders.result.orders.find((item: any) => {
-            return item.krwAmount === selectedKrwAmount && item.status === 'ordered';
-          });
-
-          if (order) {
-            setSellOrders([order]);
-          } else {
-            toast.error('Sell order not found');
-          }
-
-        }
-
-      }
-
-      fetchSellOrders();
-
-    } , [selectedKrwAmount, params.lang, params.center, orderId]);
-    */
-    
-
-    
-
-  
-    
-
-    
-
+    const [sellOrders, setSellOrders] = useState<SellOrder[]>([]);
 
 
     useEffect(() => {
@@ -1293,11 +1229,12 @@ export default function Index({ params }: any) {
         
   
     }, [orderId]);
+    */
 
 
 
 
-
+      /*
     // array of escrowing
     const [escrowing, setEscrowing] = useState([] as boolean[]);
 
@@ -1331,7 +1268,7 @@ export default function Index({ params }: any) {
       );
 
     } , [sellOrders]);
-
+    */
 
 
 
@@ -1359,8 +1296,6 @@ export default function Index({ params }: any) {
     ///console.log('usdtAmount', usdtAmount);
 
 
-
-    const [rate, setRate] = useState(1400);
 
 
 
@@ -1394,6 +1329,7 @@ export default function Index({ params }: any) {
 
 
     /* agreement for trade */
+    /*
     const [agreementForTrade, setAgreementForTrade] = useState([] as boolean[]);
     useEffect(() => {
         setAgreementForTrade (
@@ -1471,24 +1407,6 @@ export default function Index({ params }: any) {
             toast.success(Order_accepted_successfully);
 
 
-            /*
-            fetch('/api/order/getOneSellOrder', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  orderId: orderId,
-                }),
-            })
-            .then(response => response?.json())
-            .then(data => {
-                ///console.log('data', data);
-                setSellOrders(data.result.orders);
-            })
-            */
-
-
             // reouter to
 
             router.push('/' + params.lang + '/' + storecode + '/pay-usdt/' + orderId);
@@ -1511,11 +1429,11 @@ export default function Index({ params }: any) {
 
     }
 
+    */
 
 
-
-
-    const requstPayment = async (
+    /*
+    const requestPayment = async (
       index: number,
       orderId: string,
       tradeId: string,
@@ -1591,19 +1509,6 @@ export default function Index({ params }: any) {
 
         if (transactionResult) {
 
-          /*
-          setRequestingPayment(
-            requestingPayment.map((item, idx) => {
-              if (idx === index) {
-                return true;
-              }
-              return item;
-            })
-          );
-          */
-          
-          
-
 
         
           const response = await fetch('/api/order/requestPayment', {
@@ -1622,19 +1527,6 @@ export default function Index({ params }: any) {
           const data = await response?.json();
 
           console.log('/api/order/requestPayment data====', data);
-
-
-          /*
-          setRequestingPayment(
-            requestingPayment.map((item, idx) => {
-              if (idx === index) {
-                return false;
-              }
-              return item;
-            })
-          );
-          */
-          
 
 
           if (data.result) {
@@ -1700,6 +1592,7 @@ export default function Index({ params }: any) {
       
 
     }
+    */
 
 
 
@@ -1709,7 +1602,7 @@ export default function Index({ params }: any) {
 
 
 
-
+    /*
     const [privateSale, setprivateSale] = useState(false);
 
 
@@ -1781,13 +1674,14 @@ export default function Index({ params }: any) {
 
     };
 
-
+    */
 
 
 
 
 
   // array of confirmingPayment
+  /*
 
   const [confirmingPayment, setConfirmingPayment] = useState([] as boolean[]);
 
@@ -1891,11 +1785,11 @@ export default function Index({ params }: any) {
 
 
   }
-
+  */
 
 
   // api setUserWithoutWalletAddress
-
+  /*
   const setUserWithoutWalletAddress = async () => {
 
     ///////const nickname = prompt('Enter your nickname');
@@ -1937,36 +1831,17 @@ export default function Index({ params }: any) {
       setAddress(data.walletAddress);
 
 
-      /*
-      await fetch('/api/user/getUser', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          walletAddress: data.result.walletAddress,
-        }),
-      })
-      .then(response => response?.json())
-      .then(data => {
-          console.log('data=======', data);
-          setUser(data.result);
-      })
-      .catch((error) => {
-          console.error('Error:', error);
-      });
-      */
-
-
-
     } else {
       toast.error('User registration has been failed');
     }
 
 
   }
+  */
 
 
+
+  
   const [acceptingSellOrderRandom, setAcceptingSellOrderRandom] = useState(false);
 
 
@@ -2107,15 +1982,11 @@ export default function Index({ params }: any) {
 
           router.push('/' + params.lang + '/' + params.clientid + '/' + storecode + '/pay-usdt-reverse/' + order._id);
 
-
         } else {
           toast.error('구매 주문에 실패했습니다');
         }
 
-
-
       }
-
 
 
     } else {
@@ -2128,6 +1999,10 @@ export default function Index({ params }: any) {
 
 
 
+
+
+
+  /*
   const [storeCodeNumber, setStoreCodeNumber] = useState('');
 
   useEffect(() => {
@@ -2152,10 +2027,11 @@ export default function Index({ params }: any) {
     fetchStoreCode();
 
   } , []);
+  */
 
 
 
-
+  /*
   // /api/order/getAllBuyOrders
   // my buyOrders
   const [buyOrders, setBuyOrders] = useState([]);
@@ -2218,7 +2094,25 @@ export default function Index({ params }: any) {
 
   }, [address, params.center]);
 
+  */
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 
 
 
@@ -2828,11 +2722,50 @@ export default function Index({ params }: any) {
 
                           <div className='flex flex-col gap-2 items-center justify-center'>
 
+                            {/* clientInfo */}
+                            <div className="w-full flex flex-col gap-2 items-center justify-center
+                              border-b-2 border-zinc-200 border-opacity-50
+                              pb-2 mb-2
+                              ">
+
+                              <div className="flex flex-row gap-2 items-center justify-center">
+                                <Image
+                                  src="/icon-p2p-trade.png"
+                                  alt="P2P Trade"
+                                  width={32}
+                                  height={32}
+                                  className="rounded-full w-8 h-8"
+                                />
+                                <span className="text-sm text-zinc-500">
+                                  P2P 마켓에서 판매중인 회원으로부터 구매합니다.
+                                </span>
+                              </div>
+
+                              <div className="flex flex-row gap-2 items-center justify-center">
+                              
+                                <Image
+                                  src={clientInfo?.clientInfo?.avatar || '/logo.png'}
+                                  alt="Client Logo"
+                                  width={32}
+                                  height={32}
+                                  className="rounded-full w-8 h-8"
+                                />
+                                <span className="text-sm text-zinc-500 font-bold">
+                                  {clientInfo?.clientInfo?.name} 제공
+                                </span>
+                              </div>
+                              
+                            </div>
+
+
+
 
                             <div className="flex flex-row gap-2 items-center justify-center
                               border-b-2 border-zinc-200 border-opacity-50
                               pb-2 mb-2
                               ">
+                                {/* dot */}
+                                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
                                 <span className="text-sm text-zinc-500">
                                   테더 구매량(USDT)
                                 </span>
@@ -2895,6 +2828,7 @@ export default function Index({ params }: any) {
                               pb-2 mb-2
                               ">
                               <div className="flex flex-row gap-2 items-center justify-center">
+                                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
                                   <span className="text-sm text-zinc-500">
                                     구매금액
                                   </span>
@@ -2926,6 +2860,7 @@ export default function Index({ params }: any) {
                               {/* 시세 */}
                               <div className="flex flex-row gap-2 items-center justify-center">
       
+                                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
                                   <span className="text-sm text-zinc-500">
                                     시세
                                   </span>
@@ -2943,7 +2878,7 @@ export default function Index({ params }: any) {
                                     className="flex flex-row gap-2 items-center justify-center"
                                   >
                                     <div className='flex flex-row gap-2 items-center justify-center'>
-                                      <span className="text-sm text-zinc-500">
+                                      <span className="text-sm text-zinc-500 font-bold">
                                         시세제공
                                       </span>
                                       <Image
@@ -3282,7 +3217,8 @@ export default function Index({ params }: any) {
                 )}
 
 
-
+              
+              {/*
               {sellOrders.length > 0 && (
                 <div className="mt-4 w-full flex flex-col gap-5 xl:flex-row items-start justify-center ">
 
@@ -3387,7 +3323,6 @@ export default function Index({ params }: any) {
                               </div>
                             )}
 
-                            {/* byer information */}
                             {address && item.walletAddress === address && (
                               <div className="w-full flex flex-row items-center justify-start">
                                 <div className='flex flex-row items-center gap-2'>
@@ -3454,7 +3389,7 @@ export default function Index({ params }: any) {
 
 
                                     <div className="flex flex-row items-center gap-2">
-                                      {/* new order icon */}
+
                                       {
                                         (new Date(item.createdAt).getTime() - new Date().getTime()) / 1000 / 60 / 60 < 24 && (
                                           <Image
@@ -3484,8 +3419,6 @@ export default function Index({ params }: any) {
                                           />
                                       )}
 
-                                      
-                                      {/* Expired in 24 hours */}
                                       <p className=" text-sm text-zinc-400">
                                         Expired in {24 - Math.floor((new Date().getTime() - new Date(item.createdAt).getTime()) / 1000 / 60 / 60)} {hours}
                                       </p>
@@ -3621,7 +3554,6 @@ export default function Index({ params }: any) {
                                         rounded-full`
                                       }></div>
 
-                                      {/* difference minutes between payment confirmed and trade started */}
                                       <div className='flex flex-row items-center gap-2'>
 
                                         <Image
@@ -3705,15 +3637,12 @@ export default function Index({ params }: any) {
 
                                   <div className='flex flex-col items-start gap-2 mb-4'>
 
-                                    {/* vertical line of height for time between trade started  and payment confirmed */}
-
                                     <div className='flex flex-row items-center gap-2'>
                                       <div className={
                                         ` ml-4 mr-3 bg-green-500 w-1 h-[20px]
                                         rounded-full`
                                       }></div>
 
-                                      {/* difference minutes between payment confirmed and trade started */}
                                       <div className='flex flex-row items-center gap-2'>
 
                                         <Image
@@ -3796,55 +3725,15 @@ export default function Index({ params }: any) {
                                       }
                                     </p>                        
 
-                                    {/* 판매자가 입급을 확인였습니다. */}
-
                                     <p className="mt-4 text-lg text-green-500">
                                       {Deposit_Confirmed}
                                     </p>
                                   </div>
                                 )}
                                 
-
-                            
-
-
-                                {/* share button */}
-                                {/*
-
-                                  <div className='flex flex-row items-center justify-end gap-2'>
-                                    <button
-                                        className="flex text-sm bg-blue-500 text-zinc-500 px-2 py-1 rounded-md"
-                                        onClick={() => {
-                                          
-                                          //router.push(`/sell-usdt/${item._id}`);
-
-                                          // copy link to clipboard
-                                          navigator.clipboard.writeText(`https://stable.makeup/${params.lang}/sell-usdt/${item._id}`);
-                                          toast.success('Link has been copied');
-
-                                        }}
-                                    >
-                                      <Image
-                                        src="/icon-share.png"
-                                        alt="Share"
-                                        width={16}
-                                        height={16}
-                                        className='mr-2'
-                                      />
-                                      Share
-                                    </button>
-                                  </div>
-                                  */}
-                                
-
-
-
-                                {/* waiting for escrow */}
                                 {address && item.walletAddress !== address && item.status === 'accepted' && (
                                     <div className="mt-10 mb-10 flex flex-row gap-2 items-center justify-start">
 
-                                      {/* rotate loading icon */}
-                                    
                                       <Image
                                         src="/loading.png"
                                         alt="Escrow"
@@ -3928,13 +3817,10 @@ export default function Index({ params }: any) {
 
 
                                   <div className="mt-5 flex flex-row items-center gap-2">
-                                    {/* dot */}
+
                                     <div  className="w-2 h-2 rounded-full bg-green-500"></div>
 
                                     <div className="text-sm text-zinc-400">
-                                      {/*
-                                      If you request payment, the {item.usdtAmount} USDT will be escrowed to the smart contract and then the buyer ( {item?.buyer?.nickname} ) will be requested to pay.
-                                      */}
 
                                       {If_you_request_payment}
                                     </div>
@@ -3960,10 +3846,7 @@ export default function Index({ params }: any) {
                                         />
                                       </div>
                                       <div className="text-sm text-zinc-400">
-                                        {/*
-                                        I agree to escrow {item.usdtAmount} USDT to the smart contract and request payment to the buyer ( {item?.buyer?.nickname} )
-                                        */}
-
+   
                                           {I_agree_to_escrow_USDT}
 
                                       </div>
@@ -3973,7 +3856,7 @@ export default function Index({ params }: any) {
 
                                   <div className="mt-4 flex flex-col gap-2 text-sm text-left text-zinc-500">
                                     <div className='flex flex-row items-center gap-2'>
-                                      {/* dot */}
+
                                       <div  className="w-2 h-2 rounded-full bg-green-500"></div>
                                       <span>
                                         {Bank_Transfer} {Deposit_Information}
@@ -4161,7 +4044,6 @@ export default function Index({ params }: any) {
                                             <div className='mt-4 flex flex-col items-center gap-2'>
 
 
-                                              {/* agreement for trade */}
                                               <div className="flex flex-row items-center space-x-2">
                                                 <input
                                                   disabled={!address}
@@ -4224,13 +4106,10 @@ export default function Index({ params }: any) {
                                 )}
 
 
-
-                                {/* bank transfer infomation */}
                                 {item.status === 'paymentRequested' && (
 
                                   <div className="mt-4 mb-10 flex flex-col items-start gap-2">
 
-                                    {/* escrow infomation */}
                                     <div className='flex flex-row items-center gap-2'>
 
                                       <Image
@@ -4244,7 +4123,7 @@ export default function Index({ params }: any) {
                                         {Escrow}: {item.usdtAmount} USDT
                                       </div>
 
-                                      {/* polygon icon to go to polygon scan */}
+
                                       <button
                                         className="text-sm bg-green-500 text-zinc-500 px-2 py-1 rounded-md"
                                         onClick={() => {
@@ -4285,7 +4164,6 @@ export default function Index({ params }: any) {
 
                                     {address && (item.walletAddress === address || item.buyer?.walletAddress === address ) && (
                                       <>
-                                        {/* bank transfer information 입금은행 */}
                                         <div className='mt-4 text-lg text-green-500 font-semibold'>
                                           입금은행
                                         </div>
@@ -4394,15 +4272,10 @@ export default function Index({ params }: any) {
                                       </div>
                                     </div>
 
-
-                                    {/* waiting for receive USDT */}
-
                                     {!address && (
                                   
                                       <div className="mt-4 flex flex-row gap-2 items-center justify-start">
 
-                                        {/* rotate loading icon */}
-                                      
                                         <Image
                                           src="/loading.png"
                                           alt="Escrow"
@@ -4420,13 +4293,7 @@ export default function Index({ params }: any) {
                                   </div>
                                 )}
 
-
-
-
-
-
-
-
+                                
                                 {address && item.walletAddress === address && item.status === 'paymentRequested' && (
 
                                 <div className="w-full mt-4 mb-2 flex flex-col items-start ">
@@ -4435,44 +4302,6 @@ export default function Index({ params }: any) {
                                   
                                   
                                   <div className="w-full flex flex-col items-start gap-2">
-
-                                    {/*
-                                    <div className="flex flex-row items-center gap-2">
-
-                                      <Image
-                                        src='/smart-contract.png'
-                                        alt='smart-contract'
-                                        width={32}
-                                        height={32}
-                                      />
-
-                                      <span className="textlg text-zinc-500">
-                                        Escrow: {item.usdtAmount} USDT
-                                      </span>
-
-                                      <button
-                                          className="ml-5 text-sm bg-white text-zinc-500 px-2 py-1 rounded-md"
-                                          onClick={() => {
-                                              //console.log('Cancel Payment Request');
-                                              // new window
-
-                                              window.open(`https://arbiscan.io/token/0xc2132d05d31c914a87c6611c10748aeb04b58e8f?a=0x2111b6A49CbFf1C8Cc39d13250eF6bd4e1B59cF6`, '_blank');
-                                          }}
-                                      >
-                                        <Image
-                                          src='/logo-arbitrum.png'
-                                          alt='cancel'
-                                          width={20}
-                                          height={20}
-                                        />
-                                      </button>
-
-
-                                    </div>
-                                    */}
-
-
-
 
                                   
                                     { 
@@ -4506,18 +4335,6 @@ export default function Index({ params }: any) {
                                     )}
 
 
-                                    {/*
-                                    <div className="mt-5 flex flex-row items-center gap-2">
-                                      <div  className="flex w-2 h-2 rounded-full bg-green-500"></div>
-
-                                      <div className="text-sm text-zinc-400">
-                                        If you confirm the payment, the escrowed {item.usdtAmount} USDT will be transferred to the buyer ( {item?.buyer?.nickname} ) wallet address.
-                                      </div>
-                                    </div>
-                                    */}
-
-                                    {/* check box for confirming payment */}
-
                                     <div className="flex flex-row items-center gap-2">
 
                                       <div className="flex flex-row items-center gap-2">
@@ -4539,14 +4356,6 @@ export default function Index({ params }: any) {
                                       </div>
 
                                       <span className="text-sm text-zinc-400">
-                                        {/*
-                                        I agree to check the bank transfer of {
-                                        item.krwAmount?.toLocaleString('ko-KR', {
-                                          style: 'currency',
-                                          currency: 'KRW',
-                                        })} from buyer ( {item?.buyer?.nickname} ) and transfer {item.usdtAmount} USDT to the buyer wallet address.
-                                        */}
-
 
 
                                         {I_agree_to_check_the_bank_transfer_of}
@@ -4576,9 +4385,6 @@ export default function Index({ params }: any) {
                                       />
                                       <div className="text-lg font-semibold text-zinc-500">
 
-                                        {/*
-                                        Transfering {item.usdtAmount} USDT to the buyer ( {item?.buyer?.nickname} ) wallet address...
-                                        */}
                                         {Transfering_USDT_to_the_buyer_wallet_address}...
                                     
                                       </div>
@@ -4614,26 +4420,10 @@ export default function Index({ params }: any) {
 
                                 )}
 
-
-                                {/* buyer mobile number */}
-                                {/*address && item.buyer?.walletAddress === address && (
-                                  <div className="mt-4 flex flex-row items-center gap-2">
-                                    <div className="text-lg font-semibold text-green-500">
-                                      SMS: {item.buyer?.mobile}
-                                    </div>
-                                  </div>
-                                )*/}
-
-
                             </article>
 
 
                           </div>
-
-
-
-
-
 
 
                         
@@ -4663,6 +4453,7 @@ export default function Index({ params }: any) {
 
                 </div>
               )}
+              */}
 
 
 
