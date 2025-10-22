@@ -2382,8 +2382,7 @@ export default function Index({ params }: any) {
                     <span className="text-sm text-zinc-100">
 
                       아이디:{' '}{
-                        memberid ? memberid : sellOrders.length > 0 ? sellOrders[0]?.buyer.nickname
-                        : user?.nickname
+                        memberid ? memberid : user?.nickname
                       }
                     </span>
                     {user?.userType === '' && (
