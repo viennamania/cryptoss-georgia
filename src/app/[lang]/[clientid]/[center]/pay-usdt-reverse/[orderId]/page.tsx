@@ -2683,90 +2683,109 @@ export default function Index({ params }: any) {
                             
 
 
-                                    <div className='flex flex-row items-center justify-center gap-2'>
-                                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                      <div className="text-sm ">
-                                      {/*item.seller?.bankInfo.bankName*/}
-                                      {
-                                        user?.userType === 'AAA'
-                                        ? oneBuyOrder.store?.bankInfoAAA?.bankName
-                                        : user?.userType === 'BBB'
-                                        ? oneBuyOrder.store?.bankInfoBBB?.bankName
-                                        : user?.userType === 'CCC'
-                                        ? oneBuyOrder.store?.bankInfoCCC?.bankName
-                                        : user?.userType === 'DDD'
-                                        ? oneBuyOrder.store?.bankInfoDDD?.bankName
-                                        : oneBuyOrder.store?.bankInfo?.bankName
-                                      }
-                                      {' '}
-                                      <button
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(
-                                              user?.userType === 'AAA'
-                                              ? oneBuyOrder.store?.bankInfoAAA?.accountNumber
-                                              : user?.userType === 'BBB'
-                                              ? oneBuyOrder.store?.bankInfoBBB?.accountNumber
-                                              : user?.userType === 'CCC'
-                                              ? oneBuyOrder.store?.bankInfoCCC?.accountNumber
-                                              : user?.userType === 'DDD'
-                                              ? oneBuyOrder.store?.bankInfoDDD?.accountNumber
-                                              : oneBuyOrder.store?.bankInfo?.accountNumber
-                                            );
-                                            toast.success("계좌번호가 복사되었습니다.");
-                                        } }
-                                        className='text-lg font-semibold'
-                                      >
-                                        {/*item.seller?.bankInfo.accountNumber*/}
+                                    <div className='w-full flex flex-col items-start gap-4 mt-4 mb-4
+                                      border-b border-zinc-200 pb-2
+                                    '>
+
+                                      <div className="flex flex-row items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                        <span className="text-sm">은행명:</span>
+                                        <div className="text-lg font-semibold">
+                                        {/*item.seller?.bankInfo.bankName*/}
                                         {
                                           user?.userType === 'AAA'
-                                          ? oneBuyOrder.store?.bankInfoAAA?.accountNumber
+                                          ? oneBuyOrder.store?.bankInfoAAA?.bankName
                                           : user?.userType === 'BBB'
-                                          ? oneBuyOrder.store?.bankInfoBBB?.accountNumber
+                                          ? oneBuyOrder.store?.bankInfoBBB?.bankName
                                           : user?.userType === 'CCC'
-                                          ? oneBuyOrder.store?.bankInfoCCC?.accountNumber
+                                          ? oneBuyOrder.store?.bankInfoCCC?.bankName
                                           : user?.userType === 'DDD'
-                                          ? oneBuyOrder.store?.bankInfoDDD?.accountNumber
-                                          : oneBuyOrder.store?.bankInfo?.accountNumber
+                                          ? oneBuyOrder.store?.bankInfoDDD?.bankName
+                                          : oneBuyOrder.store?.bankInfo?.bankName
                                         }
-                                      </button>
-                                      {' '}
-                                      <button
-                                        onClick={() => {
-                                            navigator.clipboard.writeText(
-                                              //item.seller?.bankInfo.accountNumber
-                                              user?.userType === 'AAA'
-                                              ? oneBuyOrder.store?.bankInfoAAA?.accountNumber
-                                              : user?.userType === 'BBB'
-                                              ? oneBuyOrder.store?.bankInfoBBB?.accountNumber
-                                              : user?.userType === 'CCC'
-                                              ? oneBuyOrder.store?.bankInfoCCC?.accountNumber
-                                              : user?.userType === 'DDD'
-                                              ? oneBuyOrder.store?.bankInfoDDD?.accountNumber
-                                              : oneBuyOrder.store?.bankInfo?.accountNumber
-                                            );
-                                            toast.success("계좌번호가 복사되었습니다.");
-                                        } }
-                                        className="text-sm xl:text-lg text-zinc-500 bg-zinc-200 px-2 py-1 rounded-md
-                                        hover:bg-zinc-300 transition duration-200 ease-in-out"
-                                      >
-                                        복사
-                                      </button>
-                                      {' '}
-                                      {
-                                        user?.userType === 'AAA'
-                                        ? oneBuyOrder.store?.bankInfoAAA?.accountHolder
-                                        : user?.userType === 'BBB'
-                                        ? oneBuyOrder.store?.bankInfoBBB?.accountHolder
-                                        : user?.userType === 'CCC'
-                                        ? oneBuyOrder.store?.bankInfoCCC?.accountHolder
-                                        : user?.userType === 'DDD'
-                                        ? oneBuyOrder.store?.bankInfoDDD?.accountHolder
-                                        : oneBuyOrder.store?.bankInfo?.accountHolder
-                                      }
-                                      
+                                        </div>
                                       </div>
+
+
+
+                                      <div className="flex flex-row items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                        <span className="text-sm">계좌번호:</span>
+                                        <button
+                                          onClick={() => {
+                                              navigator.clipboard.writeText(
+                                                user?.userType === 'AAA'
+                                                ? oneBuyOrder.store?.bankInfoAAA?.accountNumber
+                                                : user?.userType === 'BBB'
+                                                ? oneBuyOrder.store?.bankInfoBBB?.accountNumber
+                                                : user?.userType === 'CCC'
+                                                ? oneBuyOrder.store?.bankInfoCCC?.accountNumber
+                                                : user?.userType === 'DDD'
+                                                ? oneBuyOrder.store?.bankInfoDDD?.accountNumber
+                                                : oneBuyOrder.store?.bankInfo?.accountNumber
+                                              );
+                                              toast.success("계좌번호가 복사되었습니다.");
+                                          } }
+                                          className='text-lg font-semibold'
+                                        >
+                                          {/*item.seller?.bankInfo.accountNumber*/}
+                                          {
+                                            user?.userType === 'AAA'
+                                            ? oneBuyOrder.store?.bankInfoAAA?.accountNumber
+                                            : user?.userType === 'BBB'
+                                            ? oneBuyOrder.store?.bankInfoBBB?.accountNumber
+                                            : user?.userType === 'CCC'
+                                            ? oneBuyOrder.store?.bankInfoCCC?.accountNumber
+                                            : user?.userType === 'DDD'
+                                            ? oneBuyOrder.store?.bankInfoDDD?.accountNumber
+                                            : oneBuyOrder.store?.bankInfo?.accountNumber
+                                          }
+                                        </button>
+                                        {' '}
+                                        <button
+                                          onClick={() => {
+                                              navigator.clipboard.writeText(
+                                                //item.seller?.bankInfo.accountNumber
+                                                user?.userType === 'AAA'
+                                                ? oneBuyOrder.store?.bankInfoAAA?.accountNumber
+                                                : user?.userType === 'BBB'
+                                                ? oneBuyOrder.store?.bankInfoBBB?.accountNumber
+                                                : user?.userType === 'CCC'
+                                                ? oneBuyOrder.store?.bankInfoCCC?.accountNumber
+                                                : user?.userType === 'DDD'
+                                                ? oneBuyOrder.store?.bankInfoDDD?.accountNumber
+                                                : oneBuyOrder.store?.bankInfo?.accountNumber
+                                              );
+                                              toast.success("계좌번호가 복사되었습니다.");
+                                          } }
+                                          className="text-sm xl:text-lg text-zinc-500 bg-zinc-200 px-2 py-1 rounded-md
+                                          hover:bg-zinc-300 transition duration-200 ease-in-out"
+                                        >
+                                          복사
+                                        </button>
+                                      </div>
+                                      
+                                      <div className="flex flex-row items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                        <span className="text-sm">예금주:</span>
+                                        <span className="text-lg font-semibold">
+                                        {
+                                          user?.userType === 'AAA'
+                                          ? oneBuyOrder.store?.bankInfoAAA?.accountHolder
+                                          : user?.userType === 'BBB'
+                                          ? oneBuyOrder.store?.bankInfoBBB?.accountHolder
+                                          : user?.userType === 'CCC'
+                                          ? oneBuyOrder.store?.bankInfoCCC?.accountHolder
+                                          : user?.userType === 'DDD'
+                                          ? oneBuyOrder.store?.bankInfoDDD?.accountHolder
+                                          : oneBuyOrder.store?.bankInfo?.accountHolder
+                                        }
+                                        </span>
+                                      </div>
+
                                     </div>
 
+                                    
 
                                     <div className='flex flex-row items-center gap-2'>
                                       <div className="w-2 h-2 rounded-full bg-green-500"></div>
