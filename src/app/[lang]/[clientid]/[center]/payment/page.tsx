@@ -2195,7 +2195,7 @@ export default function Index({ params }: any) {
   // liveOnAndOff is not true
   // 차단되었습니다. 고객센터에 문의하세요.
   if (orderId === '0'
-    && user?.liveOnAndOff === false) {
+    && user?.liveOnAndOff === false ) {
 
     return (
       <div className="w-full h-screen flex items-center justify-center
@@ -2210,7 +2210,22 @@ export default function Index({ params }: any) {
 
   }
 
-  
+
+    if (orderId === '0'
+    && !loadingUser && !user?.nickname ) {
+
+    return (
+      <div className="w-full h-screen flex items-center justify-center
+      flex-col
+      bg-zinc-50
+      text-zinc-500
+      ">
+        <h1 className="text-2xl font-bold mb-4">차단되었습니다</h1>
+        <p>고객센터에 문의하세요.</p>
+      </div>
+    );
+
+  }
 
 
   // check storeInfo
