@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
     krwAmount,
     rate,
     privateSale,
-    buyer
+    buyer,
+    returnUrl,
   } = body;
 
 
@@ -64,7 +65,8 @@ export async function POST(request: NextRequest) {
         krwAmount,
         rate,
         privateSale,
-        buyer
+        buyer,
+        returnUrl,
       }),
     });
 

@@ -266,10 +266,6 @@ export default function Index({ params }: any) {
 
     //const paramDepositName = searchParams.get('depositName');
     //const paramDepositBankName = searchParams.get('depositBankName');
-    
-
-
-
 
 
 
