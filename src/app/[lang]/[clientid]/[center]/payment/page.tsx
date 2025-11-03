@@ -278,6 +278,9 @@ export default function Index({ params }: any) {
 
     const paramAccessToken = searchParams.get('accessToken');
 
+    // returnUrl
+    const paramReturnUrl = searchParams.get('returnUrl');
+
 
     useEffect(() => {
       // Dynamically load the Binance widget script
@@ -1965,7 +1968,8 @@ export default function Index({ params }: any) {
               depositBankName: depositBankName,
               depositBankAccountNumber: depositBankAccountNumber,
               depositName: depositName,
-            }
+            },
+            returnUrl: paramReturnUrl,
           })
         });
 
