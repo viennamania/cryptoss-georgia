@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     });
     const data = await response.json();
 
-    ///console.log("API response:", data);
+    ///console.log("getOneStore API response:", data);
 
 
 

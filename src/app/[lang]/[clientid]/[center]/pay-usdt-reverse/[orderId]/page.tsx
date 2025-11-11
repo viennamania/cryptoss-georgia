@@ -71,6 +71,7 @@ const Chat = dynamic(() => import('@/components/Chat'), {
 */
 
 import { useSearchParams } from "next/navigation";
+import { on } from "events";
 
 
 
@@ -1813,7 +1814,7 @@ export default function Index({ params }: any) {
               {
                 //orderId && buyOrders.length > 0 && buyOrders[0].status === 'paymentConfirmed' && balance > 0 && (
               
-              orderId && oneBuyOrder && oneBuyOrder.status === 'paymentConfirmed' && balance > 0 && (
+              orderId && oneBuyOrder && oneBuyOrder.status === 'paymentConfirmed' && !oneBuyOrder?.settlement && (
 
                 <div className='flex flex-row gap-2 items-center justify-center'>
                   <Image
@@ -1844,18 +1845,18 @@ export default function Index({ params }: any) {
              
               orderId && oneBuyOrder?.paymentMethod === 'bank'
               && oneBuyOrder.status === 'paymentConfirmed'
-              && balance === 0
+              && oneBuyOrder?.settlement
               && (
 
                 <div className='flex flex-row gap-2 items-center justify-center'>
                   <Image
                     src="/icon-payment.png"
                     alt="Payment"
-                    width={32}
-                    height={32}
+                    width={80}
+                    height={80}
                   />
                   <span className="text-lg text-zinc-500">
-                    당신이 구매한 USDT가 상점으로 전송되었습니다. 상점에서 충전 상태를 확인할 수 있습니다.
+                    당신이 구매한 테더 <b>{oneBuyOrder.usdtAmount.toFixed(3).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b> USDT가 상점으로 전송되었습니다. 상점에서 충전 상태를 확인할 수 있습니다.
                   </span>
                 </div>
 

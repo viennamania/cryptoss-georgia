@@ -1087,7 +1087,7 @@ export default function Index({ params }: any) {
     
         const data = await response?.json();
     
-        //console.log('setBuyerWithoutWalletAddressByStorecode data', data);
+        ///console.log('setBuyerWithoutWalletAddressByStorecode data', data);
   
         if (!data.walletAddress) {
           setLoadingUser(false);
