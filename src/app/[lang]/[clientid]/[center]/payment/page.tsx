@@ -2755,12 +2755,11 @@ export default function Index({ params }: any) {
                                   className="rounded-full w-8 h-8"
                                 />
                                 <span className="text-sm text-zinc-500">
-                                  P2P 마켓에서 판매중인 회원으로부터 구매합니다.
+                                  P2P 거래소에서 판매중인 회원으로부터 구매합니다.
                                 </span>
                               </div>
 
-                              <div className="flex flex-row gap-2 items-center justify-center">
-                              
+                              <div className="flex flex-row gap-2 items-center justify-center">                   
                                 <Image
                                   src={clientInfo?.clientInfo?.avatar || '/logo.png'}
                                   alt="Client Logo"
@@ -2769,7 +2768,7 @@ export default function Index({ params }: any) {
                                   className="rounded-full w-8 h-8"
                                 />
                                 <span className="text-sm text-zinc-500 font-bold">
-                                  {clientInfo?.clientInfo?.name} 제공
+                                  {clientInfo?.clientInfo?.name} P2P 거래소 제공
                                 </span>
                               </div>
                               

@@ -1181,7 +1181,46 @@ export default function Index({ params }: any) {
 
 
 
+ 
+
     const [rate, setRate] = useState(1400);
+    const [clientChain, setClientChain] = useState('ethereum');
+
+
+
+    const [clientInfo, setClientInfo] = useState<any>(null);
+    useEffect(() => {
+      const fetchClientInfo = async () => {
+        try {
+          const response = await fetch('/api/client/getClientInfo', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              clientid: params.clientid,
+            }),
+          });
+          console.log('getClientInfo response', response);
+
+          const data = await response?.json();
+          console.log('getClientInfo data', data);
+
+
+          if (data.result) {
+            setClientInfo(data.result);
+            setRate(data.result.clientInfo.exchangeRateUSDT.KRW);
+            setClientChain(data.result.chain);
+          }
+        } catch (error) {
+          console.error('Error fetching client info:', error);
+        }
+      };
+      fetchClientInfo();
+    }, [params.clientid]);
+
+
+
 
 
 
@@ -1809,25 +1848,27 @@ export default function Index({ params }: any) {
 
 
           {!loadingUser && address && (
-            <div className="mt-5 flex flex-col items-center gap-2 mb-4"> 
+            <div className="mt-5 w-full flex flex-col items-center gap-2 mb-4"> 
 
-              {
-                //orderId && buyOrders.length > 0 && buyOrders[0].status === 'paymentConfirmed' && balance > 0 && (
-              
-              orderId && oneBuyOrder && oneBuyOrder.status === 'paymentConfirmed' && !oneBuyOrder?.settlement && (
+              {       
+              orderId
+              && oneBuyOrder
+              && oneBuyOrder.status === 'paymentConfirmed'
+              && !oneBuyOrder?.settlement
+              && (
 
-                <div className='flex flex-row gap-2 items-center justify-center'>
+                <div className='w-full flex flex-row gap-2 items-start justify-start
+                border-b border-zinc-200 pb-2 mb-2
+                '>
                   <Image
-                    src="/loading.png"
-                    alt="Loading"
-                    width={24}
-                    height={24}
-                    className='animate-spin'
+                    src="/icon-payment.png"
+                    alt="Payment"
+                    width={80}
+                    height={80}
+                    className="animate-pulse"
                   />
-
                   <span className="text-lg text-zinc-500">
-
-                    상점으로 USDT를 전송중입니다.
+                    당신이 구매한 테더 <b>{oneBuyOrder.usdtAmount.toFixed(3).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b> USDT를 상점으로 전송중입니다.
                   </span>
                 </div>
 
@@ -1848,7 +1889,9 @@ export default function Index({ params }: any) {
               && oneBuyOrder?.settlement
               && (
 
-                <div className='flex flex-row gap-2 items-center justify-center'>
+                <div className='w-full flex flex-row gap-2 items-start justify-start
+                border-b border-zinc-200 pb-2 mb-2
+                '>
                   <Image
                     src="/icon-payment.png"
                     alt="Payment"
@@ -1880,401 +1923,431 @@ export default function Index({ params }: any) {
               <div className="
                 w-full mb-10 grid grid-cols-1 gap-4 items-start justify-center">
 
-                  {/*
-                  {buyOrders.map((item, index) => (
-                  */}
+                  <div
+                    className="relative flex flex-col items-center justify-center"
+                  >
+
+                    {oneBuyOrder.status === 'ordered' && (new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime() > 1000 * 60 * 60 * 24) && (
+                      <div className="absolute inset-0 flex justify-center items-center z-10
+                        bg-black bg-opacity-50
+                      ">
+                        <Image
+                          src="/icon-expired.png"
+                          alt="Expired"
+                          width={100}
+                          height={100}
+                          className="opacity-20"
+                        />
+                      </div>
+                    )}
 
 
-                    <div
-                      className="relative flex flex-col items-center justify-center"
-                    >
 
-                      {oneBuyOrder.status === 'ordered' && (new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime() > 1000 * 60 * 60 * 24) && (
-                        <div className="absolute inset-0 flex justify-center items-center z-10
-                          bg-black bg-opacity-50
-                        ">
+                    {oneBuyOrder.status === 'cancelled' && (
+                      <div className="absolute inset-0 flex justify-center items-center z-10 pt-10
+                        bg-black bg-opacity-50
+                      ">
+                        <Image
+                          src="/icon-cancelled.png"
+                          alt="Cancelled"
+                          width={100}
+                          height={100}
+                          className="opacity-20"
+                        />
+                      </div>                    
+                    )}
+
+                    {oneBuyOrder.status === 'cancelled' && (
+                      <span className="text-lg text-red-500">
+                        판매자가 거래를 취소했습니다.
+                      </span>
+                    )}
+
+                    <div className="
+                      w-full flex flex-col gap-2 items-start justify-center
+                      ">
+
+
+                      {address && oneBuyOrder.buyer && oneBuyOrder?.buyer?.walletAddress === address && (
+                        <div className="w-full flex flex-row items-center justify-start">
+                          <div className='flex flex-row items-center gap-2'>
+
+                            <Image
+                                src={oneBuyOrder.avatar || '/profile-default.png'}
+                                alt="Avatar"
+                                width={32}
+                                height={32}
+                                priority={true} // Added priority property
+                                className="rounded-full"
+                                style={{
+                                    objectFit: 'cover',
+                                    width: '32px',
+                                    height: '32px',
+                                }}
+                            />      
+
+
+                            <h2 className="text-lg font-semibold">
+                                판매자: {
+
+                                    oneBuyOrder.walletAddress === address ? oneBuyOrder.nickname ? oneBuyOrder.nickname : Anonymous  + ' :' + Me :
+
+                                    oneBuyOrder.nickname ? oneBuyOrder.nickname : Anonymous
+
+                                }
+                            </h2>
+
+                            <Image
+                                src="/verified.png"
+                                alt="Verified"
+                                width={24}
+                                height={24}
+                            />
+
+                            <Image
+                              src='/best-seller.png'
+                              alt='Best Seller'
+                              width={24}
+                              height={24}
+                            />
+
+                          </div>
+
+                        </div>
+                      )}
+
+                      {oneBuyOrder.status === 'ordered' && (
+                        <div className="w-full flex flex-row items-start justify-start gap-2
+                          border-b border-zinc-200 pb-2 mb-2">
+                          {/* new order icon */}
+                          {/* loading icon */}
                           <Image
-                            src="/icon-expired.png"
-                            alt="Expired"
-                            width={100}
-                            height={100}
-                            className="opacity-20"
+                            src="/icon-matching.png"
+                            alt="Loading"
+                            width={32}
+                            height={32}
+                            className="animate-spin"
                           />
+                          <p className=" text-lg text-[#f472b6]">
+                            최적의 판매자와 매칭중입니다.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* 판매자와 거래가 시작되었습니다. */}
+                      {oneBuyOrder.status === 'accepted' && (
+                        <div className='
+                        w-full flex flex-col items-start justify-start gap-2'>
+
+                          <div className="w-full flex flex-row items-center justify-start gap-2
+                            border-b border-zinc-200 pb-2 mb-2">
+
+                            {/* trade icon */}
+                            <Image
+                              src="/icon-trade.png"
+                              alt="Trade"
+                              width={32}
+                              height={32}
+                              className="w-8 h-8"
+                            />
+                            <p className=" text-lg text-[#f472b6]">
+                              판매자와 매칭되어 거래가 시작되었습니다.
+                            </p>
+                          </div>
+                          <div className="w-full flex flex-row items-center justify-start gap-2
+                            border-b border-zinc-200 pb-2 mb-2">
+                            {/* loading icon */}
+                            <Image
+                              src="/icon-searching.gif"
+                              alt="Loading"
+                              width={32}
+                              height={32}
+                              className="w-8 h-8"
+                            />
+                            <p className=" text-lg text-[#f472b6]">
+                              판매자가 구매자를 확인하는 중입니다.
+                            </p>
+                          </div>
+
+
                         </div>
                       )}
 
 
 
-                      {oneBuyOrder.status === 'cancelled' && (
-                        <div className="absolute inset-0 flex justify-center items-center z-10 pt-10
-                          bg-black bg-opacity-50
-                        ">
-                          <Image
-                            src="/icon-cancelled.png"
-                            alt="Cancelled"
-                            width={100}
-                            height={100}
-                            className="opacity-20"
-                          />
-                        </div>                    
-                      )}
 
-                      {oneBuyOrder.status === 'cancelled' && (
-                        <span className="text-lg text-red-500">
-                          판매자가 거래를 취소했습니다.
-                        </span>
-                      )}
+                      {/* seller information */}
+                      {address && oneBuyOrder.walletAddress === address && oneBuyOrder?.seller && (
+                        <div className="w-full flex flex-row items-center justify-between
+                          gap-2 border-b border-zinc-200 pb-2 mb-2
+                          ">
+                          <div className='flex flex-row items-center gap-2'>
 
-                      <div className="
-                        w-full flex flex-col gap-2 items-start justify-center
-                        ">
+                            <Image
+                                src="/best-seller.png"
+                                alt="Best Seller"
+                                width={32}
+                                height={32}
+                            />
 
+                            <span className="text-lg font-semibold">
+                                판매자: {
+                                    oneBuyOrder?.seller?.nickname ? oneBuyOrder?.seller?.nickname : Anonymous
+                                }
+                            </span>
 
-                        {address && oneBuyOrder.buyer && oneBuyOrder?.buyer?.walletAddress === address && (
-                          <div className="w-full flex flex-row items-center justify-start">
-                            <div className='flex flex-row items-center gap-2'>
-
-                              <Image
-                                  src={oneBuyOrder.avatar || '/profile-default.png'}
-                                  alt="Avatar"
-                                  width={32}
-                                  height={32}
-                                  priority={true} // Added priority property
-                                  className="rounded-full"
-                                  style={{
-                                      objectFit: 'cover',
-                                      width: '32px',
-                                      height: '32px',
-                                  }}
-                              />      
-
-
-                              <h2 className="text-lg font-semibold">
-                                  판매자: {
-
-                                      oneBuyOrder.walletAddress === address ? oneBuyOrder.nickname ? oneBuyOrder.nickname : Anonymous  + ' :' + Me :
-
-                                      oneBuyOrder.nickname ? oneBuyOrder.nickname : Anonymous
-
-                                  }
-                              </h2>
-
-                              <Image
-                                  src="/verified.png"
-                                  alt="Verified"
-                                  width={24}
-                                  height={24}
-                              />
-
-                              <Image
-                                src='/best-seller.png'
-                                alt='Best Seller'
+                            <Image
+                                src="/verified.png"
+                                alt="Verified"
                                 width={24}
                                 height={24}
-                              />
 
-                            </div>
-
+                            />
                           </div>
-                        )}
 
-                        {oneBuyOrder.status === 'ordered' && (
-                          <div className="w-full flex flex-row items-start justify-start gap-2
-                            border-b border-zinc-200 pb-2 mb-2">
-                            {/* new order icon */}
-                            {/* loading icon */}
+
+                          <div className="flex flex-row gap-2 items-center justify-center">                   
                             <Image
-                              src="/icon-matching.png"
-                              alt="Loading"
+                              src={clientInfo?.clientInfo?.avatar || '/logo.png'}
+                              alt="Client Logo"
                               width={32}
                               height={32}
-                              className="animate-spin"
+                              className="rounded-full w-8 h-8"
                             />
-                            <p className=" text-lg text-[#f472b6]">
-                              최적의 판매자와 매칭중입니다.
-                            </p>
+                            <span className="text-sm text-zinc-500 font-bold">
+                              {clientInfo?.clientInfo?.name} P2P 거래소 제공
+                            </span>
                           </div>
-                        )}
 
-                        {/* 판매자와 거래가 시작되었습니다. */}
-                        {oneBuyOrder.status === 'accepted' && (
-                          <div className='
-                          w-full flex flex-col items-start justify-start gap-2'>
 
-                            <div className="w-full flex flex-row items-center justify-start gap-2
-                              border-b border-zinc-200 pb-2 mb-2">
+  
+                        </div>
 
-                              {/* trade icon */}
-                              <Image
-                                src="/icon-trade.png"
-                                alt="Trade"
-                                width={32}
-                                height={32}
-                                className="w-8 h-8"
-                              />
-                              <p className=" text-lg text-[#f472b6]">
-                                판매자와 매칭되어 거래가 시작되었습니다.
+
+                      )}
+
+
+
+
+                      <article
+                          className={`w-full bg-white rounded-lg shadow-md shadow-zinc-200 border-2 border-opacity-50
+                            ${oneBuyOrder.status === 'ordered' ? 'border-yellow-500' : ''}
+
+                            ${oneBuyOrder.walletAddress === address ? 'border-blue-500' : ''}
+
+                            ${oneBuyOrder.status === 'paymentConfirmed' ? 'border-green-500' : ''}
+
+                            w-96 `
+                          }
+                      >
+
+
+                          {oneBuyOrder.status === 'ordered' && (
+                            <div className=" flex flex-col items-start justify-start
+                            bg-white px-2 py-3 rounded-md  border border-zinc-100
+                            ">
+
+                              <p className=" text-xl font-semibold text-[#f472b6] ">
+                                거래번호:{' '}#{oneBuyOrder.tradeId}
                               </p>
-                            </div>
-                            <div className="w-full flex flex-row items-center justify-start gap-2
-                              border-b border-zinc-200 pb-2 mb-2">
-                              {/* loading icon */}
-                              <Image
-                                src="/icon-searching.gif"
-                                alt="Loading"
-                                width={32}
-                                height={32}
-                                className="w-8 h-8"
-                              />
-                              <p className=" text-lg text-[#f472b6]">
-                                판매자가 구매자를 확인하는 중입니다.
-                              </p>
-                            </div>
-
-
-                          </div>
-                        )}
 
 
 
+                              <div className="flex flex-row items-center gap-2">
+                                {
+                                  (new Date(oneBuyOrder.createdAt).getTime() - new Date().getTime()) / 1000 / 60 / 60 < 24 && (
+                                    <Image
+                                      src="/icon-new.png"
+                                      alt="New Order"
+                                      width={32}
+                                      height={32}
+                                    />
+                                  )
+                                } 
 
-                        {/* seller information */}
-                        {address && oneBuyOrder.walletAddress === address && oneBuyOrder?.seller && (
-                          <div className="w-full flex flex-row items-center justify-start">
-                            <div className='flex flex-row items-center gap-2'>
-
-                              <Image
-                                  src="/best-seller.png"
-                                  alt="Best Seller"
-                                  width={32}
-                                  height={32}
-                              />
-
-                              <span className="text-lg font-semibold">
-                                  판매자: {
-                                      oneBuyOrder?.seller?.nickname ? oneBuyOrder?.seller?.nickname : Anonymous
-                                  }
-                              </span>
-
-                              <Image
-                                  src="/verified.png"
-                                  alt="Verified"
-                                  width={24}
-                                  height={24}
-
-                              />
-
-
-
-                            </div>
-    
-                          </div>
-
-
-                        )}
-
-
-
-
-                        <article
-                            className={`w-full bg-white rounded-lg shadow-md shadow-zinc-200 border-2 border-opacity-50
-                              ${oneBuyOrder.status === 'ordered' ? 'border-yellow-500' : ''}
-
-                              ${oneBuyOrder.walletAddress === address ? 'border-blue-500' : ''}
-
-                              ${oneBuyOrder.status === 'paymentConfirmed' ? 'border-green-500' : ''}
-
-                              w-96 `
-                            }
-                        >
-
-                            {oneBuyOrder.status === 'ordered' && (
-                              <div className=" flex flex-col items-start justify-start
-                              bg-white px-2 py-3 rounded-md  border border-zinc-100
-                              ">
-
-                                <p className=" text-xl font-semibold text-[#f472b6] ">
-                                  거래번호:{' '}#{oneBuyOrder.tradeId}
+                              
+                                <p className=" text-sm text-zinc-500">
+                                  {24 - Math.floor((new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000 / 60 / 60)} 시간
+                                  {' '}후에 자동 취소됩니다.
                                 </p>
 
+                              </div>
+
+                            </div>
+                          )}
 
 
-                                <div className="flex flex-row items-center gap-2">
-                                  {
-                                    (new Date(oneBuyOrder.createdAt).getTime() - new Date().getTime()) / 1000 / 60 / 60 < 24 && (
-                                      <Image
-                                        src="/icon-new.png"
-                                        alt="New Order"
-                                        width={32}
-                                        height={32}
-                                      />
-                                    )
-                                  } 
+                          { (oneBuyOrder.status === 'accepted' || oneBuyOrder.status === 'paymentRequested' || oneBuyOrder.status === 'paymentConfirmed') && (
 
-                                
-                                  <p className=" text-sm text-zinc-500">
-                                    {24 - Math.floor((new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000 / 60 / 60)} 시간
-                                    {' '}후에 자동 취소됩니다.
-                                  </p>
+                            <div className='w-full flex flex-row items-center justify-between
+                              gap-2 bg-white px-2 py-3 rounded-md'>
 
+                              <p className=" text-xl font-semibold text-[#f472b6] ">
+                                거래번호:{' '}#{oneBuyOrder.tradeId}
+                              </p>
+
+                              {oneBuyOrder.status === 'paymentConfirmed' && (
+
+                                <div className='flex flex-row items-end gap-2'>
+                                  <Image
+                                    src='/icon-approved.png'
+                                    alt='Approved'
+                                    width={50}
+                                    height={50}
+                                  />
                                 </div>
 
-                              </div>
-                            )}
+                              )}
 
+                              
+                            </div>
 
-                            { (oneBuyOrder.status === 'accepted' || oneBuyOrder.status === 'paymentRequested' || oneBuyOrder.status === 'paymentConfirmed') && (
+                          )}
 
-                              <div className='w-full flex flex-row items-center justify-between
-                                gap-2 bg-white px-2 py-3 rounded-md'>
+                          {oneBuyOrder.acceptedAt && (
 
-                                <p className=" text-xl font-semibold text-[#f472b6] ">
-                                  거래번호:{' '}#{oneBuyOrder.tradeId}
-                                </p>
+                            <div className='flex flex-col items-start gap-2
+                            bg-white px-2 py-3 rounded-md  border border-zinc-100
+                            '>
 
-                                {oneBuyOrder.status === 'paymentConfirmed' && (
+                              <div className='hidden  flex-row items-center gap-2'>
 
-                                  <div className='flex flex-row items-end gap-2'>
-                                    <Image
-                                      src='/icon-approved.png'
-                                      alt='Approved'
-                                      width={50}
-                                      height={50}
-                                    />
-                                  </div>
-
+                                {oneBuyOrder.privateSale ? (
+                                  <Image
+                                    src='/icon-private-sale.png'
+                                    alt='Private Sale'
+                                    width={32}
+                                    height={32}
+                                  />
+                                ) : (
+                                  <Image
+                                    src='/icon-public-sale.png'
+                                    alt='Public Sale'
+                                    width={32}
+                                    height={32}
+                                  /> 
                                 )}
+                                <p className="text-sm text-zinc-500">
+                                  
 
-                                
-                              </div>
+                                  {params.lang === 'ko' ? (
 
-                            )}
+                                    <p className="text-sm text-zinc-500">
 
-                            {oneBuyOrder.acceptedAt && (
 
-                              <div className='flex flex-col items-start gap-2
-                              bg-white px-2 py-3 rounded-md  border border-zinc-100
-                              '>
+                                      {
 
-                                <div className='hidden  flex-row items-center gap-2'>
+                                        new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime() < 1000 * 60 ? (
+                                          ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000) + ' ' + '초 전'
+                                        ) :
+                                        new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime() < 1000 * 60 * 60 ? (
+                                        ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000 / 60) + ' ' + '분 전'
+                                        ) : (
+                                          ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000 / 60 / 60) + ' ' + '시간 전'
+                                        )
+                                      }{' '}판매시작
 
-                                  {oneBuyOrder.privateSale ? (
-                                    <Image
-                                      src='/icon-private-sale.png'
-                                      alt='Private Sale'
-                                      width={32}
-                                      height={32}
-                                    />
-                                  ) : (
-                                    <Image
-                                      src='/icon-public-sale.png'
-                                      alt='Public Sale'
-                                      width={32}
-                                      height={32}
-                                    /> 
-                                  )}
-                                  <p className="text-sm text-zinc-500">
-                                    
+                                    </p>
 
-                                    {params.lang === 'ko' ? (
+                                    ) : (
 
                                       <p className="text-sm text-zinc-500">
 
 
-                                        {
 
-                                          new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime() < 1000 * 60 ? (
-                                            ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000) + ' ' + '초 전'
-                                          ) :
-                                          new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime() < 1000 * 60 * 60 ? (
-                                          ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000 / 60) + ' ' + '분 전'
-                                          ) : (
-                                            ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000 / 60 / 60) + ' ' + '시간 전'
-                                          )
-                                        }{' '}판매시작
+                                      판매시작{' '}{
 
-                                      </p>
-
-                                      ) : (
-
-                                        <p className="text-sm text-zinc-500">
+                                        new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime() < 1000 * 60 ? (
+                                          ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000) + ' ' + '초 전'
+                                        ) :
+                                        new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime() < 1000 * 60 * 60 ? (
+                                        ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000 / 60) + ' ' + '분 전'
+                                        ) : (
+                                          ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000 / 60 / 60) + ' ' + '시간 전'
+                                        )
+                                      }
 
 
 
-                                        판매시작{' '}{
-
-                                          new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime() < 1000 * 60 ? (
-                                            ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000) + ' ' + '초 전'
-                                          ) :
-                                          new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime() < 1000 * 60 * 60 ? (
-                                          ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000 / 60) + ' ' + '분 전'
-                                          ) : (
-                                            ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000 / 60 / 60) + ' ' + '시간 전'
-                                          )
-                                        }
+                                    </p>
 
 
-
-                                      </p>
-
-
-                                    )}
+                                  )}
 
 
-                                  </p>
+                                </p>
 
-                                </div>
-
-
-                                <div className='hidden flex-row items-center gap-2'>
-                                  <div className={
-                                    ` ml-4 mr-3 bg-green-500 w-1 h-[20px]
-                                    rounded-full`
-                                  }></div>
-
-                                  {/* difference minutes between payment confirmed and trade started */}
-                                  <div className='flex flex-row items-center gap-2'>
-
-                                    <Image
-                                      src='/timer.png'
-                                      alt='Timer'
-                                      width={32}
-                                      height={32}
-                                    />
-                                    <div className="text-sm text-green-500">
-                                      {
-                                        ( (new Date(oneBuyOrder.acceptedAt).getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000 / 60 ).toFixed(0)
-                                      } 분
-                                    </div>
-                                  </div>
-
-                                </div>
+                              </div>
 
 
-                              
+                              <div className='hidden flex-row items-center gap-2'>
+                                <div className={
+                                  ` ml-4 mr-3 bg-green-500 w-1 h-[20px]
+                                  rounded-full`
+                                }></div>
 
-
+                                {/* difference minutes between payment confirmed and trade started */}
                                 <div className='flex flex-row items-center gap-2'>
 
-
                                   <Image
-                                    src='/icon-timer.webp'
+                                    src='/timer.png'
                                     alt='Timer'
                                     width={32}
                                     height={32}
-                                    className='w-6 h-6'
                                   />
+                                  <div className="text-sm text-green-500">
+                                    {
+                                      ( (new Date(oneBuyOrder.acceptedAt).getTime() - new Date(oneBuyOrder.createdAt).getTime()) / 1000 / 60 ).toFixed(0)
+                                    } 분
+                                  </div>
+                                </div>
+
+                              </div>
 
 
-                                  <p className="text-sm text-zinc-500">
+                            
 
 
-                                  {params.lang === 'ko' ? (
-
-                                    <p className="ml-2 text-sm text-zinc-500">
+                              <div className='flex flex-row items-center gap-2'>
 
 
-                                      {new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime() < 1000 * 60 ? (
+                                <Image
+                                  src='/icon-timer.webp'
+                                  alt='Timer'
+                                  width={32}
+                                  height={32}
+                                  className='w-6 h-6'
+                                />
+
+
+                                <p className="text-sm text-zinc-500">
+
+
+                                {params.lang === 'ko' ? (
+
+                                  <p className="ml-2 text-sm text-zinc-500">
+
+
+                                    {new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime() < 1000 * 60 ? (
+                                      ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime()) / 1000) + ' ' + '초 전'
+                                    ) :
+                                    new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime() < 1000 * 60 * 60 ? (
+                                    ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime()) / 1000 / 60) + ' ' + '분 전'
+                                    ) : (
+                                      ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime()) / 1000 / 60 / 60) + ' ' + '시간 전'
+                                    )
+                                    }{' '}거래시작
+
+                                  </p>
+
+
+
+                                ) : (
+
+                                  <p className="ml-2 text-sm text-zinc-400">
+
+                                    {Trade_Started} {
+                                      new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime() < 1000 * 60 ? (
                                         ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime()) / 1000) + ' ' + '초 전'
                                       ) :
                                       new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime() < 1000 * 60 * 60 ? (
@@ -2282,239 +2355,586 @@ export default function Index({ params }: any) {
                                       ) : (
                                         ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime()) / 1000 / 60 / 60) + ' ' + '시간 전'
                                       )
-                                      }{' '}거래시작
+                                    }
 
-                                    </p>
-
-
-
-                                  ) : (
-
-                                    <p className="ml-2 text-sm text-zinc-400">
-
-                                      {Trade_Started} {
-                                        new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime() < 1000 * 60 ? (
-                                          ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime()) / 1000) + ' ' + '초 전'
-                                        ) :
-                                        new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime() < 1000 * 60 * 60 ? (
-                                        ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime()) / 1000 / 60) + ' ' + '분 전'
-                                        ) : (
-                                          ' ' + Math.floor((new Date().getTime() - new Date(oneBuyOrder.acceptedAt).getTime()) / 1000 / 60 / 60) + ' ' + '시간 전'
-                                        )
-                                      }
-
-                                    </p>
-
-                                  )}
-                                  
-                                  
                                   </p>
-                                </div>
 
+                                )}
+                                
+                                
+                                </p>
                               </div>
 
-                            )}
+                            </div>
 
-                            {oneBuyOrder.status === 'paymentConfirmed' && (
+                          )}
 
-                              <div className='flex flex-col items-start gap-2
-                              bg-white px-2 py-3 rounded-md  border border-zinc-100
-                              '>
+                          {oneBuyOrder.status === 'paymentConfirmed' && (
 
-                                {/* vertical line of height for time between trade started  and payment confirmed */}
+                            <div className='flex flex-col items-start gap-2
+                            bg-white px-2 py-3 rounded-md  border border-zinc-100
+                            '>
 
+                              {/* vertical line of height for time between trade started  and payment confirmed */}
+
+                              <div className='flex flex-row items-center gap-2'>
+                                <div className={
+                                  ` ml-4 mr-3 bg-green-500 w-1 h-[20px]
+                                  rounded-full`
+                                }></div>
+
+                                {/* difference minutes between payment confirmed and trade started */}
                                 <div className='flex flex-row items-center gap-2'>
-                                  <div className={
-                                    ` ml-4 mr-3 bg-green-500 w-1 h-[20px]
-                                    rounded-full`
-                                  }></div>
-
-                                  {/* difference minutes between payment confirmed and trade started */}
-                                  <div className='flex flex-row items-center gap-2'>
-
-                                    <Image
-                                      src='/timer.png'
-                                      alt='Timer'
-                                      width={24}
-                                      height={24}
-                                    />
-                                    <div className="text-sm text-zinc-500">
-                                      { ( (new Date(oneBuyOrder.paymentConfirmedAt).getTime() - new Date(oneBuyOrder.acceptedAt).getTime()) / 1000 / 60 ).toFixed(0) } 분
-                                    </div>
-                                  </div>
-
-                                </div>
-
-                                <div className='flex flex-row items-center gap-2 mb-4'>
-                                  
 
                                   <Image
-                                    src='/icon-completed.png'
-                                    alt='Completed'
+                                    src='/timer.png'
+                                    alt='Timer'
                                     width={24}
                                     height={24}
                                   />
-                                  <p className="text-sm text-zinc-500">
-                                    거래완료: {new Date(oneBuyOrder.paymentConfirmedAt).toLocaleDateString() + ' ' + new Date(oneBuyOrder.paymentConfirmedAt).toLocaleTimeString()}
-                                  </p>
+                                  <div className="text-sm text-zinc-500">
+                                    { ( (new Date(oneBuyOrder.paymentConfirmedAt).getTime() - new Date(oneBuyOrder.acceptedAt).getTime()) / 1000 / 60 ).toFixed(0) } 분
+                                  </div>
                                 </div>
 
                               </div>
 
+                              <div className='flex flex-row items-center gap-2 mb-4'>
+                                
 
-
-                            )}
-
-
-                            <div className="mt-4 flex flex-col items-start gap-2 p-2">
-
-                              <div className="flex flex-row items-center gap-2 mb-2">
-                                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                                <span className="text-sm text-zinc-500">
-                                  테더 구매량(USDT)
-                                </span>
                                 <Image
-                                  src="/logo-tether.png"
-                                  alt="USDT"
+                                  src='/icon-completed.png'
+                                  alt='Completed'
                                   width={24}
                                   height={24}
-                                  className="rounded-full w-6 h-6"
                                 />
-
-                                <div className="text-4xl font-bold text-green-600"
-                                  style={{
-                                    fontFamily: 'monospace',
-                                  }}
-                                >
-                                  {
-                                    Number(oneBuyOrder.usdtAmount).toFixed(3).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                                  }
-                                </div>
-                              </div>
-
-
-                              <div className="w-full h-1 bg-green-200 rounded-full mb-4">
-                                <div
-                                  className="h-1 bg-green-500 rounded-full animate-pulse"
-                                  style={{
-                                    width: '100%',
-                                  }}
-                                ></div>
-                              </div>
-                              <div className="w-full flex flex-col items-start gap-2">
-                                <p className="text-lg text-zinc-500">
-                                  구매금액:{' '}
-                                  {
-                                    // currency
-
-                                    Number(oneBuyOrder.krwAmount)?.toLocaleString() + ' 원'
-
-
-                                  }
-                                </p>
                                 <p className="text-sm text-zinc-500">
-                                  결제수단:{' '}{oneBuyOrder.paymentMethod === 'bank' ? '계좌이체' : oneBuyOrder.paymentMethod === 'card' ? '신용카드' : '기타'}
+                                  거래완료: {new Date(oneBuyOrder.paymentConfirmedAt).toLocaleDateString() + ' ' + new Date(oneBuyOrder.paymentConfirmedAt).toLocaleTimeString()}
                                 </p>
                               </div>
-
 
                             </div>
 
 
+
+                          )}
+
+
+                          <div className="mt-4 flex flex-col items-start gap-2 p-2">
+
+                            <div className="flex flex-row items-center gap-2 mb-2">
+                              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+                              <span className="text-sm text-zinc-500">
+                                테더 구매량(USDT)
+                              </span>
+                              <Image
+                                src="/logo-tether.png"
+                                alt="USDT"
+                                width={24}
+                                height={24}
+                                className="rounded-full w-6 h-6"
+                              />
+
+                              <div className="text-4xl font-bold text-green-600"
+                                style={{
+                                  fontFamily: 'monospace',
+                                }}
+                              >
+                                {
+                                  Number(oneBuyOrder.usdtAmount).toFixed(3).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                                }
+                              </div>
+                            </div>
+
+
+                            <div className="w-full h-1 bg-green-200 rounded-full mb-4">
+                              <div
+                                className="h-1 bg-green-500 rounded-full animate-pulse"
+                                style={{
+                                  width: '100%',
+                                }}
+                              ></div>
+                            </div>
+                            <div className="w-full flex flex-col items-start gap-2">
+                              <p className="text-lg text-zinc-500">
+                                구매금액:{' '}
+                                {
+                                  // currency
+
+                                  Number(oneBuyOrder.krwAmount)?.toLocaleString() + ' 원'
+
+
+                                }
+                              </p>
+                              <p className="text-sm text-zinc-500">
+                                결제수단:{' '}{oneBuyOrder.paymentMethod === 'bank' ? '계좌이체' : oneBuyOrder.paymentMethod === 'card' ? '신용카드' : '기타'}
+                              </p>
+                            </div>
+
+
+                          </div>
+
+
+                        
+
+
+                          {oneBuyOrder.status === 'paymentConfirmed' && (
+                            <>
+                            {oneBuyOrder?.paymentMethod === 'bank' && (
+
+                              <div className="mt-4 flex flex-col items-start gap-2
+                              bg-white px-2 py-3 rounded-md  border border-zinc-100
+                              
+                              ">
+
+                                <p className="mt-4 text-sm text-zinc-500">
+                                  계좌이체:{' '}
+                                  {/*item.seller?.bankInfo.bankName} {item.seller?.bankInfo.accountNumber} {item.seller?.bankInfo.accountHolder*/}
+
+                                  
+                                  {
+                                    user?.userType === 'AAA'
+                                    ? oneBuyOrder.store?.bankInfoAAA?.bankName
+                                    : user?.userType === 'BBB'
+                                    ? oneBuyOrder.store?.bankInfoBBB?.bankName
+                                    : user?.userType === 'CCC'
+                                    ? oneBuyOrder.store?.bankInfoCCC?.bankName
+                                    : user?.userType === 'DDD'
+                                    ? oneBuyOrder.store?.bankInfoDDD?.bankName
+                                    : oneBuyOrder.store?.bankInfo?.bankName
+                                  }
+                                  {' '}
+                                  {
+                                    user?.userType === 'AAA'
+                                    ? oneBuyOrder.store?.bankInfoAAA?.accountNumber
+                                    : user?.userType === 'BBB'
+                                    ? oneBuyOrder.store?.bankInfoBBB?.accountNumber
+                                    : user?.userType === 'CCC'
+                                    ? oneBuyOrder.store?.bankInfoCCC?.accountNumber
+                                    : user?.userType === 'DDD'
+                                    ? oneBuyOrder.store?.bankInfoDDD?.accountNumber
+                                    : oneBuyOrder.store?.bankInfo?.accountNumber
+                                  }
+                                  {' '}
+                                  {
+                                    user?.userType === 'AAA'
+                                    ? oneBuyOrder.store?.bankInfoAAA?.accountHolder
+                                    : user?.userType === 'BBB'
+                                    ? oneBuyOrder.store?.bankInfoBBB?.accountHolder
+                                    : user?.userType === 'CCC'
+                                    ? oneBuyOrder.store?.bankInfoCCC?.accountHolder
+                                    : user?.userType === 'DDD'
+                                    ? oneBuyOrder.store?.bankInfoDDD?.accountHolder
+                                    : oneBuyOrder.store?.bankInfo?.accountHolder
+                                  }
+
+                                </p> 
+                                <p className="text-sm text-zinc-500">
+                                  이체금액: {
+                                  oneBuyOrder.krwAmount?.toLocaleString('ko-KR', {
+                                    style: 'currency',
+                                    currency: 'KRW',
+                                  })
+                                  }
+                                </p>
+                                <p className="text-sm text-zinc-500">
+                                  입금자명: {
+                                    oneBuyOrder.buyer?.depositName ? oneBuyOrder.buyer?.depositName : oneBuyOrder.tradeId
+                                  }
+                                </p>                        
+
+                                {/* 판매자가 입급을 확인였습니다. */}
+                                <div className="flex flex-row items-center gap-2">
+                                  <Image
+                                    src="/icon-info.png"
+                                    alt="Info"
+                                    width={32}
+                                    height={32}
+                                  />
+                                  <p className="text-lg text-green-500">
+                                    판매자가 입금을 확인하고 USDT를 전송했습니다.
+                                  </p>
+                                </div>
+
+                              </div>
+                              
+                            )}
+
+                            </>
+                          )}
+                          
+
+                          {address && oneBuyOrder.walletAddress !== address && oneBuyOrder.status === 'accepted' && (
+
+                              <div className="mt-10 mb-10 flex flex-row gap-2 items-center justify-start">
+
+
+                                <Image
+                                  src="/loading.png"
+                                  alt="Escrow"
+                                  width={32}
+                                  height={32}
+                                  className="animate-spin"
+                                />
+
+                              </div>
+
+                          )}
+                        
+
+                          {/*
+                          {oneBuyOrder.status === 'ordered' && (
+                            <>
+
+                            {acceptingSellOrder[index] ? (
+
+                              <div className="flex flex-row items-center gap-2">
+                                <Image
+                                  src='/loading.png'
+                                  alt='loading'
+                                  width={38}
+                                  height={38}
+                                  className="animate-spin"
+                                />
+                                <div>Accepting...</div>
+                              </div>
+
+
+                            ) : (
+                              <>
+                                
+                                {item.walletAddress === address ? (
+                                  <div className="flex flex-col space-y-4">
+
+                                  </div>
+                                ) : (
+                                  <div className="w-full flex items-center justify-center">
+
+                                    {item.status === 'ordered' && (
+                                      
+                                      // check if the order is expired
+                                      new Date().getTime() - new Date(item.createdAt).getTime() > 1000 * 60 * 60 * 24
+
+                                    ) ? (
+                                      
+                                      <Image
+                                        src="/icon-expired.png"
+                                        alt="Expired"
+                                        width={80}
+                                        height={80}
+                                      />
+                                    
+                                    ) : (
+
+                                      <div className='mt-4 flex flex-col items-center gap-2'>
+
+                                        <div className="flex flex-row items-center space-x-2">
+                                          <input
+                                            disabled={!address}
+                                            type="checkbox"
+                                            checked={agreementForTrade[index]}
+                                            onChange={(e) => {
+                                                setAgreementForTrade(
+                                                    buyOrders.map((item, idx) => {
+                                                        if (idx === index) {
+                                                            return e.target.checked;
+                                                        } else {
+                                                            return false;
+                                                        }
+                                                    })
+                                                );
+                                            }}
+                                          />
+                                          <label className="text-sm text-zinc-400">
+                                            거래 조건에 동의합니다.
+                                          </label>
+                                        </div>
+
+
+
+                                      
+                                        <button
+                                          disabled={!address || !agreementForTrade[index]}
+                                          className={`text-lg text-zinc-500 px-4 py-2 rounded-md
+                                          ${!user || !agreementForTrade[index] ? 'bg-zinc-800' : 'bg-green-500 hover:bg-green-600'}
+                                          `}
+
+                                          onClick={() => {
+
+                                              acceptSellOrder(index, item._id);
+                                        
+
+                                          }}
+                                        >
+                                          구매 {item.usdtAmount} USDT
+                                        </button>
+
+
+
+                                      </div>
+
+                                    )}
+
+                                  </div>
+
+
+
+                                  )}
+
+                                </>
+
+                              )}
+
+                            </>
+
+                          )}
+                          */}
+
+
+                          {oneBuyOrder.status === 'paymentRequested' && (
+
+                            <div className="mt-4 mb-10 flex flex-col items-start gap-2
+                            bg-white px-2 py-3 rounded-md  border border-zinc-100
+                            ">
+
+                              {
+                              address && (oneBuyOrder.walletAddress === address || oneBuyOrder.buyer?.walletAddress === address ) && (
+                                <>
+
+
+                                  <div className='flex flex-row items-center gap-2'>
+                                    <Image
+                                      src='/icon-bank.png'
+                                      alt='Bank'
+                                      width={24}
+                                      height={24}
+                                    />
+                                    <div className="text-lg font-semibold text-green-500">
+                                      입금은행
+                                    </div>
+                                  </div>
+
+                                  
+                                  <div className='flex flex-row items-center gap-2'>
+                                    <Image
+                                      src='/icon-info.png'
+                                      alt='Info'
+                                      width={24}
+                                      height={24}
+                                    />
+                                    <span className="text-sm text-zinc-500">
+                                      판매자가 입금은행을 선택했습니다.
+                                      {' '}
+                                      입금이 완료되면 USDT가 구매자 USDT지갑으로 이체됩니다.
+                                      {' '}
+                                      입금자명을 정확하게 입력하고 입금을 완료해주세요.
+                                    </span>
+                                  </div>
+                                    
                           
 
 
-                            {oneBuyOrder.status === 'paymentConfirmed' && (
-                              <>
-                              {oneBuyOrder?.paymentMethod === 'bank' && (
+                                  <div className='w-full flex flex-col items-start gap-4 mt-4 mb-4
+                                    border-b border-zinc-200 pb-2
+                                  '>
 
-                                <div className="mt-4 flex flex-col items-start gap-2
-                                bg-white px-2 py-3 rounded-md  border border-zinc-100
-                                
-                                ">
+                                    <div className="flex flex-row items-center gap-2">
+                                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                      <span className="text-sm">은행명:</span>
+                                      <div className="text-lg font-semibold">
+                                      {/*item.seller?.bankInfo.bankName*/}
+                                      {
+                                        user?.userType === 'AAA'
+                                        ? oneBuyOrder.store?.bankInfoAAA?.bankName
+                                        : user?.userType === 'BBB'
+                                        ? oneBuyOrder.store?.bankInfoBBB?.bankName
+                                        : user?.userType === 'CCC'
+                                        ? oneBuyOrder.store?.bankInfoCCC?.bankName
+                                        : user?.userType === 'DDD'
+                                        ? oneBuyOrder.store?.bankInfoDDD?.bankName
+                                        : oneBuyOrder.store?.bankInfo?.bankName
+                                      }
+                                      </div>
+                                    </div>
 
-                                  <p className="mt-4 text-sm text-zinc-500">
-                                    계좌이체:{' '}
-                                    {/*item.seller?.bankInfo.bankName} {item.seller?.bankInfo.accountNumber} {item.seller?.bankInfo.accountHolder*/}
 
+
+                                    <div className="flex flex-row items-center gap-2">
+                                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                      <span className="text-sm">계좌번호:</span>
+                                      <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(
+                                              user?.userType === 'AAA'
+                                              ? oneBuyOrder.store?.bankInfoAAA?.accountNumber
+                                              : user?.userType === 'BBB'
+                                              ? oneBuyOrder.store?.bankInfoBBB?.accountNumber
+                                              : user?.userType === 'CCC'
+                                              ? oneBuyOrder.store?.bankInfoCCC?.accountNumber
+                                              : user?.userType === 'DDD'
+                                              ? oneBuyOrder.store?.bankInfoDDD?.accountNumber
+                                              : oneBuyOrder.store?.bankInfo?.accountNumber
+                                            );
+                                            toast.success("계좌번호가 복사되었습니다.");
+                                        } }
+                                        className='text-lg font-semibold'
+                                      >
+                                        {/*item.seller?.bankInfo.accountNumber*/}
+                                        {
+                                          user?.userType === 'AAA'
+                                          ? oneBuyOrder.store?.bankInfoAAA?.accountNumber
+                                          : user?.userType === 'BBB'
+                                          ? oneBuyOrder.store?.bankInfoBBB?.accountNumber
+                                          : user?.userType === 'CCC'
+                                          ? oneBuyOrder.store?.bankInfoCCC?.accountNumber
+                                          : user?.userType === 'DDD'
+                                          ? oneBuyOrder.store?.bankInfoDDD?.accountNumber
+                                          : oneBuyOrder.store?.bankInfo?.accountNumber
+                                        }
+                                      </button>
+                                      {' '}
+                                      <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(
+                                              //item.seller?.bankInfo.accountNumber
+                                              user?.userType === 'AAA'
+                                              ? oneBuyOrder.store?.bankInfoAAA?.accountNumber
+                                              : user?.userType === 'BBB'
+                                              ? oneBuyOrder.store?.bankInfoBBB?.accountNumber
+                                              : user?.userType === 'CCC'
+                                              ? oneBuyOrder.store?.bankInfoCCC?.accountNumber
+                                              : user?.userType === 'DDD'
+                                              ? oneBuyOrder.store?.bankInfoDDD?.accountNumber
+                                              : oneBuyOrder.store?.bankInfo?.accountNumber
+                                            );
+                                            toast.success("계좌번호가 복사되었습니다.");
+                                        } }
+                                        className="text-sm xl:text-lg text-zinc-500 bg-zinc-200 px-2 py-1 rounded-md
+                                        hover:bg-zinc-300 transition duration-200 ease-in-out"
+                                      >
+                                        복사
+                                      </button>
+                                    </div>
                                     
-                                    {
-                                      user?.userType === 'AAA'
-                                      ? oneBuyOrder.store?.bankInfoAAA?.bankName
-                                      : user?.userType === 'BBB'
-                                      ? oneBuyOrder.store?.bankInfoBBB?.bankName
-                                      : user?.userType === 'CCC'
-                                      ? oneBuyOrder.store?.bankInfoCCC?.bankName
-                                      : user?.userType === 'DDD'
-                                      ? oneBuyOrder.store?.bankInfoDDD?.bankName
-                                      : oneBuyOrder.store?.bankInfo?.bankName
-                                    }
-                                    {' '}
-                                    {
-                                      user?.userType === 'AAA'
-                                      ? oneBuyOrder.store?.bankInfoAAA?.accountNumber
-                                      : user?.userType === 'BBB'
-                                      ? oneBuyOrder.store?.bankInfoBBB?.accountNumber
-                                      : user?.userType === 'CCC'
-                                      ? oneBuyOrder.store?.bankInfoCCC?.accountNumber
-                                      : user?.userType === 'DDD'
-                                      ? oneBuyOrder.store?.bankInfoDDD?.accountNumber
-                                      : oneBuyOrder.store?.bankInfo?.accountNumber
-                                    }
-                                    {' '}
-                                    {
-                                      user?.userType === 'AAA'
-                                      ? oneBuyOrder.store?.bankInfoAAA?.accountHolder
-                                      : user?.userType === 'BBB'
-                                      ? oneBuyOrder.store?.bankInfoBBB?.accountHolder
-                                      : user?.userType === 'CCC'
-                                      ? oneBuyOrder.store?.bankInfoCCC?.accountHolder
-                                      : user?.userType === 'DDD'
-                                      ? oneBuyOrder.store?.bankInfoDDD?.accountHolder
-                                      : oneBuyOrder.store?.bankInfo?.accountHolder
-                                    }
+                                    <div className="flex flex-row items-center gap-2">
+                                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                      <span className="text-sm">예금주:</span>
+                                      <span className="text-lg font-semibold">
+                                      {
+                                        user?.userType === 'AAA'
+                                        ? oneBuyOrder.store?.bankInfoAAA?.accountHolder
+                                        : user?.userType === 'BBB'
+                                        ? oneBuyOrder.store?.bankInfoBBB?.accountHolder
+                                        : user?.userType === 'CCC'
+                                        ? oneBuyOrder.store?.bankInfoCCC?.accountHolder
+                                        : user?.userType === 'DDD'
+                                        ? oneBuyOrder.store?.bankInfoDDD?.accountHolder
+                                        : oneBuyOrder.store?.bankInfo?.accountHolder
+                                      }
+                                      </span>
+                                    </div>
 
-                                  </p> 
-                                  <p className="text-sm text-zinc-500">
-                                    이체금액: {
-                                    oneBuyOrder.krwAmount?.toLocaleString('ko-KR', {
-                                      style: 'currency',
-                                      currency: 'KRW',
-                                    })
-                                    }
-                                  </p>
-                                  <p className="text-sm text-zinc-500">
-                                    입금자명: {
-                                      oneBuyOrder.buyer?.depositName ? oneBuyOrder.buyer?.depositName : oneBuyOrder.tradeId
-                                    }
-                                  </p>                        
-
-                                  {/* 판매자가 입급을 확인였습니다. */}
-                                  <div className="flex flex-row items-center gap-2">
-                                    <Image
-                                      src="/icon-info.png"
-                                      alt="Info"
-                                      width={32}
-                                      height={32}
-                                    />
-                                    <p className="text-lg text-green-500">
-                                      판매자가 입금을 확인하고 USDT를 전송했습니다.
-                                    </p>
                                   </div>
 
-                                </div>
-                                
+                                  
+
+                                  <div className='flex flex-row items-center gap-2'>
+                                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                    <div className="text-sm">
+                                      입금자명:{' '}
+                                      <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(oneBuyOrder.buyer?.depositName ? oneBuyOrder.buyer?.depositName : oneBuyOrder.tradeId);
+                                            toast.success("입금자명이 복사되었습니다.");
+                                        } }
+                                        className="text-lg font-semibold"
+                                      >
+                                        {oneBuyOrder.buyer?.depositName ? oneBuyOrder.buyer?.depositName : oneBuyOrder.tradeId}
+                                      </button>
+                                      {' '}
+                                      <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(oneBuyOrder.buyer?.depositName ? oneBuyOrder.buyer?.depositName : oneBuyOrder.tradeId);
+                                            toast.success("입금자명이 복사되었습니다.");
+                                        } }
+                                        className="hidden text-xs bg-green-500 text-zinc-500 px-2 py-1 rounded-md"
+                                      >
+                                        복사
+                                      </button>
+
+                                    </div>
+                                  </div>
+
+                                  <div className='flex flex-row items-center gap-2'>
+                                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                    <div className="text-sm">
+                                      입금액:{' '}
+
+                                      <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(oneBuyOrder.krwAmount.toString());
+                                            toast.success("입금액이 복사되었습니다.");
+                                        } }
+                                        className="text-lg font-semibold"
+                                      >
+                                        {oneBuyOrder.krwAmount?.toLocaleString('ko-KR', {
+                                            style: 'currency',
+                                            currency: 'KRW'
+                                          })
+                                        }
+                                      </button>
+                                      {' '}
+                                      <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(oneBuyOrder.krwAmount.toString());
+                                            toast.success("입금액이 복사되었습니다.");
+                                        } }
+                                        className="hidden text-xs bg-green-500 text-zinc-500 px-2 py-1 rounded-md"
+                                      >
+                                        복사
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                </>
+
                               )}
 
-                              </>
-                            )}
+
+
+
+                              <div className='flex flex-row items-center gap-2'>
+                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                <div className="text-sm">
+                                  입금 기한: {
+
+                                    // 30 minutes after payment requested
+
+                                    new Date(new Date(oneBuyOrder.paymentRequestedAt).getTime() + 1000 * 60 * 30).toLocaleDateString() + ' ' + new Date(new Date(oneBuyOrder.paymentRequestedAt).getTime() + 1000 * 60 * 30).toLocaleTimeString()
+
+                                  }
+                                </div>
+
+                              </div>
+
+                              <div className="mt-4 flex flex-row items-center gap-2">
+                                <Image
+                                  src="/icon-info.png"
+                                  alt="Info"
+                                  width={24}
+                                  height={24}
+                                />
+                                <span className="text-lg text-green-500">
+                                  입금 기한까지 입금하지 않으면 거래가 취소됩니다.
+                                </span>
+                              </div>
+
+                              {!address && (
                             
+                                <div className="mt-4 flex flex-row gap-2 items-center justify-start">
 
-                            {address && oneBuyOrder.walletAddress !== address && oneBuyOrder.status === 'accepted' && (
-
-                                <div className="mt-10 mb-10 flex flex-row gap-2 items-center justify-start">
-
-
+                                  {/* rotate loading icon */}
+                                
                                   <Image
                                     src="/loading.png"
                                     alt="Escrow"
@@ -2523,421 +2943,53 @@ export default function Index({ params }: any) {
                                     className="animate-spin"
                                   />
 
-                                </div>
-
-                            )}
-                          
-
-                            {/*
-                            {oneBuyOrder.status === 'ordered' && (
-                              <>
-
-                              {acceptingSellOrder[index] ? (
-
-                                <div className="flex flex-row items-center gap-2">
-                                  <Image
-                                    src='/loading.png'
-                                    alt='loading'
-                                    width={38}
-                                    height={38}
-                                    className="animate-spin"
-                                  />
-                                  <div>Accepting...</div>
-                                </div>
-
-
-                              ) : (
-                                <>
-                                  
-                                  {item.walletAddress === address ? (
-                                    <div className="flex flex-col space-y-4">
-
-                                    </div>
-                                  ) : (
-                                    <div className="w-full flex items-center justify-center">
-
-                                      {item.status === 'ordered' && (
-                                        
-                                        // check if the order is expired
-                                        new Date().getTime() - new Date(item.createdAt).getTime() > 1000 * 60 * 60 * 24
-
-                                      ) ? (
-                                        
-                                        <Image
-                                          src="/icon-expired.png"
-                                          alt="Expired"
-                                          width={80}
-                                          height={80}
-                                        />
-                                      
-                                      ) : (
-
-                                        <div className='mt-4 flex flex-col items-center gap-2'>
-
-                                          <div className="flex flex-row items-center space-x-2">
-                                            <input
-                                              disabled={!address}
-                                              type="checkbox"
-                                              checked={agreementForTrade[index]}
-                                              onChange={(e) => {
-                                                  setAgreementForTrade(
-                                                      buyOrders.map((item, idx) => {
-                                                          if (idx === index) {
-                                                              return e.target.checked;
-                                                          } else {
-                                                              return false;
-                                                          }
-                                                      })
-                                                  );
-                                              }}
-                                            />
-                                            <label className="text-sm text-zinc-400">
-                                              거래 조건에 동의합니다.
-                                            </label>
-                                          </div>
-
-
-
-                                        
-                                          <button
-                                            disabled={!address || !agreementForTrade[index]}
-                                            className={`text-lg text-zinc-500 px-4 py-2 rounded-md
-                                            ${!user || !agreementForTrade[index] ? 'bg-zinc-800' : 'bg-green-500 hover:bg-green-600'}
-                                            `}
-
-                                            onClick={() => {
-
-                                                acceptSellOrder(index, item._id);
-                                          
-
-                                            }}
-                                          >
-                                            구매 {item.usdtAmount} USDT
-                                          </button>
-
-
-
-                                        </div>
-
-                                      )}
-
-                                    </div>
-
-
-
-                                    )}
-
-                                  </>
-
-                                )}
-
-                              </>
-
-                            )}
-                            */}
-
-
-                            {oneBuyOrder.status === 'paymentRequested' && (
-
-                              <div className="mt-4 mb-10 flex flex-col items-start gap-2
-                              bg-white px-2 py-3 rounded-md  border border-zinc-100
-                              ">
-  
-                                {
-                                address && (oneBuyOrder.walletAddress === address || oneBuyOrder.buyer?.walletAddress === address ) && (
-                                  <>
-
-
-                                    <div className='flex flex-row items-center gap-2'>
-                                      <Image
-                                        src='/icon-bank.png'
-                                        alt='Bank'
-                                        width={24}
-                                        height={24}
-                                      />
-                                      <div className="text-lg font-semibold text-green-500">
-                                        입금은행
-                                      </div>
-                                    </div>
-
-                                    
-                                    <div className='flex flex-row items-center gap-2'>
-                                      <Image
-                                        src='/icon-info.png'
-                                        alt='Info'
-                                        width={24}
-                                        height={24}
-                                      />
-                                      <span className="text-sm text-zinc-500">
-                                        판매자가 입금은행을 선택했습니다.
-                                        {' '}
-                                        입금이 완료되면 USDT가 구매자 USDT지갑으로 이체됩니다.
-                                        {' '}
-                                        입금자명을 정확하게 입력하고 입금을 완료해주세요.
-                                      </span>
-                                    </div>
-                                      
-                            
-
-
-                                    <div className='w-full flex flex-col items-start gap-4 mt-4 mb-4
-                                      border-b border-zinc-200 pb-2
-                                    '>
-
-                                      <div className="flex flex-row items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                        <span className="text-sm">은행명:</span>
-                                        <div className="text-lg font-semibold">
-                                        {/*item.seller?.bankInfo.bankName*/}
-                                        {
-                                          user?.userType === 'AAA'
-                                          ? oneBuyOrder.store?.bankInfoAAA?.bankName
-                                          : user?.userType === 'BBB'
-                                          ? oneBuyOrder.store?.bankInfoBBB?.bankName
-                                          : user?.userType === 'CCC'
-                                          ? oneBuyOrder.store?.bankInfoCCC?.bankName
-                                          : user?.userType === 'DDD'
-                                          ? oneBuyOrder.store?.bankInfoDDD?.bankName
-                                          : oneBuyOrder.store?.bankInfo?.bankName
-                                        }
-                                        </div>
-                                      </div>
-
-
-
-                                      <div className="flex flex-row items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                        <span className="text-sm">계좌번호:</span>
-                                        <button
-                                          onClick={() => {
-                                              navigator.clipboard.writeText(
-                                                user?.userType === 'AAA'
-                                                ? oneBuyOrder.store?.bankInfoAAA?.accountNumber
-                                                : user?.userType === 'BBB'
-                                                ? oneBuyOrder.store?.bankInfoBBB?.accountNumber
-                                                : user?.userType === 'CCC'
-                                                ? oneBuyOrder.store?.bankInfoCCC?.accountNumber
-                                                : user?.userType === 'DDD'
-                                                ? oneBuyOrder.store?.bankInfoDDD?.accountNumber
-                                                : oneBuyOrder.store?.bankInfo?.accountNumber
-                                              );
-                                              toast.success("계좌번호가 복사되었습니다.");
-                                          } }
-                                          className='text-lg font-semibold'
-                                        >
-                                          {/*item.seller?.bankInfo.accountNumber*/}
-                                          {
-                                            user?.userType === 'AAA'
-                                            ? oneBuyOrder.store?.bankInfoAAA?.accountNumber
-                                            : user?.userType === 'BBB'
-                                            ? oneBuyOrder.store?.bankInfoBBB?.accountNumber
-                                            : user?.userType === 'CCC'
-                                            ? oneBuyOrder.store?.bankInfoCCC?.accountNumber
-                                            : user?.userType === 'DDD'
-                                            ? oneBuyOrder.store?.bankInfoDDD?.accountNumber
-                                            : oneBuyOrder.store?.bankInfo?.accountNumber
-                                          }
-                                        </button>
-                                        {' '}
-                                        <button
-                                          onClick={() => {
-                                              navigator.clipboard.writeText(
-                                                //item.seller?.bankInfo.accountNumber
-                                                user?.userType === 'AAA'
-                                                ? oneBuyOrder.store?.bankInfoAAA?.accountNumber
-                                                : user?.userType === 'BBB'
-                                                ? oneBuyOrder.store?.bankInfoBBB?.accountNumber
-                                                : user?.userType === 'CCC'
-                                                ? oneBuyOrder.store?.bankInfoCCC?.accountNumber
-                                                : user?.userType === 'DDD'
-                                                ? oneBuyOrder.store?.bankInfoDDD?.accountNumber
-                                                : oneBuyOrder.store?.bankInfo?.accountNumber
-                                              );
-                                              toast.success("계좌번호가 복사되었습니다.");
-                                          } }
-                                          className="text-sm xl:text-lg text-zinc-500 bg-zinc-200 px-2 py-1 rounded-md
-                                          hover:bg-zinc-300 transition duration-200 ease-in-out"
-                                        >
-                                          복사
-                                        </button>
-                                      </div>
-                                      
-                                      <div className="flex flex-row items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                        <span className="text-sm">예금주:</span>
-                                        <span className="text-lg font-semibold">
-                                        {
-                                          user?.userType === 'AAA'
-                                          ? oneBuyOrder.store?.bankInfoAAA?.accountHolder
-                                          : user?.userType === 'BBB'
-                                          ? oneBuyOrder.store?.bankInfoBBB?.accountHolder
-                                          : user?.userType === 'CCC'
-                                          ? oneBuyOrder.store?.bankInfoCCC?.accountHolder
-                                          : user?.userType === 'DDD'
-                                          ? oneBuyOrder.store?.bankInfoDDD?.accountHolder
-                                          : oneBuyOrder.store?.bankInfo?.accountHolder
-                                        }
-                                        </span>
-                                      </div>
-
-                                    </div>
-
-                                    
-
-                                    <div className='flex flex-row items-center gap-2'>
-                                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                      <div className="text-sm">
-                                        입금자명:{' '}
-                                        <button
-                                          onClick={() => {
-                                              navigator.clipboard.writeText(oneBuyOrder.buyer?.depositName ? oneBuyOrder.buyer?.depositName : oneBuyOrder.tradeId);
-                                              toast.success("입금자명이 복사되었습니다.");
-                                          } }
-                                          className="text-lg font-semibold"
-                                        >
-                                          {oneBuyOrder.buyer?.depositName ? oneBuyOrder.buyer?.depositName : oneBuyOrder.tradeId}
-                                        </button>
-                                        {' '}
-                                        <button
-                                          onClick={() => {
-                                              navigator.clipboard.writeText(oneBuyOrder.buyer?.depositName ? oneBuyOrder.buyer?.depositName : oneBuyOrder.tradeId);
-                                              toast.success("입금자명이 복사되었습니다.");
-                                          } }
-                                          className="hidden text-xs bg-green-500 text-zinc-500 px-2 py-1 rounded-md"
-                                        >
-                                          복사
-                                        </button>
-
-                                      </div>
-                                    </div>
-
-                                    <div className='flex flex-row items-center gap-2'>
-                                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                      <div className="text-sm">
-                                        입금액:{' '}
-
-                                        <button
-                                          onClick={() => {
-                                              navigator.clipboard.writeText(oneBuyOrder.krwAmount.toString());
-                                              toast.success("입금액이 복사되었습니다.");
-                                          } }
-                                          className="text-lg font-semibold"
-                                        >
-                                          {oneBuyOrder.krwAmount?.toLocaleString('ko-KR', {
-                                              style: 'currency',
-                                              currency: 'KRW'
-                                            })
-                                          }
-                                        </button>
-                                        {' '}
-                                        <button
-                                          onClick={() => {
-                                              navigator.clipboard.writeText(oneBuyOrder.krwAmount.toString());
-                                              toast.success("입금액이 복사되었습니다.");
-                                          } }
-                                          className="hidden text-xs bg-green-500 text-zinc-500 px-2 py-1 rounded-md"
-                                        >
-                                          복사
-                                        </button>
-                                      </div>
-                                    </div>
-
-                                  </>
-
-                                )}
-
-
-
-
-                                <div className='flex flex-row items-center gap-2'>
-                                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                  <div className="text-sm">
-                                    입금 기한: {
-
-                                      // 30 minutes after payment requested
-
-                                      new Date(new Date(oneBuyOrder.paymentRequestedAt).getTime() + 1000 * 60 * 30).toLocaleDateString() + ' ' + new Date(new Date(oneBuyOrder.paymentRequestedAt).getTime() + 1000 * 60 * 30).toLocaleTimeString()
-
-                                    }
-                                  </div>
+                                  <div>판매자 결제 확인 대기 중...</div>
 
                                 </div>
+                                
+                              )}  
 
-                                <div className="mt-4 flex flex-row items-center gap-2">
-                                  <Image
-                                    src="/icon-info.png"
-                                    alt="Info"
-                                    width={24}
-                                    height={24}
-                                  />
-                                  <span className="text-lg text-green-500">
-                                    입금 기한까지 입금하지 않으면 거래가 취소됩니다.
-                                  </span>
-                                </div>
-
-                                {!address && (
-                              
-                                  <div className="mt-4 flex flex-row gap-2 items-center justify-start">
-
-                                    {/* rotate loading icon */}
-                                  
-                                    <Image
-                                      src="/loading.png"
-                                      alt="Escrow"
-                                      width={32}
-                                      height={32}
-                                      className="animate-spin"
-                                    />
-
-                                    <div>판매자 결제 확인 대기 중...</div>
-
-                                  </div>
-                                  
-                                )}  
-
-                              </div>
-                            )}
+                            </div>
+                          )}
 
 
-                        </article>
+                      </article>
 
 
-                      </div>
-
-
-
-                      {/*address && orderId && seller && (
-
-                        <div className=' w-full flex items-center justify-center mt-4
-                        bg-white shadow-lg rounded-lg p-4
-                        border border-gray-200'>
-
-                      
-                            
-                            <Chat
-
-                              channel={orderId}
-
-                              userId={ address}
-
-                              nickname={ user?.nickname }
-
-                              profileUrl={ user?.avatar }
-                            />
-                            
-                          
-                        </div>
-
-                      )*/}
-
-
-
-                    
                     </div>
 
-                  {/*
-                  ))}
-                  */}
+
+
+                    {/*address && orderId && seller && (
+
+                      <div className=' w-full flex items-center justify-center mt-4
+                      bg-white shadow-lg rounded-lg p-4
+                      border border-gray-200'>
+
+                    
+                          
+                          <Chat
+
+                            channel={orderId}
+
+                            userId={ address}
+
+                            nickname={ user?.nickname }
+
+                            profileUrl={ user?.avatar }
+                          />
+                          
+                        
+                      </div>
+
+                    )*/}
+
+
+
+                  
+                  </div>
+
+
 
               </div>
 
