@@ -255,6 +255,8 @@ export default function Index({ params }: any) {
 
     const searchParams = useSearchParams();
 
+    const orderNumber = searchParams.get('orderNumber');
+
     //const storeUser = searchParams.get('storeUser');
 
     //console.log('storeUser', storeUser);

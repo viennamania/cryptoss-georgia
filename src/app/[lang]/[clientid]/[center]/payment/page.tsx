@@ -278,6 +278,8 @@ export default function Index({ params }: any) {
 
     const paramAccessToken = searchParams.get('accessToken');
 
+    const orderNumber = searchParams.get('orderNumber');
+
     // returnUrl
     const paramReturnUrl = searchParams.get('returnUrl');
 
@@ -1138,7 +1140,7 @@ export default function Index({ params }: any) {
         if (dataGetBuyOrder.result) {
           const order = dataGetBuyOrder.result;
 
-          router.push('/' + params.lang + '/' + params.clientid + '/' + storecode + '/pay-usdt-reverse/' + order._id);
+          router.push('/' + params.lang + '/' + params.clientid + '/' + storecode + '/pay-usdt-reverse/' + order._id + '?orderNumber=' + orderNumber);
           return;
         }
 
@@ -1970,6 +1972,7 @@ export default function Index({ params }: any) {
               depositName: depositName,
             },
             returnUrl: paramReturnUrl,
+            orderNumber: orderNumber,
           })
         });
 
