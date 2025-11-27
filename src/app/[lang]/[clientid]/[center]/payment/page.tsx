@@ -2206,8 +2206,11 @@ export default function Index({ params }: any) {
       bg-zinc-50
       text-zinc-500
       ">
-        <h1 className="text-2xl font-bold mb-4">차단되었습니다</h1>
+        <h1 className="text-2xl font-bold mb-4">차단되었습니다.</h1>
         <p>고객센터에 문의하세요.</p>
+        <p className="mt-4 text-sm text-zinc-400">
+          (liveOnAndOff: {String(user?.liveOnAndOff)})
+        </p>
       </div>
     );
 
@@ -2223,8 +2226,11 @@ export default function Index({ params }: any) {
       bg-zinc-50
       text-zinc-500
       ">
-        <h1 className="text-2xl font-bold mb-4">차단되었습니다</h1>
+        <h1 className="text-2xl font-bold mb-4">차단되었습니다.</h1>
         <p>고객센터에 문의하세요.</p>
+        <p className="mt-4 text-sm text-zinc-400">
+          (user nickname not found)
+        </p>
       </div>
     );
 

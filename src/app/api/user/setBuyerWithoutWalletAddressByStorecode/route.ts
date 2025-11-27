@@ -48,6 +48,9 @@ export async function POST(request: NextRequest) {
   // call api
 
   const apiUrl = `${stableUrl}/api/user/setBuyerWithoutWalletAddressByStorecode`;
+
+  
+
   try {
     const response = await fetch(apiUrl, {
       method: 'POST',
