@@ -1695,7 +1695,7 @@ export default function Index({ params }: any) {
 
                 <div className='flex flex-col gap-2 items-center justify-start'>
                   <Image
-                    src={storeInfo?.storeLogo || '/logo.png'}
+                    src={'/logo.png'}
                     alt="Store Logo"
                     width={38}
                     height={38}
@@ -1737,6 +1737,7 @@ export default function Index({ params }: any) {
                   </span>
 
 
+                  {/*
                   {user?.userType === '' && (
                     <span className="text-xs text-white bg-gray-500 px-2 py-1 rounded-full">
                       일반
@@ -1763,6 +1764,8 @@ export default function Index({ params }: any) {
                       4등급
                     </span>
                   )}
+                  */}
+                    
 
 
                 </div>
