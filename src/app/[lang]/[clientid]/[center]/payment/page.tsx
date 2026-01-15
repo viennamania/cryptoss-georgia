@@ -2367,7 +2367,7 @@ export default function Index({ params }: any) {
 
               <div className='flex flex-col gap-2 items-center justify-start'>
                 <Image
-                  src={storeInfo?.storeLogo || '/logo.png'}
+                  src={'/logo.png'}
                   alt="Store Logo"
                   width={38}
                   height={38}
