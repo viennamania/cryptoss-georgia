@@ -1850,6 +1850,7 @@ export default function Index({ params }: any) {
           <div className="w-full flex flex-row items-center justify-between gap-2">
 
             <div className='flex flex-col xl:flex-row gap-2 items-center justify-start'>
+              {/*
               <Image
                 src={storeInfo?.storeLogo || '/logo.png'}
                 alt="Store Logo"
@@ -1857,6 +1858,16 @@ export default function Index({ params }: any) {
                 height={38}
                 className='rounded-full w-10 h-10'
               />
+              */}
+              <Image
+                src={'/logo.png'}
+                alt="Store Logo"
+                width={38}
+                height={38}
+                className='rounded-full w-10 h-10'
+              />
+
+
               <span className="text-sm text-zinc-100 font-semibold">
                 {storeInfo?.storeName}
               </span>

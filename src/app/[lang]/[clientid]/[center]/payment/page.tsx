@@ -2413,6 +2413,8 @@ export default function Index({ params }: any) {
                         memberid ? memberid : user?.nickname
                       }
                     </span>
+
+                    {/*
                     {user?.userType === '' && (
                       <span className="text-xs text-white bg-gray-500 px-2 py-1 rounded-full">
                         일반
@@ -2439,6 +2441,8 @@ export default function Index({ params }: any) {
                         4등급
                       </span>
                     )}
+                    */}
+                      
 
                   </div>
 
