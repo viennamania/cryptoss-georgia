@@ -2358,42 +2358,42 @@ export default function Index({ params }: any) {
         <div className="pointer-events-none absolute -left-16 top-24 h-48 w-48 rounded-full bg-[#dbe4ec] opacity-80 blur-3xl" />
         <div className="pointer-events-none absolute -right-16 top-40 h-56 w-56 rounded-full bg-[#efe1cc] opacity-80 blur-3xl" />
 
-        <div className="relative z-10 mx-auto flex w-full max-w-screen-md flex-col gap-4 px-4 pb-12 pt-4 sm:px-5">
-          <section className="overflow-hidden rounded-[28px] border border-white/80 bg-gradient-to-br from-white via-[#faf7f1] to-[#eef3f7] p-5 shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-3">
+        <div className="relative z-10 mx-auto flex w-full max-w-screen-sm flex-col gap-3 px-3 pb-8 pt-3 sm:px-4">
+          <section className="overflow-hidden rounded-[24px] border border-white/80 bg-gradient-to-br from-white via-[#faf7f1] to-[#eef3f7] p-4 shadow-[0_18px_56px_rgba(15,23,42,0.07)]">
+            <div className="flex items-start justify-between gap-2.5">
+              <div className="flex min-w-0 items-center gap-2.5">
                 <Image
                   src={storeInfo?.storeLogo || '/logo.png'}
                   alt="Store Logo"
-                  width={56}
-                  height={56}
-                  className="h-14 w-14 rounded-2xl border border-white bg-white object-cover shadow-sm"
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 rounded-[18px] border border-white bg-white object-cover shadow-sm"
                 />
                 <div className="min-w-0">
-                  <div className="inline-flex rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  <div className="inline-flex rounded-full border border-slate-200 bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
                     Secure Payment
                   </div>
-                  <h1 className="mt-2 text-xl font-semibold tracking-tight text-slate-900">
+                  <h1 className="mt-1.5 text-lg font-semibold tracking-tight text-slate-900">
                     {storeName}
                   </h1>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                  <p className="mt-0.5 text-[13px] leading-5 text-slate-600">
                     {storeDescription}
                   </p>
                 </div>
               </div>
 
-              <div className="shrink-0 rounded-2xl border border-white/80 bg-white/80 px-3 py-2 text-right shadow-sm">
-                <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+              <div className="shrink-0 rounded-[18px] border border-white/80 bg-white/80 px-2.5 py-2 text-right shadow-sm">
+                <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
                   Status
                 </div>
-                <div className="mt-1 text-sm font-semibold text-slate-700">
+                <div className="mt-0.5 text-xs font-semibold text-slate-700">
                   {loadingStoreInfo ? 'Loading' : 'Ready'}
                 </div>
               </div>
             </div>
 
             {loadingStoreInfo ? (
-              <div className="mt-4 flex items-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-white/70 px-4 py-4 text-sm text-slate-500">
+              <div className="mt-3 flex items-center gap-2.5 rounded-[18px] border border-dashed border-slate-200 bg-white/70 px-3 py-3 text-sm text-slate-500">
                 <Image
                   src="/loading.png"
                   alt="Loading"
@@ -2404,56 +2404,56 @@ export default function Index({ params }: any) {
                 가맹점 정보를 불러오는 중입니다.
               </div>
             ) : (
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-white/80 bg-white/75 p-4 shadow-sm">
-                  <div className="text-[11px] uppercase tracking-[0.14em] text-slate-400">
+              <div className="mt-4 grid grid-cols-2 gap-2.5">
+                <div className="rounded-[18px] border border-white/80 bg-white/75 p-3 shadow-sm">
+                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">
                     Estimated
                   </div>
-                  <div className="mt-2 flex items-end gap-1">
-                    <span className="text-2xl font-semibold tracking-tight text-slate-900">
+                  <div className="mt-1.5 flex items-end gap-1">
+                    <span className="text-xl font-semibold tracking-tight text-slate-900">
                       {formattedEstimatedUsdt}
                     </span>
-                    <span className="pb-1 text-xs font-medium text-slate-500">USDT</span>
+                    <span className="pb-0.5 text-[11px] font-medium text-slate-500">USDT</span>
                   </div>
                 </div>
-                <div className="rounded-2xl border border-white/80 bg-white/75 p-4 shadow-sm">
-                  <div className="text-[11px] uppercase tracking-[0.14em] text-slate-400">
+                <div className="rounded-[18px] border border-white/80 bg-white/75 p-3 shadow-sm">
+                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">
                     Rate
                   </div>
-                  <div className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">
+                  <div className="mt-1.5 text-xl font-semibold tracking-tight text-slate-900">
                     {rate?.toLocaleString('ko-KR')}
                   </div>
-                  <div className="mt-1 text-xs text-slate-500">KRW / USDT</div>
+                  <div className="mt-0.5 text-[11px] text-slate-500">KRW / USDT</div>
                 </div>
-                <div className="rounded-2xl border border-white/80 bg-white/75 p-4 shadow-sm">
-                  <div className="text-[11px] uppercase tracking-[0.14em] text-slate-400">
+                <div className="rounded-[18px] border border-white/80 bg-white/75 p-3 shadow-sm">
+                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">
                     Limit
                   </div>
-                  <div className="mt-2 text-lg font-semibold tracking-tight text-slate-900">
+                  <div className="mt-1.5 text-base font-semibold tracking-tight text-slate-900">
                     {maxKrwAmount?.toLocaleString('ko-KR')}원
                   </div>
-                  <div className="mt-1 text-xs text-slate-500">1회 결제 최대 금액</div>
+                  <div className="mt-0.5 text-[11px] text-slate-500">1회 결제 최대 금액</div>
                 </div>
-                <div className="rounded-2xl border border-white/80 bg-white/75 p-4 shadow-sm">
-                  <div className="text-[11px] uppercase tracking-[0.14em] text-slate-400">
+                <div className="rounded-[18px] border border-white/80 bg-white/75 p-3 shadow-sm">
+                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">
                     Wallet
                   </div>
-                  <div className="mt-2 text-sm font-semibold text-slate-900">
+                  <div className="mt-1.5 text-xs font-semibold text-slate-900">
                     {address ? '연결 완료' : '연결 대기'}
                   </div>
-                  <div className="mt-1 text-xs text-slate-500">{maskedWalletAddress}</div>
+                  <div className="mt-0.5 text-[11px] text-slate-500">{maskedWalletAddress}</div>
                 </div>
               </div>
             )}
 
             {!loadingUser && user && (
-              <div className="mt-5 rounded-[24px] border border-white/80 bg-white/80 p-4 shadow-sm backdrop-blur-sm">
-                <div className="flex items-start justify-between gap-3">
+              <div className="mt-4 rounded-[20px] border border-white/80 bg-white/80 p-3 shadow-sm backdrop-blur-sm">
+                <div className="flex items-start justify-between gap-2.5">
                   <div>
-                    <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+                    <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
                       Account
                     </div>
-                    <div className="mt-2 text-base font-semibold text-slate-900">
+                    <div className="mt-1.5 text-sm font-semibold text-slate-900">
                       {memberid ? memberid : user?.nickname}
                     </div>
                     <button
@@ -2465,53 +2465,53 @@ export default function Index({ params }: any) {
                         navigator.clipboard.writeText(address);
                         toast.success("USDT지갑주소가 복사되었습니다.");
                       }}
-                      className="mt-2 text-sm text-slate-600 underline underline-offset-4"
+                      className="mt-1.5 text-xs text-slate-600 underline underline-offset-4"
                     >
                       {maskedWalletAddress}
                     </button>
                   </div>
 
-                  <div className="rounded-2xl bg-slate-900 px-4 py-3 text-right text-white shadow-[0_16px_40px_rgba(15,23,42,0.18)]">
-                    <div className="text-[11px] uppercase tracking-[0.16em] text-slate-300">
+                  <div className="rounded-[18px] bg-slate-900 px-3 py-2.5 text-right text-white shadow-[0_12px_32px_rgba(15,23,42,0.16)]">
+                    <div className="text-[10px] uppercase tracking-[0.14em] text-slate-300">
                       Balance
                     </div>
-                    <div className="mt-1 text-2xl font-semibold tracking-tight">
+                    <div className="mt-0.5 text-xl font-semibold tracking-tight">
                       {formattedBalance}
                     </div>
-                    <div className="text-xs text-slate-300">USDT</div>
+                    <div className="text-[11px] text-slate-300">USDT</div>
                   </div>
                 </div>
               </div>
             )}
           </section>
 
-          <section className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white/80 px-4 py-3 shadow-[0_18px_48px_rgba(15,23,42,0.06)] backdrop-blur-sm">
-            <div className="mb-3 flex items-center justify-between gap-2">
+          <section className="overflow-hidden rounded-[20px] border border-slate-200/80 bg-white/80 px-3 py-2.5 shadow-[0_14px_36px_rgba(15,23,42,0.05)] backdrop-blur-sm">
+            <div className="mb-2.5 flex items-center justify-between gap-2">
               <div>
-                <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+                <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
                   Market Feed
                 </div>
-                <div className="text-sm font-semibold text-slate-800">USDT 주요 시세</div>
+                <div className="text-xs font-semibold text-slate-800">USDT 주요 시세</div>
               </div>
               <a
                 href="https://upbit.com/exchange?code=CRIX.UPBIT.KRW-USDT"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600"
+                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600"
               >
                 <Image
                   src="/logo-upbit.jpg"
                   alt="upbit"
                   width={20}
                   height={20}
-                  className="h-5 w-5 rounded-full"
+                  className="h-4 w-4 rounded-full"
                 />
                 Upbit KRW-USDT
               </a>
             </div>
 
             <div
-              className="binance-widget-marquee min-h-[44px] w-full"
+              className="binance-widget-marquee min-h-[38px] w-full"
               data-cmc-ids="1,1027,52,5426,3408,74,20947,5994,24478,13502,35336,825"
               data-theme="light"
               data-transparent="true"
@@ -2520,7 +2520,7 @@ export default function Index({ params }: any) {
             ></div>
           </section>
 
-          <section className="overflow-hidden rounded-[28px] border border-slate-200/80 bg-white/90 p-4 shadow-[0_20px_70px_rgba(15,23,42,0.07)] backdrop-blur-sm sm:p-5">
+          <section className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white/90 p-3 shadow-[0_16px_48px_rgba(15,23,42,0.06)] backdrop-blur-sm sm:p-4">
 
   
 
@@ -2529,7 +2529,7 @@ export default function Index({ params }: any) {
 
 
             {!address && (
-              <div className="mb-4 rounded-[22px] border border-amber-200 bg-[#fff8eb] px-4 py-4 text-sm leading-6 text-slate-600">
+              <div className="mb-3 rounded-[18px] border border-amber-200 bg-[#fff8eb] px-3 py-3 text-sm leading-5 text-slate-600">
                 <div className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-700">
                   Wallet Notice
                 </div>
@@ -2543,8 +2543,8 @@ export default function Index({ params }: any) {
             )}
 
             {loadingUser && (
-              <div className="rounded-[24px] border border-dashed border-slate-200 bg-[#faf8f4] px-4 py-6 text-sm text-slate-500">
-                <div className="flex items-center gap-3">
+              <div className="rounded-[20px] border border-dashed border-slate-200 bg-[#faf8f4] px-3 py-4 text-sm text-slate-500">
+                <div className="flex items-center gap-2">
                   <Image
                     src="/loading.png"
                     alt="Loading"
@@ -2560,102 +2560,102 @@ export default function Index({ params }: any) {
             {!loadingUser && (
               <div className="w-full">
                 {orderId === '0' && (
-                  <div className="flex w-full flex-col gap-4">
+                  <div className="flex w-full flex-col gap-3">
                     {isOrderInProgress ? (
-                      <div className="rounded-[24px] border border-sky-200 bg-sky-50 px-4 py-5">
-                        <div className="text-[11px] uppercase tracking-[0.16em] text-sky-700">
+                      <div className="rounded-[20px] border border-sky-200 bg-sky-50 px-3 py-4">
+                        <div className="text-[10px] uppercase tracking-[0.14em] text-sky-700">
                           Active Order
                         </div>
-                        <div className="mt-2 text-lg font-semibold text-slate-900">
+                        <div className="mt-1.5 text-base font-semibold text-slate-900">
                           {user?.buyOrderStatus === 'ordered'
                             ? '구매 주문이 진행 중입니다.'
                             : '결제 요청이 진행 중입니다.'}
                         </div>
-                        <div className="mt-1 text-sm leading-6 text-slate-600">
+                        <div className="mt-1 text-sm leading-5 text-slate-600">
                           기존 거래가 완료되면 새 결제를 다시 진행할 수 있습니다.
                         </div>
                       </div>
                     ) : (
                       <>
-                        <div className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
-                          <div className="flex flex-col gap-4">
-                            <div className="rounded-[26px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 p-5 text-white shadow-[0_22px_50px_rgba(15,23,42,0.22)]">
-                              <div className="flex items-start justify-between gap-3">
+                        <div className="grid gap-3 md:grid-cols-[1.05fr_0.95fr]">
+                          <div className="flex flex-col gap-3">
+                            <div className="rounded-[22px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 p-4 text-white shadow-[0_18px_40px_rgba(15,23,42,0.2)]">
+                              <div className="flex items-start justify-between gap-2.5">
                                 <div>
-                                  <div className="text-[11px] uppercase tracking-[0.18em] text-slate-300">
+                                  <div className="text-[10px] uppercase tracking-[0.16em] text-slate-300">
                                     Payment Preview
                                   </div>
-                                  <h2 className="mt-2 text-lg font-semibold">실시간 결제 금액</h2>
+                                  <h2 className="mt-1.5 text-base font-semibold">실시간 결제 금액</h2>
                                 </div>
-                                <div className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-slate-200">
+                                <div className="rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] text-slate-200">
                                   Mobile Optimized
                                 </div>
                               </div>
 
-                              <div className="mt-6 flex items-end gap-2">
-                                <div className="text-4xl font-semibold tracking-tight">
+                              <div className="mt-4.5 flex items-end gap-1.5">
+                                <div className="text-3xl font-semibold tracking-tight">
                                   {selectedKrwAmount?.toLocaleString('ko-KR')}
                                 </div>
-                                <div className="pb-1 text-sm text-slate-300">KRW</div>
+                                <div className="pb-0.5 text-xs text-slate-300">KRW</div>
                               </div>
 
-                              <div className="mt-3 flex items-center gap-2 text-sm text-slate-200">
+                              <div className="mt-2.5 flex items-center gap-2 text-[13px] text-slate-200">
                                 <Image
                                   src="/logo-tether.png"
                                   alt="USDT"
                                   width={20}
                                   height={20}
-                                  className="h-5 w-5 rounded-full"
+                                  className="h-4 w-4 rounded-full"
                                 />
                                 예상 수령 {formattedEstimatedUsdt} USDT
                               </div>
 
-                              <div className="mt-5 grid grid-cols-2 gap-3">
-                                <div className="rounded-2xl border border-white/10 bg-white/10 p-3">
-                                  <div className="text-[11px] uppercase tracking-[0.14em] text-slate-300">
+                              <div className="mt-4 grid grid-cols-2 gap-2.5">
+                                <div className="rounded-[18px] border border-white/10 bg-white/10 p-2.5">
+                                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-300">
                                     Provider
                                   </div>
-                                  <div className="mt-2 text-sm font-medium text-white">
+                                  <div className="mt-1.5 text-xs font-medium text-white">
                                     {providerName}
                                   </div>
                                 </div>
-                                <div className="rounded-2xl border border-white/10 bg-white/10 p-3">
-                                  <div className="text-[11px] uppercase tracking-[0.14em] text-slate-300">
+                                <div className="rounded-[18px] border border-white/10 bg-white/10 p-2.5">
+                                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-300">
                                     Member
                                   </div>
-                                  <div className="mt-2 text-sm font-medium text-white">
+                                  <div className="mt-1.5 text-xs font-medium text-white">
                                     {memberid || nickname}
                                   </div>
                                 </div>
-                                <div className="rounded-2xl border border-white/10 bg-white/10 p-3">
-                                  <div className="text-[11px] uppercase tracking-[0.14em] text-slate-300">
+                                <div className="rounded-[18px] border border-white/10 bg-white/10 p-2.5">
+                                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-300">
                                     Limit
                                   </div>
-                                  <div className="mt-2 text-sm font-medium text-white">
+                                  <div className="mt-1.5 text-xs font-medium text-white">
                                     {maxKrwAmount?.toLocaleString('ko-KR')}원
                                   </div>
                                 </div>
-                                <div className="rounded-2xl border border-white/10 bg-white/10 p-3">
-                                  <div className="text-[11px] uppercase tracking-[0.14em] text-slate-300">
+                                <div className="rounded-[18px] border border-white/10 bg-white/10 p-2.5">
+                                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-300">
                                     Depositor
                                   </div>
-                                  <div className="mt-2 text-sm font-medium text-white">
+                                  <div className="mt-1.5 text-xs font-medium text-white">
                                     {depositName || '사전 등록 정보 확인'}
                                   </div>
                                 </div>
                               </div>
                             </div>
 
-                            <div className="rounded-[26px] border border-slate-200 bg-[#fcfaf6] p-4 shadow-sm">
-                              <div className="flex items-start justify-between gap-3">
+                            <div className="rounded-[22px] border border-slate-200 bg-[#fcfaf6] p-3 shadow-sm">
+                              <div className="flex items-start justify-between gap-2.5">
                                 <div>
-                                  <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+                                  <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
                                     Quick Amount
                                   </div>
-                                  <h3 className="mt-1 text-lg font-semibold text-slate-900">
+                                  <h3 className="mt-0.5 text-base font-semibold text-slate-900">
                                     빠른 금액 선택
                                   </h3>
-                                  <p className="mt-1 text-sm leading-6 text-slate-500">
+                                  <p className="mt-1 text-sm leading-5 text-slate-500">
                                     자주 사용하는 금액을 빠르게 추가해 모바일에서 바로 결제할 수 있습니다.
                                   </p>
                                 </div>
@@ -2663,7 +2663,7 @@ export default function Index({ params }: any) {
                                 {(!depositAmountKrw || depositAmountKrw === "0") && (
                                   <button
                                     onClick={() => setSelectedKrwAmount(0)}
-                                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                                    className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
                                     disabled={loadingStoreInfo}
                                   >
                                     초기화
@@ -2672,7 +2672,7 @@ export default function Index({ params }: any) {
                               </div>
 
                               {(!depositAmountKrw || depositAmountKrw === "0") && (
-                                <div className="mt-4 grid grid-cols-2 gap-3">
+                                <div className="mt-3 grid grid-cols-2 gap-2.5">
                                   {quickAmountOptions.map((amount) => {
                                     const exceedsLimit = selectedKrwAmount + amount > maxKrwAmount;
 
@@ -2690,17 +2690,17 @@ export default function Index({ params }: any) {
                                           setSelectedKrwAmount((prev) => prev + amount);
                                         }}
                                         className={`
-                                          flex min-h-[76px] flex-col items-start justify-between rounded-[22px] border px-4 py-3 text-left transition
+                                          flex min-h-[64px] flex-col items-start justify-between rounded-[18px] border px-3 py-2.5 text-left transition
                                           ${loadingStoreInfo || exceedsLimit
                                             ? 'border-slate-200 bg-slate-100 text-slate-400'
                                             : 'border-slate-200 bg-white text-slate-900 shadow-sm hover:border-slate-400 hover:shadow-md active:translate-y-px'}
                                         `}
                                         disabled={loadingStoreInfo}
                                       >
-                                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                                        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
                                           Quick Add
                                         </span>
-                                        <span className="text-lg font-semibold tracking-tight">
+                                        <span className="text-base font-semibold tracking-tight">
                                           + {amount.toLocaleString('ko-KR')}원
                                         </span>
                                       </button>
@@ -2709,55 +2709,55 @@ export default function Index({ params }: any) {
                                 </div>
                               )}
 
-                              <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-500">
+                              <div className="mt-3 rounded-[18px] border border-slate-200 bg-white px-3 py-2.5 text-sm leading-5 text-slate-500">
                                 현재 시세는 <span className="font-semibold text-slate-900">{rate?.toLocaleString('ko-KR')}원</span>이며,
                                 구매 수량은 자동으로 가맹점 결제에 반영됩니다.
                               </div>
                             </div>
                           </div>
 
-                          <div className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-sm">
-                            <div className="flex items-start justify-between gap-3">
+                          <div className="rounded-[22px] border border-slate-200 bg-white p-3 shadow-sm">
+                            <div className="flex items-start justify-between gap-2.5">
                               <div>
-                                <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+                                <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
                                   Settlement Profile
                                 </div>
-                                <h3 className="mt-1 text-lg font-semibold text-slate-900">
+                                <h3 className="mt-0.5 text-base font-semibold text-slate-900">
                                   입금자 정보 확인
                                 </h3>
-                                <p className="mt-1 text-sm leading-6 text-slate-500">
+                                <p className="mt-1 text-sm leading-5 text-slate-500">
                                   사전 등록된 은행, 계좌번호, 이름으로만 송금됩니다.
                                 </p>
                               </div>
-                              <div className="rounded-full bg-[#eef2f6] px-3 py-1 text-xs font-semibold text-slate-600">
+                              <div className="rounded-full bg-[#eef2f6] px-2.5 py-1 text-[11px] font-semibold text-slate-600">
                                 Verified
                               </div>
                             </div>
 
-                            <div className="mt-5 flex flex-col gap-3">
-                              <div className="rounded-2xl border border-slate-200 bg-[#faf8f4] px-4 py-3">
-                                <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+                            <div className="mt-4 flex flex-col gap-2.5">
+                              <div className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
+                                <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
                                   Bank
                                 </div>
-                                <div className="mt-1 text-base font-semibold text-slate-900">
+                                <div className="mt-1 text-sm font-semibold text-slate-900">
                                   {depositBankName || '사전 등록 은행 없음'}
                                 </div>
                               </div>
 
-                              <div className="rounded-2xl border border-slate-200 bg-[#faf8f4] px-4 py-3">
-                                <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+                              <div className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
+                                <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
                                   Account Number
                                 </div>
-                                <div className="mt-1 text-base font-semibold tracking-tight text-slate-900">
+                                <div className="mt-1 text-sm font-semibold tracking-tight text-slate-900">
                                   {maskedDepositAccountNumber}
                                 </div>
                               </div>
 
-                              <div className="rounded-2xl border border-slate-200 bg-[#faf8f4] px-4 py-3">
-                                <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+                              <div className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
+                                <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
                                   Depositor Name
                                 </div>
-                                <div className="mt-1 text-base font-semibold text-slate-900">
+                                <div className="mt-1 text-sm font-semibold text-slate-900">
                                   {depositName || '사전 등록 이름 없음'}
                                 </div>
                               </div>
@@ -2766,7 +2766,7 @@ export default function Index({ params }: any) {
                             <button
                               disabled={isPurchaseDisabled}
                               className={`
-                                mt-5 flex min-h-[58px] w-full items-center justify-center gap-2 rounded-[22px] px-4 text-base font-semibold transition
+                                mt-4 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[18px] px-3 text-sm font-semibold transition
                                 ${isPurchaseDisabled
                                   ? 'bg-slate-200 text-slate-400'
                                   : 'bg-slate-900 text-white shadow-[0_16px_40px_rgba(15,23,42,0.18)] hover:bg-slate-800'}
@@ -2806,17 +2806,17 @@ export default function Index({ params }: any) {
                               </span>
                             </button>
 
-                            <p className="mt-3 text-xs leading-5 text-slate-500">
+                            <p className="mt-2.5 text-[11px] leading-5 text-slate-500">
                               결제 직후 구매 수량은 자동으로 가맹점 결제 화면에 반영됩니다.
                             </p>
                           </div>
                         </div>
 
-                        <div className="rounded-[22px] border border-amber-200 bg-[#fffaf0] px-4 py-4 text-sm leading-6 text-slate-600">
-                          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">
+                        <div className="rounded-[18px] border border-amber-200 bg-[#fffaf0] px-3 py-3 text-sm leading-5 text-slate-600">
+                          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-700">
                             Transfer Rule
                           </div>
-                          <div className="mt-2 font-medium text-slate-800">
+                          <div className="mt-1.5 font-medium text-slate-800">
                             입금 시 반드시 사전 등록한 은행과 이름, 계좌번호로 송금해야 합니다.
                           </div>
                           <div className="mt-1">
@@ -4090,43 +4090,43 @@ export default function Index({ params }: any) {
 
           </section>
 
-          <section className="mt-6 rounded-[28px] border border-slate-200/80 bg-white/85 p-5 shadow-[0_18px_52px_rgba(15,23,42,0.06)] backdrop-blur-sm">
-            <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-xs font-semibold uppercase tracking-[0.16em] text-white">
+          <section className="mt-5 rounded-[24px] border border-slate-200/80 bg-white/85 p-4 shadow-[0_14px_40px_rgba(15,23,42,0.05)] backdrop-blur-sm">
+            <div className="flex items-start gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-[18px] bg-slate-900 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
                 Safe
               </div>
               <div>
-                <div className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+                <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
                   Notice
                 </div>
-                <h2 className="mt-1 text-lg font-semibold text-slate-900">필독 안내사항</h2>
+                <h2 className="mt-0.5 text-base font-semibold text-slate-900">필독 안내사항</h2>
               </div>
             </div>
 
-            <ul className="mt-4 flex flex-col gap-3 text-sm leading-6 text-slate-600">
-              <li className="rounded-2xl border border-slate-200 bg-[#faf8f4] px-4 py-3">
+            <ul className="mt-3 flex flex-col gap-2.5 text-sm leading-5 text-slate-600">
+              <li className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
                 대행 신청 전 유의사항을 반드시 확인해 주세요. 신청 전 안내된 내용을 충분히 숙지하지 않아 발생하는 모든 문제는 회원 본인의 책임이며, 당사는 이에 대해 책임지지 않습니다.
               </li>
-              <li className="rounded-2xl border border-slate-200 bg-[#faf8f4] px-4 py-3">
+              <li className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
                 코인 전송 완료 후에는 취소 및 환불이 불가능합니다. 대행 신청 완료 후 진행된 코인 거래는 어떤 경우에도 취소나 환불이 불가하오니 신중히 진행해 주세요.
               </li>
-              <li className="rounded-2xl border border-slate-200 bg-[#faf8f4] px-4 py-3">
+              <li className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
                 최근 코인 거래 관련 사기가 빈번하게 발생하고 있습니다. 구매 및 판매 시 반드시 신원과 거래 내용을 철저히 확인해 주세요. 대행 신청 후 사고 발생 시 당사는 도움을 드릴 수 없습니다.
               </li>
-              <li className="rounded-2xl border border-slate-200 bg-[#faf8f4] px-4 py-3">
+              <li className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
                 불법 자금 거래 및 금융사기 방지를 위해 최선을 다하고 있습니다. 의심스러운 거래로 판단될 경우 신분증, 통장 사본, 거래 내역, 이체 확인증 등의 추가 인증을 요청드릴 수 있습니다.
               </li>
-              <li className="rounded-2xl border border-slate-200 bg-[#faf8f4] px-4 py-3">
+              <li className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
                 잘못된 정보 입력 시 거래에 문제가 발생할 수 있습니다. 모든 정보를 정확히 기입해 주시고 신청 전 다시 한 번 확인해 주세요.
               </li>
-              <li className="rounded-2xl border border-slate-200 bg-[#faf8f4] px-4 py-3">
+              <li className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
                 영업시간은 연중무휴 24시간 운영입니다. 언제든지 문의 및 이용이 가능합니다.
               </li>
             </ul>
           </section>
 
-          <footer className="mb-10 rounded-[24px] border border-slate-200/80 bg-white/80 p-5 text-sm text-slate-500 shadow-[0_16px_40px_rgba(15,23,42,0.05)]">
-            <div className="flex flex-wrap items-center justify-center gap-3">
+          <footer className="mb-8 rounded-[20px] border border-slate-200/80 bg-white/80 p-4 text-sm text-slate-500 shadow-[0_12px_32px_rgba(15,23,42,0.04)]">
+            <div className="flex flex-wrap items-center justify-center gap-2.5">
               <a
                 href="#"
                 className="transition hover:text-slate-900"
@@ -4148,7 +4148,7 @@ export default function Index({ params }: any) {
                 고객센터
               </a>
             </div>
-            <div className="mt-3 text-center">
+            <div className="mt-2 text-center text-[11px]">
               © 2023 Iskan9. All rights reserved.
             </div>
           </footer>
