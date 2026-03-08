@@ -27,8 +27,9 @@ import {
 } from "thirdweb/chains";
 
 import {
-    ConnectButton,
     useActiveAccount,
+    useConnect,
+    useDisconnect,
     useActiveWallet,
 } from "thirdweb/react";
 import { inAppWallet } from "thirdweb/wallets";
@@ -38,6 +39,7 @@ import {
   getProfiles,
   getUserEmail,
   getUserPhoneNumber,
+  preAuthenticate,
 } from "thirdweb/wallets/in-app";
 
 
@@ -116,24 +118,55 @@ interface SellOrder {
   transactionHash: string;
 }
 
-
-
-
-
-const wallets = [
-  inAppWallet({
-    auth: {
-      options: ["phone"],
-      defaultSmsCountryCode: "KR",
-    },
-    hidePrivateKeyExport: true,
-  }),
-];
-
 const thirdwebClientId = process.env.NEXT_PUBLIC_TEMPLATE_CLIENT_ID || "";
 const smartAccountConnectConfig = {
   sponsorGas: true,
 };
+
+function createPhoneWallet(chain: any) {
+  return inAppWallet({
+    auth: {
+      options: ["phone"],
+      defaultSmsCountryCode: "KR",
+      allowedSmsCountryCodes: ["KR"],
+    },
+    executionMode: {
+      mode: "EIP4337",
+      smartAccount: {
+        chain,
+        sponsorGas: smartAccountConnectConfig.sponsorGas,
+      },
+    },
+    hidePrivateKeyExport: true,
+  });
+}
+
+function normalizeKoreanPhoneNumber(value: string) {
+  const digits = value.replace(/\D/g, "");
+
+  if (!digits) {
+    return "";
+  }
+
+  if (digits.startsWith("82")) {
+    const localNumber = digits.slice(2);
+    return `+82${localNumber.startsWith("0") ? localNumber.slice(1) : localNumber}`;
+  }
+
+  return `+82${digits.startsWith("0") ? digits.slice(1) : digits}`;
+}
+
+function isValidKoreanMobileNumber(value: string) {
+  return /^\+821\d{8,9}$/.test(normalizeKoreanPhoneNumber(value));
+}
+
+function formatPhoneNumberPreview(value: string) {
+  if (!value) {
+    return "";
+  }
+
+  return value.replace(/^\+82/, "+82 ");
+}
 
 function serializeThirdwebValue(
   value: any,
@@ -771,6 +804,8 @@ export default function Index({ params }: any) {
  
 
     // get the active wallet
+    const { connect, isConnecting } = useConnect();
+    const { disconnect } = useDisconnect();
     const activeWallet = useActiveWallet();
 
 
@@ -787,6 +822,114 @@ export default function Index({ params }: any) {
   const [connectedPhoneNumber, setConnectedPhoneNumber] = useState('');
   const hasConnectedSmartWallet = Boolean(smartAccount?.address);
   const walletLoginSyncRef = useRef('');
+  const [isPhoneAuthModalOpen, setIsPhoneAuthModalOpen] = useState(false);
+  const [phoneInput, setPhoneInput] = useState('');
+  const [submittedPhoneNumber, setSubmittedPhoneNumber] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [phoneAuthStep, setPhoneAuthStep] = useState<'phone' | 'code'>('phone');
+  const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
+  const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
+  const [phoneAuthError, setPhoneAuthError] = useState('');
+
+  const resetPhoneAuthState = () => {
+    setPhoneInput('');
+    setSubmittedPhoneNumber('');
+    setVerificationCode('');
+    setPhoneAuthStep('phone');
+    setPhoneAuthError('');
+    setIsSendingPhoneCode(false);
+    setIsVerifyingPhoneCode(false);
+  };
+
+  const closePhoneAuthModal = () => {
+    setIsPhoneAuthModalOpen(false);
+    resetPhoneAuthState();
+  };
+
+  const openPhoneAuthModal = () => {
+    setPhoneAuthError('');
+    setIsPhoneAuthModalOpen(true);
+  };
+
+  const handleSendPhoneVerificationCode = async (phoneNumberOverride?: string) => {
+    const rawPhoneNumber = phoneNumberOverride || phoneInput;
+    const normalizedPhoneNumber = normalizeKoreanPhoneNumber(rawPhoneNumber);
+
+    if (!isValidKoreanMobileNumber(rawPhoneNumber)) {
+      setPhoneAuthError('휴대폰 번호를 다시 확인해 주세요.');
+      return;
+    }
+
+    setIsSendingPhoneCode(true);
+    setPhoneAuthError('');
+
+    try {
+      await preAuthenticate({
+        client,
+        strategy: 'phone',
+        phoneNumber: normalizedPhoneNumber,
+      });
+
+      setSubmittedPhoneNumber(normalizedPhoneNumber);
+      setPhoneAuthStep('code');
+      toast.success('인증 코드를 전송했습니다.');
+    } catch (error: any) {
+      console.error('Error sending phone verification code:', error);
+      setPhoneAuthError('인증 코드 전송에 실패했습니다. 번호를 다시 확인해 주세요.');
+    } finally {
+      setIsSendingPhoneCode(false);
+    }
+  };
+
+  const handleVerifyPhoneCode = async () => {
+    if (!submittedPhoneNumber) {
+      setPhoneAuthError('휴대폰 번호를 다시 입력해 주세요.');
+      setPhoneAuthStep('phone');
+      return;
+    }
+
+    if (!verificationCode.trim()) {
+      setPhoneAuthError('인증 코드를 입력해 주세요.');
+      return;
+    }
+
+    setIsVerifyingPhoneCode(true);
+    setPhoneAuthError('');
+
+    try {
+      await connect(async () => {
+        const wallet = createPhoneWallet(paymentChain);
+
+        await wallet.connect({
+          client,
+          chain: paymentChain,
+          strategy: 'phone',
+          phoneNumber: submittedPhoneNumber,
+          verificationCode: verificationCode.trim(),
+        });
+
+        return wallet;
+      });
+
+      toast.success('휴대폰 확인이 완료되었습니다.');
+      closePhoneAuthModal();
+    } catch (error: any) {
+      console.error('Error verifying phone code:', error);
+      setPhoneAuthError('인증 코드가 올바르지 않거나 다시 인증이 필요합니다.');
+    } finally {
+      setIsVerifyingPhoneCode(false);
+    }
+  };
+
+  const handleReconnectPhoneWallet = () => {
+    if (activeWallet) {
+      disconnect(activeWallet);
+    }
+
+    resetPhoneAuthState();
+    setPhoneAuthError('');
+    setIsPhoneAuthModalOpen(true);
+  };
 
   useEffect(() => {
     if (!smartAccount?.address) {
@@ -2638,56 +2781,32 @@ export default function Index({ params }: any) {
               </div>
 
               <div className="mt-2.5">
-                <ConnectButton
-                  client={client}
-                  wallets={wallets}
-                  chain={paymentChain}
-                  accountAbstraction={{
-                    chain: paymentChain,
-                    sponsorGas: smartAccountConnectConfig.sponsorGas,
-                  }}
-                  theme="light"
-                  locale="ko_KR"
-                  connectButton={{
-                    style: {
-                      width: '100%',
-                      minHeight: '52px',
-                      borderRadius: '18px',
-                      backgroundColor: '#1d4ed8',
-                      color: '#ffffff',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      lineHeight: '1.2',
-                      padding: '0 14px',
-                      boxShadow: '0 10px 18px rgba(29,78,216,0.24)',
-                      border: '1px solid rgba(29,78,216,0.32)',
-                    },
-                    label: '휴대폰으로 연결',
-                  }}
-                  detailsButton={{
-                    style: {
-                      width: '100%',
-                      minHeight: '52px',
-                      borderRadius: '18px',
-                      backgroundColor: '#1d4ed8',
-                      color: '#ffffff',
-                      fontSize: '14px',
-                      fontWeight: 600,
-                      lineHeight: '1.2',
-                      padding: '0 14px',
-                      boxShadow: '0 10px 18px rgba(29,78,216,0.24)',
-                      border: '1px solid rgba(29,78,216,0.32)',
-                    },
-                    connectedAccountName: '휴대폰 확인 완료',
-                    connectedAccountAvatarUrl: storeInfo?.storeLogo || '/logo.png',
-                  }}
-                  connectModal={{
-                    title: '휴대폰 본인 확인',
-                    titleIcon: storeInfo?.storeLogo || '/logo.png',
-                    size: 'compact',
-                    showThirdwebBranding: false,
-                  }}
-                />
+                {hasConnectedSmartWallet ? (
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      disabled
+                      className="flex min-h-[52px] w-full items-center justify-center rounded-[18px] border border-emerald-300 bg-emerald-500 px-4 text-[14px] font-semibold text-white shadow-[0_10px_18px_rgba(16,185,129,0.22)]"
+                    >
+                      휴대폰 확인 완료
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleReconnectPhoneWallet}
+                      className="w-full text-center text-[12px] font-medium text-slate-500 transition hover:text-slate-700"
+                    >
+                      다른 번호로 다시 인증
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={openPhoneAuthModal}
+                    className="flex min-h-[52px] w-full items-center justify-center rounded-[18px] border border-[#1d4ed8]/30 bg-[#1d4ed8] px-4 text-[14px] font-semibold text-white shadow-[0_10px_18px_rgba(29,78,216,0.24)] transition hover:bg-[#1e40af]"
+                  >
+                    휴대폰으로 연결
+                  </button>
+                )}
               </div>
 
               <div className="mt-2 flex flex-wrap gap-2">
@@ -4475,6 +4594,136 @@ export default function Index({ params }: any) {
 
 
 
+
+          {isPhoneAuthModalOpen && (
+            <div className="fixed inset-0 z-[120] flex items-end justify-center bg-slate-900/45 px-4 pb-4 pt-10 sm:items-center">
+              <div className="w-full max-w-[360px] rounded-[28px] bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.28)]">
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (phoneAuthStep === 'code') {
+                        setPhoneAuthStep('phone');
+                        setVerificationCode('');
+                        setPhoneAuthError('');
+                        return;
+                      }
+
+                      closePhoneAuthModal();
+                    }}
+                    className="text-sm font-medium text-slate-500"
+                  >
+                    {phoneAuthStep === 'code' ? '이전' : '닫기'}
+                  </button>
+                  <div className="text-[18px] font-semibold text-slate-900">
+                    휴대폰 확인
+                  </div>
+                  <button
+                    type="button"
+                    onClick={closePhoneAuthModal}
+                    className="text-sm font-medium text-slate-500"
+                  >
+                    닫기
+                  </button>
+                </div>
+
+                {phoneAuthStep === 'phone' ? (
+                  <div className="mt-5">
+                    <div className="text-sm font-semibold text-slate-900">
+                      휴대폰 번호를 입력해 주세요
+                    </div>
+                    <div className="mt-1 text-[12px] leading-5 text-slate-500">
+                      +82가 기본이며, 앞자리 0은 자동으로 제외됩니다.
+                    </div>
+
+                    <div className="mt-4 flex items-center rounded-[18px] border border-slate-200 bg-slate-50 px-4 py-3">
+                      <div className="pr-3 text-[15px] font-semibold text-slate-900">
+                        +82
+                      </div>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        autoFocus
+                        value={phoneInput}
+                        onChange={(event) => {
+                          setPhoneInput(event.target.value.replace(/[^\d+\-\s]/g, ''));
+                          if (phoneAuthError) {
+                            setPhoneAuthError('');
+                          }
+                        }}
+                        placeholder="10 1234 5678"
+                        className="w-full border-0 bg-transparent text-[15px] font-medium text-slate-900 outline-none placeholder:text-slate-400"
+                      />
+                    </div>
+
+                    {phoneAuthError && (
+                      <div className="mt-2 text-[12px] font-medium text-rose-500">
+                        {phoneAuthError}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => handleSendPhoneVerificationCode()}
+                      disabled={isSendingPhoneCode}
+                      className="mt-4 flex min-h-[50px] w-full items-center justify-center rounded-[18px] border border-[#1d4ed8]/30 bg-[#1d4ed8] px-4 text-[14px] font-semibold text-white shadow-[0_10px_18px_rgba(29,78,216,0.24)] transition hover:bg-[#1e40af] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+                    >
+                      {isSendingPhoneCode ? '전송 중...' : '인증 코드 받기'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-5">
+                    <div className="text-sm font-semibold text-slate-900">
+                      인증 코드를 입력해 주세요
+                    </div>
+                    <div className="mt-1 text-[13px] font-medium text-slate-600">
+                      {formatPhoneNumberPreview(submittedPhoneNumber)}
+                    </div>
+
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      autoFocus
+                      maxLength={6}
+                      value={verificationCode}
+                      onChange={(event) => {
+                        setVerificationCode(event.target.value.replace(/\D/g, '').slice(0, 6));
+                        if (phoneAuthError) {
+                          setPhoneAuthError('');
+                        }
+                      }}
+                      placeholder="6자리 인증 코드"
+                      className="mt-4 h-[52px] w-full rounded-[18px] border border-slate-200 bg-slate-50 px-4 text-center text-[18px] font-semibold tracking-[0.3em] text-slate-900 outline-none placeholder:tracking-normal placeholder:text-[15px] placeholder:font-medium placeholder:text-slate-400"
+                    />
+
+                    {phoneAuthError && (
+                      <div className="mt-2 text-[12px] font-medium text-rose-500">
+                        {phoneAuthError}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleVerifyPhoneCode}
+                      disabled={isVerifyingPhoneCode || isConnecting}
+                      className="mt-4 flex min-h-[50px] w-full items-center justify-center rounded-[18px] border border-[#1d4ed8]/30 bg-[#1d4ed8] px-4 text-[14px] font-semibold text-white shadow-[0_10px_18px_rgba(29,78,216,0.24)] transition hover:bg-[#1e40af] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+                    >
+                      {isVerifyingPhoneCode || isConnecting ? '확인 중...' : '확인'}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleSendPhoneVerificationCode(submittedPhoneNumber)}
+                      disabled={isSendingPhoneCode}
+                      className="mt-3 w-full text-center text-[12px] font-medium text-[#1d4ed8] transition hover:text-[#1e40af] disabled:text-slate-400"
+                    >
+                      인증 코드 다시 보내기
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <Modal isOpen={isModalOpen} onClose={closeModal}>
               <TradeDetail
