@@ -666,41 +666,108 @@ export default function Index({ params }: any) {
     const [user, setUser] = useState<any>(null);
     const [loadingUser, setLoadingUser] = useState(false);
     useEffect(() => {
-
         if (!address) {
             return;
         }
 
-        setLoadingUser(true);
+        let mounted = true;
 
-        fetch('/api/user/getUser', {
-            method: 'POST',
-            headers: {
+        const fetchUser = async () => {
+          setLoadingUser(true);
+
+          try {
+            const response = await fetch('/api/user/getUser', {
+              method: 'POST',
+              headers: {
                 'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+              },
+              body: JSON.stringify({
                 clientid: params.clientid,
                 storecode: params.center,
                 walletAddress: address,
-            }),
-        })
-        .then(response => response?.json())
-        .then(data => {
-            
-          //console.log('getUser data', data);
+              }),
+            });
 
+            const data = await response.json().catch(() => null);
+            const fetchedUser = data?.result || null;
+            const resolvedFetchedUserType = normalizeUserType(fetchedUser?.userType);
 
+            if (mounted && fetchedUser && resolvedFetchedUserType) {
+              setUser(fetchedUser);
+              return;
+            }
 
-          setUser(data.result);
+            if (!oneBuyOrder?.nickname) {
+              if (mounted) {
+                setUser(fetchedUser);
+              }
+              return;
+            }
 
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
+            const fallbackResponse = await fetch('/api/user/setBuyerWithoutWalletAddressByStorecode', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                clientid: params.clientid,
+                storecode: params.center,
+                walletAddress: address,
+                userCode: oneBuyOrder.nickname,
+                userName: oneBuyOrder?.buyer?.depositName || '',
+                userBankName: oneBuyOrder?.buyer?.depositBankName || '',
+                userBankAccountNumber: oneBuyOrder?.buyer?.depositBankAccountNumber || '',
+              }),
+            });
 
-        setLoadingUser(false);
+            const fallbackData = await fallbackResponse.json().catch(() => null);
 
-    } , [address, params.clientid, params.center]);
+            if (!mounted) {
+              return;
+            }
+
+            if (fallbackData?.walletAddress) {
+              setUser({
+                ...fetchedUser,
+                walletAddress: fallbackData.walletAddress,
+                nickname: oneBuyOrder.nickname,
+                userType: fallbackData.userType || fetchedUser?.userType || requestedUserType,
+                buyOrderStatus: fallbackData.buyOrderStatus || fetchedUser?.buyOrderStatus,
+                liveOnAndOff: fallbackData.liveOnAndOff ?? fetchedUser?.liveOnAndOff,
+              });
+              return;
+            }
+
+            setUser(fetchedUser);
+          } catch (error) {
+            console.error('Error fetching user:', error);
+
+            if (mounted) {
+              setUser(null);
+            }
+          } finally {
+            if (mounted) {
+              setLoadingUser(false);
+            }
+          }
+        };
+
+        fetchUser();
+
+        return () => {
+          mounted = false;
+        };
+
+    } , [
+      address,
+      oneBuyOrder?.nickname,
+      oneBuyOrder?.buyer?.depositName,
+      oneBuyOrder?.buyer?.depositBankName,
+      oneBuyOrder?.buyer?.depositBankAccountNumber,
+      params.clientid,
+      params.center,
+      requestedUserType,
+    ]);
 
 
 
