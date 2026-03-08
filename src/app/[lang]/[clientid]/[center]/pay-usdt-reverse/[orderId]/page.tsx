@@ -148,7 +148,32 @@ const contractAddressArbitrum = "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"; //
 const contractAddressBSC = "0x55d398326f99059fF775485246999027B3197955"; // USDT on BSC
 
 function normalizeUserType(value?: string | null) {
-  const normalizedValue = (value || "").trim().toUpperCase();
+  const rawValue = (value || "").trim();
+  const normalizedValue = rawValue.toUpperCase();
+
+  if (!rawValue) {
+    return "";
+  }
+
+  if (/^(AAA|A|1|1등급|LEVEL1|GRADE1|TIER1|MEMBER1|VIP1)$/i.test(rawValue)) {
+    return "AAA";
+  }
+
+  if (/^(BBB|B|2|2등급|LEVEL2|GRADE2|TIER2|MEMBER2|VIP2)$/i.test(rawValue)) {
+    return "BBB";
+  }
+
+  if (/^(CCC|C|3|3등급|LEVEL3|GRADE3|TIER3|MEMBER3|VIP3)$/i.test(rawValue)) {
+    return "CCC";
+  }
+
+  if (/^(DDD|D|4|4등급|LEVEL4|GRADE4|TIER4|MEMBER4|VIP4)$/i.test(rawValue)) {
+    return "DDD";
+  }
+
+  if (/^(GENERAL|NORMAL|BASIC|DEFAULT|0|일반|일반등급)$/i.test(rawValue)) {
+    return "";
+  }
 
   return ["AAA", "BBB", "CCC", "DDD"].includes(normalizedValue)
     ? normalizedValue
