@@ -147,6 +147,14 @@ const contractAddressPolygon = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"; // 
 const contractAddressArbitrum = "0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"; // USDT on Arbitrum
 const contractAddressBSC = "0x55d398326f99059fF775485246999027B3197955"; // USDT on BSC
 
+function normalizeUserType(value?: string | null) {
+  const normalizedValue = (value || "").trim().toUpperCase();
+
+  return ["AAA", "BBB", "CCC", "DDD"].includes(normalizedValue)
+    ? normalizedValue
+    : "";
+}
+
 
 
 
@@ -256,6 +264,14 @@ export default function Index({ params }: any) {
     const searchParams = useSearchParams();
 
     const orderNumber = searchParams.get('orderNumber');
+    const requestedUserType = normalizeUserType(
+      searchParams.get('userType')
+      || searchParams.get('memberGrade')
+      || searchParams.get('memberType')
+      || searchParams.get('grade')
+      || searchParams.get('gradeCode')
+      || searchParams.get('user_type')
+    );
 
     //const storeUser = searchParams.get('storeUser');
 
@@ -1671,14 +1687,15 @@ export default function Index({ params }: any) {
       : oneBuyOrder?.status === 'ordered'
       ? 'text-violet-700 bg-violet-50 border-violet-200'
       : 'text-slate-700 bg-slate-50 border-slate-200';
+  const resolvedUserType = normalizeUserType(user?.userType || requestedUserType);
   const selectedStoreBankInfo =
-    user?.userType === 'AAA'
+    resolvedUserType === 'AAA'
       ? oneBuyOrder?.store?.bankInfoAAA
-      : user?.userType === 'BBB'
+      : resolvedUserType === 'BBB'
       ? oneBuyOrder?.store?.bankInfoBBB
-      : user?.userType === 'CCC'
+      : resolvedUserType === 'CCC'
       ? oneBuyOrder?.store?.bankInfoCCC
-      : user?.userType === 'DDD'
+      : resolvedUserType === 'DDD'
       ? oneBuyOrder?.store?.bankInfoDDD
       : oneBuyOrder?.store?.bankInfo;
   const depositorName = oneBuyOrder?.buyer?.depositName || oneBuyOrder?.tradeId || '-';

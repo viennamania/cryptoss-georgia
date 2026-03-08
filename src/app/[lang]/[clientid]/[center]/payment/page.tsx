@@ -169,6 +169,47 @@ function formatPhoneNumberPreview(value: string) {
   return value.replace(/^\+82/, "+82 ");
 }
 
+function normalizeUserType(value?: string | null) {
+  const normalizedValue = (value || "").trim().toUpperCase();
+
+  return ["AAA", "BBB", "CCC", "DDD"].includes(normalizedValue)
+    ? normalizedValue
+    : "";
+}
+
+function buildReverseOrderUrl({
+  lang,
+  clientid,
+  storecode,
+  orderId,
+  orderNumber,
+  userType,
+}: {
+  lang: string;
+  clientid: string;
+  storecode: string;
+  orderId: string;
+  orderNumber?: string | null;
+  userType?: string;
+}) {
+  const nextSearchParams = new URLSearchParams();
+
+  if (orderNumber) {
+    nextSearchParams.set('orderNumber', orderNumber);
+  }
+
+  if (userType) {
+    nextSearchParams.set('userType', userType);
+  }
+
+  const nextQueryString = nextSearchParams.toString();
+
+  return (
+    '/' + lang + '/' + clientid + '/' + storecode + '/pay-usdt-reverse/' + orderId
+    + (nextQueryString ? `?${nextQueryString}` : '')
+  );
+}
+
 function serializeThirdwebValue(
   value: any,
   depth = 0,
@@ -376,6 +417,14 @@ export default function Index({ params }: any) {
 
 
     const paramAccessToken = searchParams.get('accessToken');
+    const requestedUserType = normalizeUserType(
+      searchParams.get('userType')
+      || searchParams.get('memberGrade')
+      || searchParams.get('memberType')
+      || searchParams.get('grade')
+      || searchParams.get('gradeCode')
+      || searchParams.get('user_type')
+    );
 
     const orderNumber = searchParams.get('orderNumber');
 
@@ -1455,7 +1504,7 @@ export default function Index({ params }: any) {
                 userName: depositName,
                 userBankName: depositBankName,
                 userBankAccountNumber: depositBankAccountNumber,
-                userType: '',
+                userType: requestedUserType,
               }
             ),
           });
@@ -1484,7 +1533,7 @@ export default function Index({ params }: any) {
 
             buyOrderStatus: data.buyOrderStatus,
 
-            userType: data.userType,
+            userType: data.userType || requestedUserType,
 
             liveOnAndOff: data.liveOnAndOff,
           });
@@ -1517,7 +1566,14 @@ export default function Index({ params }: any) {
           if (dataGetBuyOrder?.result) {
             const order = dataGetBuyOrder.result;
 
-            router.push('/' + params.lang + '/' + params.clientid + '/' + storecode + '/pay-usdt-reverse/' + order._id + '?orderNumber=' + orderNumber);
+            router.push(buildReverseOrderUrl({
+              lang: params.lang,
+              clientid: params.clientid,
+              storecode,
+              orderId: order._id,
+              orderNumber,
+              userType: requestedUserType,
+            }));
             return;
           }
         } catch (error) {
@@ -1539,7 +1595,7 @@ export default function Index({ params }: any) {
     } , [isMyWalletAddress,
       params.lang,
       params.clientid,
-      storecode, storeUser, depositName, depositBankName, depositBankAccountNumber, orderNumber, router, smartAccount?.address]);
+      storecode, storeUser, depositName, depositBankName, depositBankAccountNumber, orderNumber, requestedUserType, router, smartAccount?.address]);
     
 
 
@@ -2379,7 +2435,14 @@ export default function Index({ params }: any) {
 
           const order = data.result;
 
-          router.push('/' + params.lang + '/' + params.clientid + '/' + storecode + '/pay-usdt-reverse/' + order._id );
+          router.push(buildReverseOrderUrl({
+            lang: params.lang,
+            clientid: params.clientid,
+            storecode,
+            orderId: order._id,
+            orderNumber,
+            userType: requestedUserType,
+          }));
 
         } else {
           toast.error('구매 주문에 실패했습니다');
