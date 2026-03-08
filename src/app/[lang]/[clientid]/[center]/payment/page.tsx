@@ -830,6 +830,7 @@ export default function Index({ params }: any) {
   const [isSendingPhoneCode, setIsSendingPhoneCode] = useState(false);
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
   const [phoneAuthError, setPhoneAuthError] = useState('');
+  const [isDisconnectConfirmModalOpen, setIsDisconnectConfirmModalOpen] = useState(false);
 
   const resetPhoneAuthState = () => {
     setPhoneInput('');
@@ -849,6 +850,14 @@ export default function Index({ params }: any) {
   const openPhoneAuthModal = () => {
     setPhoneAuthError('');
     setIsPhoneAuthModalOpen(true);
+  };
+
+  const closeDisconnectConfirmModal = () => {
+    setIsDisconnectConfirmModalOpen(false);
+  };
+
+  const openDisconnectConfirmModal = () => {
+    setIsDisconnectConfirmModalOpen(true);
   };
 
   const handleSendPhoneVerificationCode = async (phoneNumberOverride?: string) => {
@@ -921,14 +930,18 @@ export default function Index({ params }: any) {
     }
   };
 
-  const handleReconnectPhoneWallet = () => {
+  const handleDisconnectPhoneWallet = () => {
     if (activeWallet) {
       disconnect(activeWallet);
     }
 
     resetPhoneAuthState();
+    setAddress('');
+    setConnectedPhoneNumber('');
+    walletLoginSyncRef.current = '';
     setPhoneAuthError('');
-    setIsPhoneAuthModalOpen(true);
+    setIsDisconnectConfirmModalOpen(false);
+    toast.success('지갑 연결을 해제했습니다.');
   };
 
   useEffect(() => {
@@ -2785,17 +2798,10 @@ export default function Index({ params }: any) {
                   <div className="space-y-2">
                     <button
                       type="button"
-                      disabled
-                      className="flex min-h-[52px] w-full items-center justify-center rounded-[18px] border border-emerald-300 bg-emerald-500 px-4 text-[14px] font-semibold text-white shadow-[0_10px_18px_rgba(16,185,129,0.22)]"
+                      onClick={openDisconnectConfirmModal}
+                      className="flex min-h-[52px] w-full items-center justify-center rounded-[18px] border border-rose-200 bg-rose-50 px-4 text-[14px] font-semibold text-rose-600 shadow-[0_8px_16px_rgba(244,63,94,0.10)] transition hover:bg-rose-100"
                     >
-                      휴대폰 확인 완료
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleReconnectPhoneWallet}
-                      className="w-full text-center text-[12px] font-medium text-slate-500 transition hover:text-slate-700"
-                    >
-                      다른 번호로 다시 인증
+                      지갑 연결 해제
                     </button>
                   </div>
                 ) : (
@@ -4594,6 +4600,37 @@ export default function Index({ params }: any) {
 
 
 
+
+          {isDisconnectConfirmModalOpen && (
+            <div className="fixed inset-0 z-[130] flex items-end justify-center bg-slate-900/45 px-4 pb-4 pt-10 sm:items-center">
+              <div className="w-full max-w-[340px] rounded-[24px] bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.28)]">
+                <div className="text-[18px] font-semibold text-slate-900">
+                  지갑 연결 해제
+                </div>
+                <div className="mt-2 text-[13px] leading-5 text-slate-600">
+                  현재 연결된 지갑을 해제할까요?
+                  해제 후 다시 결제하려면 휴대폰 인증이 필요합니다.
+                </div>
+
+                <div className="mt-5 grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={closeDisconnectConfirmModal}
+                    className="flex min-h-[46px] items-center justify-center rounded-[16px] border border-slate-200 bg-slate-50 px-4 text-[14px] font-semibold text-slate-700 transition hover:bg-slate-100"
+                  >
+                    취소
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDisconnectPhoneWallet}
+                    className="flex min-h-[46px] items-center justify-center rounded-[16px] border border-rose-200 bg-rose-500 px-4 text-[14px] font-semibold text-white transition hover:bg-rose-600"
+                  >
+                    연결 해제
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {isPhoneAuthModalOpen && (
             <div className="fixed inset-0 z-[120] flex items-end justify-center bg-slate-900/45 px-4 pb-4 pt-10 sm:items-center">
