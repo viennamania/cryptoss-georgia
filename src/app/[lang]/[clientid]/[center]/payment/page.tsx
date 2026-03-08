@@ -28,6 +28,7 @@ import {
 
 import {
     useActiveAccount,
+    useAutoConnect,
     useConnect,
     useDisconnect,
     useActiveWallet,
@@ -807,6 +808,7 @@ export default function Index({ params }: any) {
     const { connect, isConnecting } = useConnect();
     const { disconnect } = useDisconnect();
     const activeWallet = useActiveWallet();
+    const phoneWalletRegistryRef = useRef<Record<string, any>>({});
 
 
 
@@ -831,6 +833,18 @@ export default function Index({ params }: any) {
   const [isVerifyingPhoneCode, setIsVerifyingPhoneCode] = useState(false);
   const [phoneAuthError, setPhoneAuthError] = useState('');
   const [isDisconnectConfirmModalOpen, setIsDisconnectConfirmModalOpen] = useState(false);
+
+  if (!phoneWalletRegistryRef.current[clientChain]) {
+    phoneWalletRegistryRef.current[clientChain] = createPhoneWallet(paymentChain);
+  }
+
+  const phoneWallet = phoneWalletRegistryRef.current[clientChain];
+  const { isLoading: isAutoConnecting } = useAutoConnect({
+    client,
+    wallets: [phoneWallet],
+    chain: paymentChain,
+    timeout: 10000,
+  });
 
   const resetPhoneAuthState = () => {
     setPhoneInput('');
@@ -907,9 +921,7 @@ export default function Index({ params }: any) {
 
     try {
       await connect(async () => {
-        const wallet = createPhoneWallet(paymentChain);
-
-        await wallet.connect({
+        await phoneWallet.connect({
           client,
           chain: paymentChain,
           strategy: 'phone',
@@ -917,7 +929,7 @@ export default function Index({ params }: any) {
           verificationCode: verificationCode.trim(),
         });
 
-        return wallet;
+        return phoneWallet;
       });
 
       toast.success('휴대폰 확인이 완료되었습니다.');
@@ -2804,6 +2816,14 @@ export default function Index({ params }: any) {
                       지갑 연결 해제
                     </button>
                   </div>
+                ) : isAutoConnecting ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="flex min-h-[52px] w-full items-center justify-center rounded-[18px] border border-slate-200 bg-slate-100 px-4 text-[14px] font-semibold text-slate-500"
+                  >
+                    지갑 세션 확인 중...
+                  </button>
                 ) : (
                   <button
                     type="button"
