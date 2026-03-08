@@ -818,11 +818,10 @@ export default function Index({ params }: any) {
 
   //const address = smartAccount?.address || "";
 
-  const [address, setAddress] = useState(
-    smartAccount?.address || ""
-  );
+  const [address, setAddress] = useState('');
   const [connectedPhoneNumber, setConnectedPhoneNumber] = useState('');
-  const hasConnectedSmartWallet = Boolean(smartAccount?.address);
+  const connectedSmartWalletAddress = smartAccount?.address || '';
+  const hasConnectedSmartWallet = Boolean(connectedSmartWalletAddress);
   const walletLoginSyncRef = useRef('');
   const [isPhoneAuthModalOpen, setIsPhoneAuthModalOpen] = useState(false);
   const [phoneInput, setPhoneInput] = useState('');
@@ -948,7 +947,6 @@ export default function Index({ params }: any) {
     }
 
     resetPhoneAuthState();
-    setAddress('');
     setConnectedPhoneNumber('');
     walletLoginSyncRef.current = '';
     setPhoneAuthError('');
@@ -962,8 +960,6 @@ export default function Index({ params }: any) {
       walletLoginSyncRef.current = '';
       return;
     }
-
-    setAddress(smartAccount.address);
 
     let mounted = true;
 
@@ -1475,7 +1471,7 @@ export default function Index({ params }: any) {
             return;
           }
 
-          if (!smartAccount?.address && data.walletAddress) {
+          if (data.walletAddress) {
             setAddress(data.walletAddress);
           }
 
@@ -2245,12 +2241,19 @@ export default function Index({ params }: any) {
     depositBankName: string,
     depositBankAccountNumber: string,
   ) => {
+    const buyerWalletAddress = user?.walletAddress || address;
+    const buyerNickname = user?.nickname || nickname || storeUser || '';
 
     
     //console.log('acceptSellOrderRandom depositName', depositName);
     //console.log('acceptSellOrderRandom depositBankName', depositBankName);
 
     if (acceptingSellOrderRandom) {
+      return;
+    }
+
+    if (!buyerWalletAddress) {
+      toast.error('회원 지갑 정보를 다시 불러와 주세요.');
       return;
     }
 
@@ -2304,8 +2307,8 @@ export default function Index({ params }: any) {
             
             orderId: order._id,
 
-            buyerWalletAddress: address,
-            buyerNickname: nickname,
+            buyerWalletAddress,
+            buyerNickname,
             buyerAvatar: '',
             buyerMobile: '010-1234-5678',
             depositName: depositName,
@@ -2349,8 +2352,8 @@ export default function Index({ params }: any) {
             lang: params.lang,
             clientid: params.clientid,
             storecode: storecode,
-            walletAddress: address,
-            nickname: nickname,
+            walletAddress: buyerWalletAddress,
+            nickname: buyerNickname,
             usdtAmount: usdtAmount,
             krwAmount: krwAmount,
             rate: rate,
@@ -2708,8 +2711,9 @@ export default function Index({ params }: any) {
   const quickAmountOptions = [5000, 10000, 50000, 100000, 500000, 1000000];
   const isOrderInProgress =
     user?.buyOrderStatus === 'ordered' || user?.buyOrderStatus === 'paymentRequested';
+  const tradeWalletAddress = user?.walletAddress || address;
   const isPurchaseDisabled =
-    !address || !user || !selectedKrwAmount || acceptingSellOrderRandom;
+    !tradeWalletAddress || !user || !selectedKrwAmount || acceptingSellOrderRandom;
   const formattedBalance = Number(balance).toFixed(2);
   const formattedEstimatedUsdt =
     rate > 0
@@ -2717,8 +2721,8 @@ export default function Index({ params }: any) {
           .toFixed(3)
           .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
       : '0.000';
-  const maskedWalletAddress = address
-    ? `${address.slice(0, 6)}...${address.slice(-4)}`
+  const maskedWalletAddress = tradeWalletAddress
+    ? `${tradeWalletAddress.slice(0, 6)}...${tradeWalletAddress.slice(-4)}`
     : '자동 연결 대기';
   const maskedDepositAccountNumber = depositBankAccountNumber
     ? depositBankAccountNumber.length > 8
@@ -2850,7 +2854,7 @@ export default function Index({ params }: any) {
                     {connectedPhoneNumber || '휴대폰 본인 확인 완료'}
                   </div>
                   <div className="mt-1 break-all text-[11px] text-slate-500">
-                    {smartAccount?.address}
+                    {connectedSmartWalletAddress}
                   </div>
                 </div>
               )}
@@ -2903,7 +2907,7 @@ export default function Index({ params }: any) {
                     Wallet
                   </div>
                   <div className="mt-1.5 text-xs font-semibold text-slate-900">
-                    {address ? '연결 완료' : '연결 대기'}
+                    {tradeWalletAddress ? '준비 완료' : '준비 대기'}
                   </div>
                   <div className="mt-0.5 text-[11px] text-slate-500">{maskedWalletAddress}</div>
                 </div>
@@ -2922,11 +2926,11 @@ export default function Index({ params }: any) {
                     </div>
                     <button
                       onClick={() => {
-                        if (!address) {
+                        if (!tradeWalletAddress) {
                           return;
                         }
 
-                        navigator.clipboard.writeText(address);
+                        navigator.clipboard.writeText(tradeWalletAddress);
                         toast.success("USDT지갑주소가 복사되었습니다.");
                       }}
                       className="mt-1.5 text-xs text-slate-600 underline underline-offset-4"
