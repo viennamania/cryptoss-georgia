@@ -653,6 +653,8 @@ export default function Index({ params }: any) {
     smartAccount?.address || ""
   );
 
+  const [oneBuyOrder, setOneBuyOrder] = useState<any>(null);
+
 
 
 
@@ -1056,7 +1058,6 @@ export default function Index({ params }: any) {
 
   const [orderChain, setOrderChain] = useState('ethereum');
 
-  const [oneBuyOrder, setOneBuyOrder] = useState<any>(null);
   useEffect(() => {
     // /api/order/getOneBuyOrderByOrderId
 
