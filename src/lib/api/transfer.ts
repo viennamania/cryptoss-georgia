@@ -1,5 +1,5 @@
 import { transfer } from 'thirdweb/extensions/erc20';
-import clientPromise from '../mongodb';
+import clientPromise, { getMongoDb } from '../mongodb';
 
 /*
   console.log("transactionHash", transactionHash, "transactionIndex", transactionIndex,
@@ -39,11 +39,11 @@ export async function insertOne(data: any) {
     // if toAddress is user wallet address, then insert into userTransfers collection
 
 
-    const collectionUsers = client.db('ultraman').collection('users');
+    const collectionUsers = getMongoDb(client).collection('users');
 
-    const collectionUserTransfers = client.db('ultraman').collection('userTransfers');
+    const collectionUserTransfers = getMongoDb(client).collection('userTransfers');
 
-    const collection = client.db('ultraman').collection('transfers');
+    const collection = getMongoDb(client).collection('transfers');
 
 
     
@@ -123,7 +123,7 @@ export async function insertOne(data: any) {
                 ///const message = "You have received " + Number(amount).toFixed(6) + " USDT";
                 const message = Number(amount).toFixed(6) + " USDT 를 받았습니다";
 
-                const collectionTelegramMessages = client.db('ultraman').collection('telegramMessages');
+                const collectionTelegramMessages = getMongoDb(client).collection('telegramMessages');
 
                 await collectionTelegramMessages.insertOne(
                 {
@@ -166,7 +166,7 @@ export async function getTransferByWalletAddress(data: any) {
 
     const client = await clientPromise;
 
-    const collectionUsers = client.db('ultraman').collection('users');
+    const collectionUsers = getMongoDb(client).collection('users');
 
     
     const user = await collectionUsers.findOne(
@@ -183,7 +183,7 @@ export async function getTransferByWalletAddress(data: any) {
     // timestamp desc
     
 
-    const collectionUserTransfers = client.db('ultraman').collection('userTransfers');
+    const collectionUserTransfers = getMongoDb(client).collection('userTransfers');
 
     const userTransfers = await collectionUserTransfers
     .find({ "user.walletAddress": data.walletAddress })

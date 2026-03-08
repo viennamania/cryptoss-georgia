@@ -1,5 +1,5 @@
 import { create } from 'domain';
-import clientPromise from '../mongodb';
+import clientPromise, { getMongoDb } from '../mongodb';
 
 
 
@@ -25,7 +25,7 @@ export async function insertStore(data: any) {
 
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
   // check storecode is unique
   const stores = await collection.findOne<any>(
     {
@@ -74,7 +74,7 @@ export async function insertStore(data: any) {
   console.log('sumOfStores: ' + sumOfStores);
 
 
-  const agentCollection = client.db('ultraman').collection('agents');
+  const agentCollection = getMongoDb(client).collection('agents');
   await agentCollection.updateOne(
     { agentcode: data.agentcode },
     { $set: { totalStoreCount: sumOfStores } },
@@ -113,7 +113,7 @@ export async function getStoreByStorecode(
   //console.log('getStoreByStorecode storecode: ' + storecode);
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
 
   // join with agents collection
@@ -208,7 +208,7 @@ export async function getStoreByStorecode(
 
 export async function updateStoreLogo(data: any) {
     const client = await clientPromise;
-    const collection = client.db('ultraman').collection('stores');
+    const collection = getMongoDb(client).collection('stores');
   
   
     // update storeLogo
@@ -230,7 +230,7 @@ export async function updateStoreLogo(data: any) {
 // updateStoreMemo
 export async function updateStoreMemo(data: any) {
     const client = await clientPromise;
-    const collection = client.db('ultraman').collection('stores');
+    const collection = getMongoDb(client).collection('stores');
   
     // update storeMemo
     const result = await collection.updateOne(
@@ -250,7 +250,7 @@ export async function updateStoreMemo(data: any) {
 // getOneStoreMemo
 export async function getOneStoreMemo(data: any) {
     const client = await clientPromise;
-    const collection = client.db('ultraman').collection('stores');
+    const collection = getMongoDb(client).collection('stores');
   
     // get storeMemo
     const result = await collection.findOne(
@@ -282,7 +282,7 @@ export async function updateStoreName(data: any) {
 
 
     const client = await clientPromise;
-    const collection = client.db('ultraman').collection('stores');
+    const collection = getMongoDb(client).collection('stores');
   
     // update storeName
     const result = await collection.updateOne(
@@ -303,7 +303,7 @@ export async function updateStoreName(data: any) {
 // updateStoreDescription
 export async function updateStoreDescription(data: any) {
     const client = await clientPromise;
-    const collection = client.db('ultraman').collection('stores');
+    const collection = getMongoDb(client).collection('stores');
   
     // update storeDescription
     const result = await collection.updateOne(
@@ -337,7 +337,7 @@ export async function updateStoreAdminWalletAddress(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
   // update storecode
   const result = await collection.updateOne(
@@ -363,7 +363,7 @@ export async function updateStoreSellerWalletAddress(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
   // update storecode
   const result = await collection.updateOne(
@@ -389,7 +389,7 @@ export async function updateStoreSettlementWalletAddress(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
   // update storecode
   const result = await collection.updateOne(
@@ -415,7 +415,7 @@ export async function updateStoreSettlementFeeWalletAddress(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
   // update storecode
   const result = await collection.updateOne(
@@ -448,7 +448,7 @@ export async function updateStoreSettlementFeePercent(
 
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
   // update storecode
   const result = await collection.updateOne(
@@ -480,7 +480,7 @@ export async function updateStoreBankInfo(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
   const bankInfo = {
     bankName,
@@ -527,7 +527,7 @@ export async function updateStoreWithdrawalBankInfo(
   ///console.log('updateStoreWithdrawalBankInfo', storecode, withdrawalBankName, withdrawalAccountNumber, withdrawalAccountHolder, withdrawalBankCode);
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
   const withdrawalBankInfo = {
     bankName: withdrawalBankName,
@@ -581,7 +581,7 @@ export async function getAllStores(
 
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
   const query: any = {};
 
@@ -698,7 +698,7 @@ export async function getAllStoresForAgent(
   console.log('getAllStoresForAgent', limit, page, agentcode);
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
   const query: any = {};
 
@@ -774,7 +774,7 @@ export async function updatePayactionKeys(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
   // update storecode
   const result = await collection.updateOne(
@@ -798,7 +798,7 @@ export async function getPayactionKeys(
   }
 ): Promise<any> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
   // get storecode
   const result = await collection.findOne<any>(
     { storecode: storecode },
@@ -826,7 +826,7 @@ export async function updateBackgroundColor(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
   // update storecode
   const result = await collection.updateOne(
@@ -855,7 +855,7 @@ export async function updateAgentcode(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
   // update storecode
   const result = await collection.updateOne(
@@ -869,7 +869,7 @@ export async function updateAgentcode(
   // if totalStoreCount is not exist, set it to 0
 
 
-  const agentCollection = client.db('ultraman').collection('agents');
+  const agentCollection = getMongoDb(client).collection('agents');
   await agentCollection.updateOne(
     { agentcode: agentcode },
     { $inc: { totalStoreCount: 1 } },
@@ -902,7 +902,7 @@ export async function updateStoreAgentFeeWalletAddress(
   console.log('updateStoreAgentFeeWalletAddress', storecode, agentFeeWalletAddress);
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
   // update storecode
   const result = await collection.updateOne(
@@ -939,7 +939,7 @@ export async function updateStoreAgentFeePercent(
 
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('stores');
+  const collection = getMongoDb(client).collection('stores');
 
   // update storecode
   const result = await collection.updateOne(

@@ -1,8 +1,13 @@
 import { MongoClient } from 'mongodb';
 
 const uri = process.env.MONGODB_URI as string; // your mongodb connection string
+const databaseName = process.env.MONGODB_DB_NAME;
 
 const options = {};
+
+if (!databaseName) {
+  throw new Error('MONGODB_DB_NAME is not defined');
+}
 
 declare global {
   var _mongoClientPromise: Promise<MongoClient>;
@@ -30,6 +35,10 @@ class Singleton {
   }
 }
 const clientPromise = Singleton.instance;
+
+export function getMongoDb(client: MongoClient) {
+  return client.db(databaseName);
+}
 
 // Export a module-scoped MongoClient promise. By doing this in a
 // separate module, the client can be shared across functions.

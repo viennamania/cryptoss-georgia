@@ -4,7 +4,7 @@ import type { GetStaticProps, InferGetStaticPropsType } from 'next';
 
 
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useRef } from "react";
 
 
 
@@ -34,7 +34,11 @@ import {
 import { inAppWallet } from "thirdweb/wallets";
 
 
-import { getUserPhoneNumber } from "thirdweb/wallets/in-app";
+import {
+  getProfiles,
+  getUserEmail,
+  getUserPhoneNumber,
+} from "thirdweb/wallets/in-app";
 
 
 import Image from 'next/image';
@@ -125,6 +129,65 @@ const wallets = [
     hidePrivateKeyExport: true,
   }),
 ];
+
+const thirdwebClientId = process.env.NEXT_PUBLIC_TEMPLATE_CLIENT_ID || "";
+const smartAccountConnectConfig = {
+  sponsorGas: true,
+};
+
+function serializeThirdwebValue(
+  value: any,
+  depth = 0,
+  seen = new WeakSet<object>(),
+): any {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (value === null || typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  if (depth >= 4) {
+    return "[MaxDepth]";
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => serializeThirdwebValue(item, depth + 1, seen));
+  }
+
+  if (typeof value === "object") {
+    if (seen.has(value)) {
+      return "[Circular]";
+    }
+
+    seen.add(value);
+
+    const snapshot: Record<string, unknown> = {};
+
+    for (const [key, entry] of Object.entries(value)) {
+      if (typeof entry === "function" || entry === undefined) {
+        continue;
+      }
+
+      snapshot[key] = serializeThirdwebValue(entry, depth + 1, seen);
+    }
+
+    seen.delete(value);
+
+    return snapshot;
+  }
+
+  return String(value);
+}
 
 
 const recipientWalletAddress = "0x2111b6A49CbFf1C8Cc39d13250eF6bd4e1B59cF6";
@@ -284,6 +347,7 @@ export default function Index({ params }: any) {
 
     // returnUrl
     const paramReturnUrl = searchParams.get('returnUrl');
+    const queryString = searchParams.toString();
 
 
     useEffect(() => {
@@ -722,10 +786,12 @@ export default function Index({ params }: any) {
   );
   const [connectedPhoneNumber, setConnectedPhoneNumber] = useState('');
   const hasConnectedSmartWallet = Boolean(smartAccount?.address);
+  const walletLoginSyncRef = useRef('');
 
   useEffect(() => {
     if (!smartAccount?.address) {
       setConnectedPhoneNumber('');
+      walletLoginSyncRef.current = '';
       return;
     }
 
@@ -733,28 +799,127 @@ export default function Index({ params }: any) {
 
     let mounted = true;
 
-    const fetchConnectedPhoneNumber = async () => {
+    const syncThirdwebWalletLogin = async () => {
+      const [phoneNumberResult, emailResult, profilesResult] = await Promise.allSettled([
+        getUserPhoneNumber({ client }),
+        getUserEmail({ client }),
+        getProfiles({ client }),
+      ]);
+
+      const phoneNumber = phoneNumberResult.status === 'fulfilled'
+        ? phoneNumberResult.value || ''
+        : '';
+      const email = emailResult.status === 'fulfilled'
+        ? emailResult.value || ''
+        : '';
+      const linkedProfiles = profilesResult.status === 'fulfilled'
+        ? profilesResult.value || []
+        : [];
+
+      if (phoneNumberResult.status === 'rejected') {
+        console.error('Error fetching connected phone number:', phoneNumberResult.reason);
+      }
+
+      if (emailResult.status === 'rejected') {
+        console.error('Error fetching connected email:', emailResult.reason);
+      }
+
+      if (profilesResult.status === 'rejected') {
+        console.error('Error fetching thirdweb linked profiles:', profilesResult.reason);
+      }
+
+      if (mounted) {
+        setConnectedPhoneNumber(phoneNumber);
+      }
+
+      const walletChain = activeWallet?.getChain?.();
+      const activeWalletAddress = activeWallet?.getAccount?.()?.address || '';
+      const adminWalletAddress = activeWallet?.getAdminAccount?.()?.address || '';
+      const pageParams = Object.fromEntries(new URLSearchParams(queryString).entries());
+      const loginSignature = JSON.stringify({
+        storecode,
+        walletAddress: smartAccount.address,
+        phoneNumber,
+        queryString,
+      });
+
+      if (walletLoginSyncRef.current === loginSignature) {
+        return;
+      }
+
       try {
-        const phoneNumber = await getUserPhoneNumber({ client });
+        const response = await fetch('/api/user/logThirdwebWalletLogin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            lang: params?.lang || '',
+            pageClientId: params?.clientid || '',
+            thirdwebClientId,
+            storecode,
+            storeUser: storeUser || '',
+            walletAddress: smartAccount.address,
+            smartAccountAddress: smartAccount.address,
+            adminWalletAddress,
+            phoneNumber,
+            email,
+            walletId: activeWallet?.id || '',
+            connectionMethod: 'phone',
+            sponsorGas: smartAccountConnectConfig.sponsorGas,
+            defaultSmsCountryCode: 'KR',
+            pageParams,
+            currentUrl: typeof window !== 'undefined' ? window.location.href : '',
+            browser: {
+              language: typeof navigator !== 'undefined' ? navigator.language : '',
+              languages: typeof navigator !== 'undefined' ? navigator.languages : [],
+              platform: typeof navigator !== 'undefined' ? navigator.platform : '',
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : '',
+              screenWidth: typeof window !== 'undefined' ? window.screen.width : 0,
+              screenHeight: typeof window !== 'undefined' ? window.screen.height : 0,
+              viewportWidth: typeof window !== 'undefined' ? window.innerWidth : 0,
+              viewportHeight: typeof window !== 'undefined' ? window.innerHeight : 0,
+            },
+            thirdwebProfiles: serializeThirdwebValue(linkedProfiles),
+            thirdwebClientSnapshot: serializeThirdwebValue({
+              activeWalletId: activeWallet?.id || '',
+              activeWalletAddress,
+              adminWalletAddress,
+              connectedEmail: email,
+              connectedPhoneNumber: phoneNumber,
+              linkedProfileCount: linkedProfiles.length,
+              linkedProfiles,
+              sponsorGas: smartAccountConnectConfig.sponsorGas,
+              paymentChain,
+              walletChain,
+              walletConfig: activeWallet?.getConfig?.(),
+              hasAuthToken: Boolean(activeWallet?.getAuthToken?.()),
+              clientChain,
+              authStrategy: 'phone',
+              defaultSmsCountryCode: 'KR',
+              hidePrivateKeyExport: true,
+              smartAccountEnabled: true,
+            }),
+          }),
+        });
 
-        if (mounted) {
-          setConnectedPhoneNumber(phoneNumber || '');
+        if (!response.ok) {
+          throw new Error(`Failed to log thirdweb wallet login: ${response.status}`);
         }
+
+        walletLoginSyncRef.current = loginSignature;
       } catch (error) {
-        console.error('Error fetching connected phone number:', error);
-
-        if (mounted) {
-          setConnectedPhoneNumber('');
-        }
+        console.error('Error logging thirdweb wallet login:', error);
       }
     };
 
-    fetchConnectedPhoneNumber();
+    syncThirdwebWalletLogin();
 
     return () => {
       mounted = false;
     };
-  }, [smartAccount?.address]);
+  }, [activeWallet, clientChain, params?.clientid, params?.lang, paymentChain, queryString, smartAccount?.address, storeUser, storecode]);
 
 
 
@@ -2440,26 +2605,37 @@ export default function Index({ params }: any) {
               </div>
             </div>
 
-            <div className="mt-4 rounded-[20px] border border-white/80 bg-white/80 p-3 shadow-sm backdrop-blur-sm">
+            <div className="mt-4 rounded-[22px] border border-slate-200 bg-white p-3 shadow-[0_14px_32px_rgba(15,23,42,0.06)]">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
-                    Thirdweb Wallet
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-[#eef4ff] px-2.5 py-1 text-[10px] font-semibold tracking-[0.12em] text-[#2563eb]">
+                    <Image
+                      src="/icon-shield.png"
+                      alt="Shield"
+                      width={14}
+                      height={14}
+                      className="h-3.5 w-3.5"
+                    />
+                    ASSET SAFE
                   </div>
-                  <div className="mt-1.5 text-sm font-semibold text-slate-900">
-                    휴대폰 번호로 스마트 지갑을 연결하세요
+                  <div className="mt-2 text-[17px] font-semibold tracking-tight text-slate-900">
+                    고객 자산 보호를 위해
+                    <br />
+                    휴대폰으로 먼저 안전하게 연결해 주세요
                   </div>
-                  <div className="mt-1 text-[13px] leading-5 text-slate-600">
-                    휴대폰 인증만 노출되며, 기본 국가코드는 +82, 연결 후에는 smart account와 sponsorGas 방식으로 결제를 진행합니다.
+                  <div className="mt-1.5 text-[13px] leading-5 text-slate-600">
+                    이 기능은 고객님의 개인 자산을 보호하기 위해 필요합니다.
+                    본인 휴대폰으로 확인된 지갑에서만 결제가 진행되어,
+                    다른 사람의 지갑 사용이나 잘못된 결제를 줄일 수 있습니다.
                   </div>
                 </div>
 
                 <div className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
                   hasConnectedSmartWallet
                     ? 'bg-emerald-50 text-emerald-700'
-                    : 'bg-slate-100 text-slate-600'
+                    : 'bg-[#f1f5f9] text-slate-600'
                 }`}>
-                  {hasConnectedSmartWallet ? 'Connected' : 'Phone Only'}
+                  {hasConnectedSmartWallet ? '본인 확인 완료' : '휴대폰 확인'}
                 </div>
               </div>
 
@@ -2470,39 +2646,43 @@ export default function Index({ params }: any) {
                   chain={paymentChain}
                   accountAbstraction={{
                     chain: paymentChain,
-                    sponsorGas: true,
+                    sponsorGas: smartAccountConnectConfig.sponsorGas,
                   }}
                   theme="light"
                   locale="ko_KR"
                   connectButton={{
                     style: {
                       width: '100%',
-                      minHeight: '52px',
-                      borderRadius: '18px',
-                      backgroundColor: '#0f172a',
-                      color: '#f8fafc',
-                      fontSize: '14px',
+                      minHeight: '56px',
+                      borderRadius: '20px',
+                      backgroundColor: '#3182f6',
+                      color: '#ffffff',
+                      fontSize: '15px',
                       fontWeight: 600,
                       padding: '0 16px',
+                      boxShadow: '0 12px 24px rgba(49,130,246,0.28)',
+                      border: '1px solid rgba(37,99,235,0.16)',
                     },
-                    label: '휴대폰으로 지갑 연결',
+                    label: '휴대폰으로 안전하게 연결',
                   }}
                   detailsButton={{
                     style: {
                       width: '100%',
-                      minHeight: '52px',
-                      borderRadius: '18px',
-                      backgroundColor: '#0f172a',
-                      color: '#f8fafc',
-                      fontSize: '14px',
+                      minHeight: '56px',
+                      borderRadius: '20px',
+                      backgroundColor: '#3182f6',
+                      color: '#ffffff',
+                      fontSize: '15px',
                       fontWeight: 600,
                       padding: '0 16px',
+                      boxShadow: '0 12px 24px rgba(49,130,246,0.28)',
+                      border: '1px solid rgba(37,99,235,0.16)',
                     },
-                    connectedAccountName: connectedPhoneNumber || '휴대폰 인증 완료',
+                    connectedAccountName: connectedPhoneNumber || '본인 확인 완료',
                     connectedAccountAvatarUrl: storeInfo?.storeLogo || '/logo.png',
                   }}
                   connectModal={{
-                    title: '휴대폰 번호로 로그인',
+                    title: '휴대폰 본인 확인',
                     titleIcon: storeInfo?.storeLogo || '/logo.png',
                     size: 'compact',
                     showThirdwebBranding: false,
@@ -2510,25 +2690,30 @@ export default function Index({ params }: any) {
                 />
               </div>
 
-              <div className="mt-3 grid grid-cols-3 gap-2">
-                <div className="rounded-[16px] border border-slate-200 bg-[#faf8f4] px-2.5 py-2 text-center">
-                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">Auth</div>
-                  <div className="mt-1 text-xs font-semibold text-slate-900">Phone OTP</div>
+              <div className="mt-3 grid grid-cols-2 gap-2.5">
+                <div className="rounded-[18px] border border-slate-200 bg-[#fafcff] px-3 py-3">
+                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">보호 목적</div>
+                  <div className="mt-1 text-sm font-semibold text-slate-900">개인 자산 보호</div>
+                  <div className="mt-1 text-[12px] leading-5 text-slate-500">
+                    본인 확인된 지갑에서만 결제가 진행됩니다.
+                  </div>
                 </div>
-                <div className="rounded-[16px] border border-slate-200 bg-[#faf8f4] px-2.5 py-2 text-center">
-                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">Country</div>
-                  <div className="mt-1 text-xs font-semibold text-slate-900">+82 Default</div>
-                </div>
-                <div className="rounded-[16px] border border-slate-200 bg-[#faf8f4] px-2.5 py-2 text-center">
-                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">Mode</div>
-                  <div className="mt-1 text-xs font-semibold text-slate-900">Smart Gasless</div>
+                <div className="rounded-[18px] border border-slate-200 bg-[#fafcff] px-3 py-3">
+                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">확인 방식</div>
+                  <div className="mt-1 text-sm font-semibold text-slate-900">휴대폰 번호 확인</div>
+                  <div className="mt-1 text-[12px] leading-5 text-slate-500">
+                    기본 국가코드는 +82로 설정되어 있습니다.
+                  </div>
                 </div>
               </div>
 
               {hasConnectedSmartWallet && (
-                <div className="mt-3 rounded-[18px] border border-emerald-200 bg-emerald-50/70 px-3 py-2.5 text-sm text-slate-700">
+                <div className="mt-3 rounded-[18px] border border-emerald-200 bg-emerald-50/70 px-3 py-3 text-sm text-slate-700">
                   <div className="font-semibold text-slate-900">
-                    {connectedPhoneNumber || '휴대폰 인증 완료'}
+                    {connectedPhoneNumber || '휴대폰 본인 확인 완료'}
+                  </div>
+                  <div className="mt-1 text-[12px] leading-5 text-slate-600">
+                    안전한 결제를 위한 연결이 완료되었습니다.
                   </div>
                   <div className="mt-1 break-all text-[12px] text-slate-500">
                     {smartAccount?.address}

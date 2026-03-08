@@ -1,4 +1,4 @@
-import clientPromise from '../mongodb';
+import clientPromise, { getMongoDb } from '../mongodb';
 
 export interface UserProps {
   walletAddress: string;
@@ -16,7 +16,7 @@ export async function insertOne(data: any) {
 
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('opts');
+  const collection = getMongoDb(client).collection('opts');
 
 
 
@@ -83,7 +83,7 @@ export async function findOne(data: any) {
   }
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('opts');
+  const collection = getMongoDb(client).collection('opts');
 
   const result = await collection.findOne<UserProps>(
     {

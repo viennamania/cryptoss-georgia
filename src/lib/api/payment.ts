@@ -1,4 +1,4 @@
-import clientPromise from '../mongodb';
+import clientPromise, { getMongoDb } from '../mongodb';
 
 
 
@@ -197,7 +197,7 @@ export async function getAllPaymentsByStorecode(
 }): Promise<any[]> {
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('payments');
+  const collection = getMongoDb(client).collection('payments');
 
   // get all payments by storecode
   const payments = await collection

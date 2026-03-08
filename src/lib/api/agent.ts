@@ -1,5 +1,5 @@
 import { admin } from '@/thirdweb/10/0x0b2c639c533813f4aa9d7837caf62653d097ff85';
-import clientPromise from '../mongodb';
+import clientPromise, { getMongoDb } from '../mongodb';
 
 
 
@@ -21,7 +21,7 @@ export async function insertAgent(data: any) {
     return null;
   }
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('agents');
+  const collection = getMongoDb(client).collection('agents');
   // check agentcode is unique
   const agents = await collection.findOne<any>(
     {
@@ -100,7 +100,7 @@ export async function getAgentByAgentcode(
   
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('agents');
+  const collection = getMongoDb(client).collection('agents');
 
   const result = await collection.findOne<any>(
     { agentcode: agentcode }
@@ -133,7 +133,7 @@ getAgentByAgentcode result: {
 
 export async function updateAgentLogo(data: any) {
     const client = await clientPromise;
-    const collection = client.db('ultraman').collection('agents');
+    const collection = getMongoDb(client).collection('agents');
   
   
     // update agentLogo
@@ -155,7 +155,7 @@ export async function updateAgentLogo(data: any) {
 // updateAgentMemo
 export async function updateAgentMemo(data: any) {
     const client = await clientPromise;
-    const collection = client.db('ultraman').collection('agents');
+    const collection = getMongoDb(client).collection('agents');
   
     // update agentMemo
     const result = await collection.updateOne(
@@ -175,7 +175,7 @@ export async function updateAgentMemo(data: any) {
 // getOneAgentMemo
 export async function getOneAgentMemo(data: any) {
     const client = await clientPromise;
-    const collection = client.db('ultraman').collection('agents');
+    const collection = getMongoDb(client).collection('agents');
   
     // get agentMemo
     const result = await collection.findOne(
@@ -207,7 +207,7 @@ export async function updateAgentName(data: any) {
 
 
     const client = await clientPromise;
-    const collection = client.db('ultraman').collection('agents');
+    const collection = getMongoDb(client).collection('agents');
   
     // update agentName
     const result = await collection.updateOne(
@@ -228,7 +228,7 @@ export async function updateAgentName(data: any) {
 // updateAgentDescription
 export async function updateAgentDescription(data: any) {
     const client = await clientPromise;
-    const collection = client.db('ultraman').collection('agents');
+    const collection = getMongoDb(client).collection('agents');
   
     // update agentDescription
     const result = await collection.updateOne(
@@ -262,7 +262,7 @@ export async function updateAgentAdminWalletAddress(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('agents');
+  const collection = getMongoDb(client).collection('agents');
 
   // update agentcode
   const result = await collection.updateOne(
@@ -288,7 +288,7 @@ export async function updateAgentSellerWalletAddress(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('agents');
+  const collection = getMongoDb(client).collection('agents');
 
   // update agentcode
   const result = await collection.updateOne(
@@ -314,7 +314,7 @@ export async function updateAgentSettlementWalletAddress(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('agents');
+  const collection = getMongoDb(client).collection('agents');
 
   // update agentcode
   const result = await collection.updateOne(
@@ -340,7 +340,7 @@ export async function updateAgentSettlementFeeWalletAddress(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('agents');
+  const collection = getMongoDb(client).collection('agents');
 
   // update agentcode
   const result = await collection.updateOne(
@@ -373,7 +373,7 @@ export async function updateAgentSettlementFeePercent(
 
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('agents');
+  const collection = getMongoDb(client).collection('agents');
 
   // update agentcode
   const result = await collection.updateOne(
@@ -405,7 +405,7 @@ export async function updateAgentBankInfo(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('agents');
+  const collection = getMongoDb(client).collection('agents');
 
   const bankInfo = {
     bankName,
@@ -443,7 +443,7 @@ export async function getAllAgents(
 
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('agents');
+  const collection = getMongoDb(client).collection('agents');
 
   const query: any = {};
 
@@ -498,7 +498,7 @@ export async function updatePayactionKeys(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('agents');
+  const collection = getMongoDb(client).collection('agents');
 
   // update agentcode
   const result = await collection.updateOne(
@@ -526,7 +526,7 @@ export async function updateBackgroundColor(
   }
 ): Promise<boolean> {
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('agents');
+  const collection = getMongoDb(client).collection('agents');
 
   // update agentcode
   const result = await collection.updateOne(
@@ -554,7 +554,7 @@ export async function getAgentByStorecode(
   console.log('getAgentByStorecode storecode: ' + storecode);
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('agents');
+  const collection = getMongoDb(client).collection('agents');
 
   const result = await collection.findOne<any>(
     { storecode: storecode }
@@ -585,7 +585,7 @@ export async function updateAgentFeeWalletAddress(
   console.log('updateAgentFeeWalletAddress', agentcode, agentFeeWalletAddress);
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('agents');
+  const collection = getMongoDb(client).collection('agents');
 
   // update agentcode
   const result = await collection.updateOne(
@@ -615,7 +615,7 @@ export async function updateAgentFeePercent(
   console.log('updateAgentFeePercent', agentcode, agentFeePercent);
 
   const client = await clientPromise;
-  const collection = client.db('ultraman').collection('agents');
+  const collection = getMongoDb(client).collection('agents');
 
   // update agentcode
   const result = await collection.updateOne(
