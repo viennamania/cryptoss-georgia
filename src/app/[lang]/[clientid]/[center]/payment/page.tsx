@@ -119,8 +119,10 @@ interface SellOrder {
 const wallets = [
   inAppWallet({
     auth: {
-      options: ["phone", "email"],
+      options: ["phone"],
+      defaultSmsCountryCode: "KR",
     },
+    hidePrivateKeyExport: true,
   }),
 ];
 
@@ -321,6 +323,15 @@ export default function Index({ params }: any) {
 
     const [rate, setRate] = useState(1400);
     const [clientChain, setClientChain] = useState('ethereum');
+    const paymentChain = clientChain === 'ethereum'
+      ? ethereum
+      : clientChain === 'polygon'
+      ? polygon
+      : clientChain === 'arbitrum'
+      ? arbitrum
+      : clientChain === 'bsc'
+      ? bsc
+      : arbitrum;
 
 
 
@@ -365,13 +376,7 @@ export default function Index({ params }: any) {
       // the client you have created via `createThirdwebClient()`
       client,
       // the chain the contract is deployed on
-      
-      
-      chain: clientChain === 'ethereum' ? ethereum
-        : clientChain === 'polygon' ? polygon
-        : clientChain === 'arbitrum' ? arbitrum
-        : clientChain === 'bsc' ? bsc
-        : arbitrum,
+      chain: paymentChain,
     
     
     
@@ -715,6 +720,41 @@ export default function Index({ params }: any) {
   const [address, setAddress] = useState(
     smartAccount?.address || ""
   );
+  const [connectedPhoneNumber, setConnectedPhoneNumber] = useState('');
+  const hasConnectedSmartWallet = Boolean(smartAccount?.address);
+
+  useEffect(() => {
+    if (!smartAccount?.address) {
+      setConnectedPhoneNumber('');
+      return;
+    }
+
+    setAddress(smartAccount.address);
+
+    let mounted = true;
+
+    const fetchConnectedPhoneNumber = async () => {
+      try {
+        const phoneNumber = await getUserPhoneNumber({ client });
+
+        if (mounted) {
+          setConnectedPhoneNumber(phoneNumber || '');
+        }
+      } catch (error) {
+        console.error('Error fetching connected phone number:', error);
+
+        if (mounted) {
+          setConnectedPhoneNumber('');
+        }
+      }
+    };
+
+    fetchConnectedPhoneNumber();
+
+    return () => {
+      mounted = false;
+    };
+  }, [smartAccount?.address]);
 
 
 
@@ -1021,7 +1061,9 @@ export default function Index({ params }: any) {
 
       const walletAddress = data.walletAddress;
 
-      setAddress(walletAddress);
+      if (!smartAccount?.address && walletAddress) {
+        setAddress(walletAddress);
+      }
 
       setNickname(paramNickname);
 
@@ -1100,7 +1142,9 @@ export default function Index({ params }: any) {
             return;
           }
 
-          setAddress(data.walletAddress);
+          if (!smartAccount?.address && data.walletAddress) {
+            setAddress(data.walletAddress);
+          }
 
           setUser({
             storecode: storecode,
@@ -1166,7 +1210,7 @@ export default function Index({ params }: any) {
     } , [isMyWalletAddress,
       params.lang,
       params.clientid,
-      storecode, storeUser, depositName, depositBankName, depositBankAccountNumber, orderNumber, router]);
+      storecode, storeUser, depositName, depositBankName, depositBankAccountNumber, orderNumber, router, smartAccount?.address]);
     
 
 
@@ -1218,7 +1262,9 @@ export default function Index({ params }: any) {
 
               setSellOrders(data.result.orders);
 
-              setAddress(data.result.orders[0].buyer.walletAddress);
+              if (!smartAccount?.address && data.result.orders[0].buyer.walletAddress) {
+                setAddress(data.result.orders[0].buyer.walletAddress);
+              }
 
               ////setNickname(data.result.orders[0].buyer.nickname);
             }
@@ -1841,7 +1887,9 @@ export default function Index({ params }: any) {
       
       //window.location.reload();
 
-      setAddress(data.walletAddress);
+      if (!smartAccount?.address && data.walletAddress) {
+        setAddress(data.walletAddress);
+      }
 
 
     } else {
@@ -2390,6 +2438,103 @@ export default function Index({ params }: any) {
                   {loadingStoreInfo ? 'Loading' : 'Ready'}
                 </div>
               </div>
+            </div>
+
+            <div className="mt-4 rounded-[20px] border border-white/80 bg-white/80 p-3 shadow-sm backdrop-blur-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
+                    Thirdweb Wallet
+                  </div>
+                  <div className="mt-1.5 text-sm font-semibold text-slate-900">
+                    휴대폰 번호로 스마트 지갑을 연결하세요
+                  </div>
+                  <div className="mt-1 text-[13px] leading-5 text-slate-600">
+                    휴대폰 인증만 노출되며, 기본 국가코드는 +82, 연결 후에는 smart account와 sponsorGas 방식으로 결제를 진행합니다.
+                  </div>
+                </div>
+
+                <div className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                  hasConnectedSmartWallet
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'bg-slate-100 text-slate-600'
+                }`}>
+                  {hasConnectedSmartWallet ? 'Connected' : 'Phone Only'}
+                </div>
+              </div>
+
+              <div className="mt-3">
+                <ConnectButton
+                  client={client}
+                  wallets={wallets}
+                  chain={paymentChain}
+                  accountAbstraction={{
+                    chain: paymentChain,
+                    sponsorGas: true,
+                  }}
+                  theme="light"
+                  locale="ko_KR"
+                  connectButton={{
+                    style: {
+                      width: '100%',
+                      minHeight: '52px',
+                      borderRadius: '18px',
+                      backgroundColor: '#0f172a',
+                      color: '#f8fafc',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      padding: '0 16px',
+                    },
+                    label: '휴대폰으로 지갑 연결',
+                  }}
+                  detailsButton={{
+                    style: {
+                      width: '100%',
+                      minHeight: '52px',
+                      borderRadius: '18px',
+                      backgroundColor: '#0f172a',
+                      color: '#f8fafc',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      padding: '0 16px',
+                    },
+                    connectedAccountName: connectedPhoneNumber || '휴대폰 인증 완료',
+                    connectedAccountAvatarUrl: storeInfo?.storeLogo || '/logo.png',
+                  }}
+                  connectModal={{
+                    title: '휴대폰 번호로 로그인',
+                    titleIcon: storeInfo?.storeLogo || '/logo.png',
+                    size: 'compact',
+                    showThirdwebBranding: false,
+                  }}
+                />
+              </div>
+
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <div className="rounded-[16px] border border-slate-200 bg-[#faf8f4] px-2.5 py-2 text-center">
+                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">Auth</div>
+                  <div className="mt-1 text-xs font-semibold text-slate-900">Phone OTP</div>
+                </div>
+                <div className="rounded-[16px] border border-slate-200 bg-[#faf8f4] px-2.5 py-2 text-center">
+                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">Country</div>
+                  <div className="mt-1 text-xs font-semibold text-slate-900">+82 Default</div>
+                </div>
+                <div className="rounded-[16px] border border-slate-200 bg-[#faf8f4] px-2.5 py-2 text-center">
+                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">Mode</div>
+                  <div className="mt-1 text-xs font-semibold text-slate-900">Smart Gasless</div>
+                </div>
+              </div>
+
+              {hasConnectedSmartWallet && (
+                <div className="mt-3 rounded-[18px] border border-emerald-200 bg-emerald-50/70 px-3 py-2.5 text-sm text-slate-700">
+                  <div className="font-semibold text-slate-900">
+                    {connectedPhoneNumber || '휴대폰 인증 완료'}
+                  </div>
+                  <div className="mt-1 break-all text-[12px] text-slate-500">
+                    {smartAccount?.address}
+                  </div>
+                </div>
+              )}
             </div>
 
             {loadingStoreInfo ? (
