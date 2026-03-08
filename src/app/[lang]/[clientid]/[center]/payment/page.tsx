@@ -2605,8 +2605,8 @@ export default function Index({ params }: any) {
               </div>
             </div>
 
-            <div className="mt-4 rounded-[22px] border border-slate-200 bg-white p-3 shadow-[0_14px_32px_rgba(15,23,42,0.06)]">
-              <div className="flex items-start justify-between gap-3">
+            <div className="mt-3 rounded-[20px] border border-slate-200 bg-white p-2.5 shadow-[0_12px_28px_rgba(15,23,42,0.06)]">
+              <div className="flex items-start justify-between gap-2.5">
                 <div className="min-w-0 flex-1">
                   <div className="inline-flex items-center gap-1.5 rounded-full bg-[#eef4ff] px-2.5 py-1 text-[10px] font-semibold tracking-[0.12em] text-[#2563eb]">
                     <Image
@@ -2616,30 +2616,28 @@ export default function Index({ params }: any) {
                       height={14}
                       className="h-3.5 w-3.5"
                     />
-                    ASSET SAFE
+                    SAFE
                   </div>
-                  <div className="mt-2 text-[17px] font-semibold tracking-tight text-slate-900">
-                    고객 자산 보호를 위해
+                  <div className="mt-2 text-[16px] font-semibold tracking-tight text-slate-900">
+                    안전 결제를 위해
                     <br />
-                    휴대폰으로 먼저 안전하게 연결해 주세요
+                    휴대폰으로 연결해 주세요
                   </div>
-                  <div className="mt-1.5 text-[13px] leading-5 text-slate-600">
-                    이 기능은 고객님의 개인 자산을 보호하기 위해 필요합니다.
-                    본인 휴대폰으로 확인된 지갑에서만 결제가 진행되어,
-                    다른 사람의 지갑 사용이나 잘못된 결제를 줄일 수 있습니다.
+                  <div className="mt-1 text-[12px] leading-5 text-slate-600">
+                    고객 자산 보호를 위한 본인 확인 절차입니다.
                   </div>
                 </div>
 
-                <div className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                <div className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold ${
                   hasConnectedSmartWallet
                     ? 'bg-emerald-50 text-emerald-700'
                     : 'bg-[#f1f5f9] text-slate-600'
                 }`}>
-                  {hasConnectedSmartWallet ? '본인 확인 완료' : '휴대폰 확인'}
+                  {hasConnectedSmartWallet ? '확인 완료' : '휴대폰 확인'}
                 </div>
               </div>
 
-              <div className="mt-3">
+              <div className="mt-2.5">
                 <ConnectButton
                   client={client}
                   wallets={wallets}
@@ -2653,32 +2651,34 @@ export default function Index({ params }: any) {
                   connectButton={{
                     style: {
                       width: '100%',
-                      minHeight: '56px',
-                      borderRadius: '20px',
-                      backgroundColor: '#3182f6',
+                      minHeight: '52px',
+                      borderRadius: '18px',
+                      backgroundColor: '#1d4ed8',
                       color: '#ffffff',
-                      fontSize: '15px',
+                      fontSize: '14px',
                       fontWeight: 600,
-                      padding: '0 16px',
-                      boxShadow: '0 12px 24px rgba(49,130,246,0.28)',
-                      border: '1px solid rgba(37,99,235,0.16)',
+                      lineHeight: '1.2',
+                      padding: '0 14px',
+                      boxShadow: '0 10px 18px rgba(29,78,216,0.24)',
+                      border: '1px solid rgba(29,78,216,0.32)',
                     },
-                    label: '휴대폰으로 안전하게 연결',
+                    label: '휴대폰으로 연결',
                   }}
                   detailsButton={{
                     style: {
                       width: '100%',
-                      minHeight: '56px',
-                      borderRadius: '20px',
-                      backgroundColor: '#3182f6',
+                      minHeight: '52px',
+                      borderRadius: '18px',
+                      backgroundColor: '#1d4ed8',
                       color: '#ffffff',
-                      fontSize: '15px',
+                      fontSize: '14px',
                       fontWeight: 600,
-                      padding: '0 16px',
-                      boxShadow: '0 12px 24px rgba(49,130,246,0.28)',
-                      border: '1px solid rgba(37,99,235,0.16)',
+                      lineHeight: '1.2',
+                      padding: '0 14px',
+                      boxShadow: '0 10px 18px rgba(29,78,216,0.24)',
+                      border: '1px solid rgba(29,78,216,0.32)',
                     },
-                    connectedAccountName: connectedPhoneNumber || '본인 확인 완료',
+                    connectedAccountName: '휴대폰 확인 완료',
                     connectedAccountAvatarUrl: storeInfo?.storeLogo || '/logo.png',
                   }}
                   connectModal={{
@@ -2690,32 +2690,21 @@ export default function Index({ params }: any) {
                 />
               </div>
 
-              <div className="mt-3 grid grid-cols-2 gap-2.5">
-                <div className="rounded-[18px] border border-slate-200 bg-[#fafcff] px-3 py-3">
-                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">보호 목적</div>
-                  <div className="mt-1 text-sm font-semibold text-slate-900">개인 자산 보호</div>
-                  <div className="mt-1 text-[12px] leading-5 text-slate-500">
-                    본인 확인된 지갑에서만 결제가 진행됩니다.
-                  </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-medium text-slate-600">
+                  개인 자산 보호
                 </div>
-                <div className="rounded-[18px] border border-slate-200 bg-[#fafcff] px-3 py-3">
-                  <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">확인 방식</div>
-                  <div className="mt-1 text-sm font-semibold text-slate-900">휴대폰 번호 확인</div>
-                  <div className="mt-1 text-[12px] leading-5 text-slate-500">
-                    기본 국가코드는 +82로 설정되어 있습니다.
-                  </div>
+                <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-medium text-slate-600">
+                  +82 기본 설정
                 </div>
               </div>
 
               {hasConnectedSmartWallet && (
-                <div className="mt-3 rounded-[18px] border border-emerald-200 bg-emerald-50/70 px-3 py-3 text-sm text-slate-700">
+                <div className="mt-2 rounded-[16px] border border-emerald-200 bg-emerald-50/70 px-3 py-2.5 text-sm text-slate-700">
                   <div className="font-semibold text-slate-900">
                     {connectedPhoneNumber || '휴대폰 본인 확인 완료'}
                   </div>
-                  <div className="mt-1 text-[12px] leading-5 text-slate-600">
-                    안전한 결제를 위한 연결이 완료되었습니다.
-                  </div>
-                  <div className="mt-1 break-all text-[12px] text-slate-500">
+                  <div className="mt-1 break-all text-[11px] text-slate-500">
                     {smartAccount?.address}
                   </div>
                 </div>
