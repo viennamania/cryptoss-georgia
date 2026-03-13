@@ -4,7 +4,7 @@ import type { GetStaticProps, InferGetStaticPropsType } from 'next';
 
 
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, type CSSProperties } from "react";
 
 
 
@@ -67,6 +67,7 @@ import { add } from 'thirdweb/extensions/farcaster/keyGateway';
 
 import { useSearchParams } from "next/navigation";
 import { parse } from 'path';
+import { derivePaymentBrandTheme } from "@/lib/payment-branding";
 
 
 
@@ -1897,6 +1898,8 @@ export default function Index({ params }: any) {
 
 
   const [storeCodeNumber, setStoreCodeNumber] = useState('');
+  const [storeInfo, setStoreInfo] = useState<any>(null);
+  const [loadingStoreInfo, setLoadingStoreInfo] = useState(false);
 
   useEffect(() => {
 
@@ -1921,8 +1924,81 @@ export default function Index({ params }: any) {
 
   } , []);
 
+  useEffect(() => {
+    const fetchStoreInfo = async () => {
+      if (!storecode) {
+        setStoreInfo(null);
+        return;
+      }
+
+      setLoadingStoreInfo(true);
+
+      try {
+        const response = await fetch('/api/store/getOneStore', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            clientid: params.clientid,
+            storecode,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data?.result) {
+          setStoreInfo(data.result);
+        } else {
+          setStoreInfo(null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch store info', error);
+        setStoreInfo(null);
+      } finally {
+        setLoadingStoreInfo(false);
+      }
+    };
+
+    fetchStoreInfo();
+  }, [params.clientid, storecode]);
 
 
+
+
+  const providerName = storeInfo?.storeName || params.center || 'CrypToss';
+  const storeName = storeInfo?.storeName || storecode || providerName;
+  const storeDescription =
+    storeInfo?.storeDescription ||
+    '가맹점 결제 정보를 확인한 뒤 사전 등록된 입금자 정보로 안전하게 진행합니다.';
+  const brandTheme = derivePaymentBrandTheme({
+    backgroundColor: storeInfo?.backgroundColor,
+    seed: [params.clientid, storecode, storeName].filter(Boolean).join(':'),
+  });
+  const brandStyles = {
+    '--brand-base': brandTheme.base,
+    '--brand-base-contrast': brandTheme.baseContrast,
+    '--brand-base-dark': brandTheme.baseDark,
+    '--brand-page-bg': brandTheme.pageBg,
+    '--brand-page-bg-alt': brandTheme.pageBgAlt,
+    '--brand-page-tint': brandTheme.pageTint,
+    '--brand-page-mist': brandTheme.pageMist,
+    '--brand-glow-a': brandTheme.glowA,
+    '--brand-glow-b': brandTheme.glowB,
+    '--brand-shell-from': brandTheme.shellFrom,
+    '--brand-shell-via': brandTheme.shellVia,
+    '--brand-shell-to': brandTheme.shellTo,
+    '--brand-shell-border': brandTheme.shellBorder,
+    '--brand-card-bg': brandTheme.cardBg,
+    '--brand-card-muted': brandTheme.cardMutedBg,
+    '--brand-card-border': brandTheme.cardBorder,
+    '--brand-badge-bg': brandTheme.badgeBg,
+    '--brand-badge-text': brandTheme.badgeText,
+    '--brand-accent-soft': brandTheme.accentSoft,
+    '--brand-accent-text': brandTheme.accentText,
+    '--brand-button-shadow': brandTheme.buttonShadow,
+    '--brand-panel-shadow': brandTheme.panelShadow,
+  } as CSSProperties;
 
   if (orderId !== '0') {
       
@@ -1980,9 +2056,71 @@ export default function Index({ params }: any) {
     
     return (
 
-      <main className="p-4 pb-10 min-h-[100vh] flex items-start justify-center container
+      <main
+        className="merchant-branded-payment p-4 pb-10 min-h-[100vh] flex items-start justify-center container
         max-w-screen-xl
-        mx-auto">
+        mx-auto relative overflow-hidden"
+        style={brandStyles}
+      >
+
+        <style jsx global>{`
+          .merchant-branded-payment {
+            background:
+              radial-gradient(circle at top left, var(--brand-glow-a), transparent 24rem),
+              radial-gradient(circle at top right, var(--brand-glow-b), transparent 28rem),
+              linear-gradient(180deg, var(--brand-shell-from) 0%, var(--brand-shell-via) 38%, var(--brand-shell-to) 100%);
+          }
+
+          .merchant-branded-payment .bg-black {
+            background-color: var(--brand-shell-to) !important;
+          }
+
+          .merchant-branded-payment .bg-gray-900 {
+            background-color: var(--brand-base-dark) !important;
+          }
+
+          .merchant-branded-payment .bg-zinc-100 {
+            background-color: var(--brand-card-bg) !important;
+            color: var(--brand-accent-text) !important;
+          }
+
+          .merchant-branded-payment .bg-zinc-800 {
+            background-color: rgba(148, 163, 184, 0.18) !important;
+            color: rgba(255, 255, 255, 0.62) !important;
+          }
+
+          .merchant-branded-payment .bg-green-500,
+          .merchant-branded-payment .hover\\:bg-green-500:hover,
+          .merchant-branded-payment .hover\\:bg-green-600:hover {
+            background-color: var(--brand-base) !important;
+            color: var(--brand-base-contrast) !important;
+          }
+
+          .merchant-branded-payment .text-green-500 {
+            color: var(--brand-base) !important;
+          }
+
+          .merchant-branded-payment .border-zinc-100,
+          .merchant-branded-payment .border-gray-200,
+          .merchant-branded-payment .border-green-500,
+          .merchant-branded-payment .border-gray-900 {
+            border-color: var(--brand-card-border) !important;
+          }
+
+          .merchant-branded-payment .text-zinc-400 {
+            color: rgba(226, 232, 240, 0.72) !important;
+          }
+
+          .merchant-branded-payment .hover\\:bg-zinc-200:hover {
+            background-color: var(--brand-accent-soft) !important;
+          }
+
+          .merchant-branded-payment .hover\\:text-black:hover {
+            color: var(--brand-base-contrast) !important;
+          }
+        `}</style>
+
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-[var(--brand-page-tint)]/20 via-transparent to-transparent" />
 
         <div className="py-0  w-full">
   
@@ -1991,6 +2129,68 @@ export default function Index({ params }: any) {
           */}
 
           <AppBarComponent />
+
+          <section
+            className="mt-4 overflow-hidden rounded-[28px] border px-4 py-4 shadow-[0_20px_60px_rgba(15,23,42,0.2)]"
+            style={{
+              borderColor: 'var(--brand-shell-border)',
+              background: 'linear-gradient(135deg, var(--brand-shell-from), var(--brand-shell-via), var(--brand-shell-to))',
+              boxShadow: `0 20px 60px ${brandTheme.panelShadow}`,
+            }}
+          >
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div className="flex min-w-0 items-center gap-3">
+                <Image
+                  src={storeInfo?.storeLogo || '/logo.png'}
+                  alt="Store Logo"
+                  width={56}
+                  height={56}
+                  className="h-14 w-14 rounded-[20px] border bg-white object-cover shadow-sm"
+                  style={{ borderColor: 'var(--brand-card-border)' }}
+                />
+                <div className="min-w-0">
+                  <div className="flex flex-wrap gap-2">
+                    <span
+                      className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]"
+                      style={{
+                        backgroundColor: 'var(--brand-badge-bg)',
+                        color: 'var(--brand-badge-text)',
+                      }}
+                    >
+                      Merchant Payment
+                    </span>
+                    <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-medium text-white/70">
+                      {loadingStoreInfo ? 'Loading merchant' : storecode || params.center}
+                    </span>
+                  </div>
+                  <h1 className="mt-2 text-xl font-semibold tracking-tight text-white">
+                    {storeName}
+                  </h1>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-white/72">
+                    {storeDescription}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                className="rounded-[20px] border px-3 py-2.5 text-right"
+                style={{
+                  borderColor: 'var(--brand-shell-border)',
+                  backgroundColor: 'rgba(255,255,255,0.08)',
+                }}
+              >
+                <div className="text-[10px] uppercase tracking-[0.16em] text-white/60">
+                  Brand Tone
+                </div>
+                <div className="mt-1 text-sm font-semibold text-white">
+                  {storeInfo?.backgroundColor || brandTheme.base}
+                </div>
+                <div className="mt-1 text-[11px] text-white/60">
+                  {providerName}
+                </div>
+              </div>
+            </div>
+          </section>
   
           <div className="hidden mt-4 w-full flex-row gap-5 justify-center mb-10">
               {/* history back */}
@@ -4172,5 +4372,3 @@ const TradeDetail = (
       </div>
     );
   };
-
-

@@ -4,7 +4,7 @@ import type { GetStaticProps, InferGetStaticPropsType } from 'next';
 
 
 
-import { useState, useEffect, use, useRef } from "react";
+import { useState, useEffect, use, useRef, type CSSProperties } from "react";
 
 
 
@@ -76,6 +76,7 @@ import { add } from 'thirdweb/extensions/farcaster/keyGateway';
 
 import { useSearchParams } from "next/navigation";
 import { parse } from 'path';
+import { derivePaymentBrandTheme } from "@/lib/payment-branding";
 
 
 
@@ -2741,6 +2742,40 @@ export default function Index({ params }: any) {
   }
   */
 
+  const providerName = clientInfo?.clientInfo?.name || storeInfo?.storeName || 'CrypToss';
+  const storeName = storeInfo?.storeName || providerName;
+  const storeDescription =
+    storeInfo?.storeDescription ||
+    '실시간 시세와 사전 등록된 입금자 정보로 안전하게 결제를 진행합니다.';
+  const brandTheme = derivePaymentBrandTheme({
+    backgroundColor: storeInfo?.backgroundColor,
+    seed: [params.clientid, storecode, storeName].filter(Boolean).join(':'),
+  });
+  const brandStyles = {
+    '--brand-base': brandTheme.base,
+    '--brand-base-contrast': brandTheme.baseContrast,
+    '--brand-base-dark': brandTheme.baseDark,
+    '--brand-page-bg': brandTheme.pageBg,
+    '--brand-page-bg-alt': brandTheme.pageBgAlt,
+    '--brand-page-tint': brandTheme.pageTint,
+    '--brand-page-mist': brandTheme.pageMist,
+    '--brand-glow-a': brandTheme.glowA,
+    '--brand-glow-b': brandTheme.glowB,
+    '--brand-shell-from': brandTheme.shellFrom,
+    '--brand-shell-via': brandTheme.shellVia,
+    '--brand-shell-to': brandTheme.shellTo,
+    '--brand-shell-border': brandTheme.shellBorder,
+    '--brand-card-bg': brandTheme.cardBg,
+    '--brand-card-muted': brandTheme.cardMutedBg,
+    '--brand-card-border': brandTheme.cardBorder,
+    '--brand-badge-bg': brandTheme.badgeBg,
+    '--brand-badge-text': brandTheme.badgeText,
+    '--brand-accent-soft': brandTheme.accentSoft,
+    '--brand-accent-text': brandTheme.accentText,
+    '--brand-button-shadow': brandTheme.buttonShadow,
+    '--brand-panel-shadow': brandTheme.panelShadow,
+  } as CSSProperties;
+
 
   if (!loadingStoreInfo && !storeInfo) {
     return (
@@ -2765,22 +2800,44 @@ export default function Index({ params }: any) {
   {/* banner-under-maintenance.png */}
   if (!loadingStoreInfo && storeInfo && !liveOnAndOff) {
     return (
-      <div className="w-full h-screen flex items-center justify-center
+      <div
+        className="w-full h-screen flex items-center justify-center
       flex-col
-      bg-zinc-50
-      text-zinc-500
-      ">
+      text-zinc-600
+      "
+        style={{ backgroundColor: brandTheme.pageBg }}
+      >
         {/* storeInfo.storeName */}
-        <div className='flex flex-col items-center justify-center gap-2 mb-4'>
+        <div
+          className='flex flex-col items-center justify-center gap-2 mb-4 rounded-[24px] border px-6 py-5 shadow-sm'
+          style={{
+            backgroundColor: brandTheme.cardBg,
+            borderColor: brandTheme.cardBorder,
+            boxShadow: `0 18px 48px ${brandTheme.panelShadow}`,
+          }}
+        >
           <Image
             src={storeInfo?.storeLogo || '/logo.png'}
             alt="Store Logo"
             width={64}
             height={64}
-            className='rounded-full w-16 h-16'
+            className='rounded-full w-16 h-16 border bg-white object-cover'
+            style={{ borderColor: brandTheme.cardBorder }}
           />
-          <span className="text-lg text-zinc-500 font-semibold">
-            {storeInfo?.storeName}
+          <span
+            className="text-lg font-semibold"
+            style={{ color: brandTheme.baseDark }}
+          >
+            {storeName}
+          </span>
+          <span
+            className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]"
+            style={{
+              backgroundColor: brandTheme.badgeBg,
+              color: brandTheme.badgeText,
+            }}
+          >
+            Merchant Maintenance
           </span>
         </div>
         <h1 className="text-2xl font-bold mb-4">시스템 점검중</h1>
@@ -2817,22 +2874,27 @@ export default function Index({ params }: any) {
       ? `${depositBankAccountNumber.slice(0, 4)}****${depositBankAccountNumber.slice(-4)}`
       : depositBankAccountNumber
     : '사전 등록 계좌 없음';
-  const providerName = clientInfo?.clientInfo?.name || storeInfo?.storeName || 'CrypToss';
-  const storeName = storeInfo?.storeName || providerName;
-  const storeDescription =
-    storeInfo?.storeDescription ||
-    '실시간 시세와 사전 등록된 입금자 정보로 안전하게 결제를 진행합니다.';
 
 
 
   return (
-      <main className="relative min-h-[100vh] overflow-hidden bg-[#f6f3ec] text-slate-900">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-[#e9eef4] via-[#f8f5ef] to-transparent" />
-        <div className="pointer-events-none absolute -left-16 top-24 h-48 w-48 rounded-full bg-[#dbe4ec] opacity-80 blur-3xl" />
-        <div className="pointer-events-none absolute -right-16 top-40 h-56 w-56 rounded-full bg-[#efe1cc] opacity-80 blur-3xl" />
+      <main
+        className="relative min-h-[100vh] overflow-hidden bg-[var(--brand-page-bg)] text-slate-900"
+        style={brandStyles}
+      >
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-[var(--brand-page-tint)] via-[var(--brand-page-mist)] to-transparent" />
+        <div className="pointer-events-none absolute -left-16 top-24 h-48 w-48 rounded-full bg-[var(--brand-glow-a)] opacity-90 blur-3xl" />
+        <div className="pointer-events-none absolute -right-16 top-40 h-56 w-56 rounded-full bg-[var(--brand-glow-b)] opacity-90 blur-3xl" />
 
         <div className="relative z-10 mx-auto flex w-full max-w-screen-sm flex-col gap-3 px-3 pb-8 pt-3 sm:px-4">
-          <section className="overflow-hidden rounded-[24px] border border-white/80 bg-gradient-to-br from-white via-[#faf7f1] to-[#eef3f7] p-4 shadow-[0_18px_56px_rgba(15,23,42,0.07)]">
+          <section
+            className="overflow-hidden rounded-[24px] border p-4"
+            style={{
+              borderColor: 'var(--brand-shell-border)',
+              background: 'linear-gradient(135deg, var(--brand-page-mist), var(--brand-page-tint), var(--brand-page-bg-alt))',
+              boxShadow: `0 18px 56px ${brandTheme.panelShadow}`,
+            }}
+          >
             <div className="flex items-start justify-between gap-2.5">
               <div className="flex min-w-0 items-center gap-2.5">
                 <Image
@@ -2840,10 +2902,18 @@ export default function Index({ params }: any) {
                   alt="Store Logo"
                   width={48}
                   height={48}
-                  className="h-12 w-12 rounded-[18px] border border-white bg-white object-cover shadow-sm"
+                  className="h-12 w-12 rounded-[18px] border bg-white object-cover shadow-sm"
+                  style={{ borderColor: 'var(--brand-card-border)' }}
                 />
                 <div className="min-w-0">
-                  <div className="inline-flex rounded-full border border-slate-200 bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  <div
+                    className="inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]"
+                    style={{
+                      borderColor: 'var(--brand-card-border)',
+                      backgroundColor: 'var(--brand-card-bg)',
+                      color: 'var(--brand-accent-text)',
+                    }}
+                  >
                     Secure Payment
                   </div>
                   <h1 className="mt-1.5 text-lg font-semibold tracking-tight text-slate-900">
@@ -2852,10 +2922,30 @@ export default function Index({ params }: any) {
                   <p className="mt-0.5 text-[13px] leading-5 text-slate-600">
                     {storeDescription}
                   </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span
+                      className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]"
+                      style={{
+                        backgroundColor: 'var(--brand-badge-bg)',
+                        color: 'var(--brand-badge-text)',
+                      }}
+                    >
+                      {storecode || params.center}
+                    </span>
+                    <span className="rounded-full border border-white/70 bg-white/80 px-2.5 py-1 text-[10px] font-medium text-slate-500">
+                      {providerName}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div className="shrink-0 rounded-[18px] border border-white/80 bg-white/80 px-2.5 py-2 text-right shadow-sm">
+              <div
+                className="shrink-0 rounded-[18px] border px-2.5 py-2 text-right shadow-sm"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-bg)',
+                }}
+              >
                 <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
                   Status
                 </div>
@@ -2865,10 +2955,23 @@ export default function Index({ params }: any) {
               </div>
             </div>
 
-            <div className="mt-3 rounded-[20px] border border-slate-200 bg-white p-2.5 shadow-[0_12px_28px_rgba(15,23,42,0.06)]">
+            <div
+              className="mt-3 rounded-[20px] border p-2.5"
+              style={{
+                borderColor: 'var(--brand-card-border)',
+                backgroundColor: 'var(--brand-card-bg)',
+                boxShadow: `0 12px 28px ${brandTheme.panelShadow}`,
+              }}
+            >
               <div className="flex items-start justify-between gap-2.5">
                 <div className="min-w-0 flex-1">
-                  <div className="inline-flex items-center gap-1.5 rounded-full bg-[#eef4ff] px-2.5 py-1 text-[10px] font-semibold tracking-[0.12em] text-[#2563eb]">
+                  <div
+                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.12em]"
+                    style={{
+                      backgroundColor: 'var(--brand-badge-bg)',
+                      color: 'var(--brand-badge-text)',
+                    }}
+                  >
                     <Image
                       src="/icon-shield.png"
                       alt="Shield"
@@ -2888,11 +2991,17 @@ export default function Index({ params }: any) {
                   </div>
                 </div>
 
-                <div className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold ${
-                  hasConnectedSmartWallet
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'bg-[#f1f5f9] text-slate-600'
-                }`}>
+                <div
+                  className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold ${
+                    hasConnectedSmartWallet ? '' : 'bg-[#f1f5f9] text-slate-600'
+                  }`}
+                  style={hasConnectedSmartWallet
+                    ? {
+                        backgroundColor: 'var(--brand-badge-bg)',
+                        color: 'var(--brand-badge-text)',
+                      }
+                    : undefined}
+                >
                   {hasConnectedSmartWallet ? '확인 완료' : '휴대폰 확인'}
                 </div>
               </div>
@@ -2920,7 +3029,13 @@ export default function Index({ params }: any) {
                   <button
                     type="button"
                     onClick={openPhoneAuthModal}
-                    className="flex min-h-[52px] w-full items-center justify-center rounded-[18px] border border-[#1d4ed8]/30 bg-[#1d4ed8] px-4 text-[14px] font-semibold text-white shadow-[0_10px_18px_rgba(29,78,216,0.24)] transition hover:bg-[#1e40af]"
+                    className="flex min-h-[52px] w-full items-center justify-center rounded-[18px] border px-4 text-[14px] font-semibold transition hover:brightness-95"
+                    style={{
+                      borderColor: 'var(--brand-shell-border)',
+                      backgroundColor: 'var(--brand-base)',
+                      color: 'var(--brand-base-contrast)',
+                      boxShadow: `0 10px 18px ${brandTheme.buttonShadow}`,
+                    }}
                   >
                     휴대폰으로 연결
                   </button>
@@ -2928,16 +3043,36 @@ export default function Index({ params }: any) {
               </div>
 
               <div className="mt-2 flex flex-wrap gap-2">
-                <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-medium text-slate-600">
+                <div
+                  className="rounded-full border px-3 py-1.5 text-[11px] font-medium"
+                  style={{
+                    borderColor: 'var(--brand-card-border)',
+                    backgroundColor: 'var(--brand-card-muted)',
+                    color: 'var(--brand-accent-text)',
+                  }}
+                >
                   개인 자산 보호
                 </div>
-                <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-medium text-slate-600">
+                <div
+                  className="rounded-full border px-3 py-1.5 text-[11px] font-medium"
+                  style={{
+                    borderColor: 'var(--brand-card-border)',
+                    backgroundColor: 'var(--brand-card-muted)',
+                    color: 'var(--brand-accent-text)',
+                  }}
+                >
                   +82 기본 설정
                 </div>
               </div>
 
               {hasConnectedSmartWallet && (
-                <div className="mt-2 rounded-[16px] border border-emerald-200 bg-emerald-50/70 px-3 py-2.5 text-sm text-slate-700">
+                <div
+                  className="mt-2 rounded-[16px] border px-3 py-2.5 text-sm text-slate-700"
+                  style={{
+                    borderColor: 'var(--brand-card-border)',
+                    backgroundColor: 'var(--brand-accent-soft)',
+                  }}
+                >
                   <div className="font-semibold text-slate-900">
                     {connectedPhoneNumber || '휴대폰 본인 확인 완료'}
                   </div>
@@ -2949,7 +3084,13 @@ export default function Index({ params }: any) {
             </div>
 
             {loadingStoreInfo ? (
-              <div className="mt-3 flex items-center gap-2.5 rounded-[18px] border border-dashed border-slate-200 bg-white/70 px-3 py-3 text-sm text-slate-500">
+              <div
+                className="mt-3 flex items-center gap-2.5 rounded-[18px] border border-dashed px-3 py-3 text-sm text-slate-500"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-bg)',
+                }}
+              >
                 <Image
                   src="/loading.png"
                   alt="Loading"
@@ -2961,7 +3102,13 @@ export default function Index({ params }: any) {
               </div>
             ) : (
               <div className="mt-4 grid grid-cols-2 gap-2.5">
-                <div className="rounded-[18px] border border-white/80 bg-white/75 p-3 shadow-sm">
+                <div
+                  className="rounded-[18px] border p-3 shadow-sm"
+                  style={{
+                    borderColor: 'var(--brand-card-border)',
+                    backgroundColor: 'var(--brand-card-bg)',
+                  }}
+                >
                   <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">
                     Estimated
                   </div>
@@ -2972,7 +3119,13 @@ export default function Index({ params }: any) {
                     <span className="pb-0.5 text-[11px] font-medium text-slate-500">USDT</span>
                   </div>
                 </div>
-                <div className="rounded-[18px] border border-white/80 bg-white/75 p-3 shadow-sm">
+                <div
+                  className="rounded-[18px] border p-3 shadow-sm"
+                  style={{
+                    borderColor: 'var(--brand-card-border)',
+                    backgroundColor: 'var(--brand-card-bg)',
+                  }}
+                >
                   <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">
                     Rate
                   </div>
@@ -2981,7 +3134,13 @@ export default function Index({ params }: any) {
                   </div>
                   <div className="mt-0.5 text-[11px] text-slate-500">KRW / USDT</div>
                 </div>
-                <div className="rounded-[18px] border border-white/80 bg-white/75 p-3 shadow-sm">
+                <div
+                  className="rounded-[18px] border p-3 shadow-sm"
+                  style={{
+                    borderColor: 'var(--brand-card-border)',
+                    backgroundColor: 'var(--brand-card-bg)',
+                  }}
+                >
                   <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">
                     Limit
                   </div>
@@ -2990,7 +3149,13 @@ export default function Index({ params }: any) {
                   </div>
                   <div className="mt-0.5 text-[11px] text-slate-500">1회 결제 최대 금액</div>
                 </div>
-                <div className="rounded-[18px] border border-white/80 bg-white/75 p-3 shadow-sm">
+                <div
+                  className="rounded-[18px] border p-3 shadow-sm"
+                  style={{
+                    borderColor: 'var(--brand-card-border)',
+                    backgroundColor: 'var(--brand-card-bg)',
+                  }}
+                >
                   <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">
                     Wallet
                   </div>
@@ -3003,7 +3168,13 @@ export default function Index({ params }: any) {
             )}
 
             {!loadingUser && user && (
-              <div className="mt-4 rounded-[20px] border border-white/80 bg-white/80 p-3 shadow-sm backdrop-blur-sm">
+              <div
+                className="mt-4 rounded-[20px] border p-3 shadow-sm backdrop-blur-sm"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-bg)',
+                }}
+              >
                 <div className="flex items-start justify-between gap-2.5">
                   <div>
                     <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
@@ -3027,21 +3198,35 @@ export default function Index({ params }: any) {
                     </button>
                   </div>
 
-                  <div className="rounded-[18px] bg-slate-900 px-3 py-2.5 text-right text-white shadow-[0_12px_32px_rgba(15,23,42,0.16)]">
-                    <div className="text-[10px] uppercase tracking-[0.14em] text-slate-300">
+                  <div
+                    className="rounded-[18px] px-3 py-2.5 text-right shadow-[0_12px_32px_rgba(15,23,42,0.16)]"
+                    style={{
+                      background: 'linear-gradient(135deg, var(--brand-shell-from), var(--brand-shell-via), var(--brand-shell-to))',
+                      color: 'var(--brand-base-contrast)',
+                      boxShadow: `0 12px 32px ${brandTheme.buttonShadow}`,
+                    }}
+                  >
+                    <div className="text-[10px] uppercase tracking-[0.14em] text-white/70">
                       Balance
                     </div>
                     <div className="mt-0.5 text-xl font-semibold tracking-tight">
                       {formattedBalance}
                     </div>
-                    <div className="text-[11px] text-slate-300">USDT</div>
+                    <div className="text-[11px] text-white/70">USDT</div>
                   </div>
                 </div>
               </div>
             )}
           </section>
 
-          <section className="overflow-hidden rounded-[20px] border border-slate-200/80 bg-white/80 px-3 py-2.5 shadow-[0_14px_36px_rgba(15,23,42,0.05)] backdrop-blur-sm">
+          <section
+            className="overflow-hidden rounded-[20px] border px-3 py-2.5 backdrop-blur-sm"
+            style={{
+              borderColor: 'var(--brand-card-border)',
+              backgroundColor: 'var(--brand-card-bg)',
+              boxShadow: `0 14px 36px ${brandTheme.panelShadow}`,
+            }}
+          >
             <div className="mb-2.5 flex items-center justify-between gap-2">
               <div>
                 <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
@@ -3053,7 +3238,12 @@ export default function Index({ params }: any) {
                 href="https://upbit.com/exchange?code=CRIX.UPBIT.KRW-USDT"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600"
+                className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-muted)',
+                  color: 'var(--brand-accent-text)',
+                }}
               >
                 <Image
                   src="/logo-upbit.jpg"
@@ -3076,7 +3266,14 @@ export default function Index({ params }: any) {
             ></div>
           </section>
 
-          <section className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white/90 p-3 shadow-[0_16px_48px_rgba(15,23,42,0.06)] backdrop-blur-sm sm:p-4">
+          <section
+            className="overflow-hidden rounded-[24px] border p-3 backdrop-blur-sm sm:p-4"
+            style={{
+              borderColor: 'var(--brand-card-border)',
+              backgroundColor: 'var(--brand-card-bg)',
+              boxShadow: `0 16px 48px ${brandTheme.panelShadow}`,
+            }}
+          >
 
   
 
@@ -3085,8 +3282,17 @@ export default function Index({ params }: any) {
 
 
             {!address && (
-              <div className="mb-3 rounded-[18px] border border-amber-200 bg-[#fff8eb] px-3 py-3 text-sm leading-5 text-slate-600">
-                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-700">
+              <div
+                className="mb-3 rounded-[18px] border px-3 py-3 text-sm leading-5 text-slate-600"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-muted)',
+                }}
+              >
+                <div
+                  className="text-xs font-semibold uppercase tracking-[0.16em]"
+                  style={{ color: 'var(--brand-badge-text)' }}
+                >
                   Wallet Notice
                 </div>
                 <div className="mt-2 font-medium text-slate-800">
@@ -3099,7 +3305,13 @@ export default function Index({ params }: any) {
             )}
 
             {loadingUser && (
-              <div className="rounded-[20px] border border-dashed border-slate-200 bg-[#faf8f4] px-3 py-4 text-sm text-slate-500">
+              <div
+                className="rounded-[20px] border border-dashed px-3 py-4 text-sm text-slate-500"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-muted)',
+                }}
+              >
                 <div className="flex items-center gap-2">
                   <Image
                     src="/loading.png"
@@ -3118,8 +3330,17 @@ export default function Index({ params }: any) {
                 {orderId === '0' && (
                   <div className="flex w-full flex-col gap-3">
                     {isOrderInProgress ? (
-                      <div className="rounded-[20px] border border-sky-200 bg-sky-50 px-3 py-4">
-                        <div className="text-[10px] uppercase tracking-[0.14em] text-sky-700">
+                      <div
+                        className="rounded-[20px] border px-3 py-4"
+                        style={{
+                          borderColor: 'var(--brand-card-border)',
+                          backgroundColor: 'var(--brand-accent-soft)',
+                        }}
+                      >
+                        <div
+                          className="text-[10px] uppercase tracking-[0.14em]"
+                          style={{ color: 'var(--brand-badge-text)' }}
+                        >
                           Active Order
                         </div>
                         <div className="mt-1.5 text-base font-semibold text-slate-900">
@@ -3135,10 +3356,17 @@ export default function Index({ params }: any) {
                       <>
                         <div className="grid gap-3 md:grid-cols-[1.05fr_0.95fr]">
                           <div className="flex flex-col gap-3">
-                            <div className="rounded-[22px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 p-4 text-white shadow-[0_18px_40px_rgba(15,23,42,0.2)]">
+                            <div
+                              className="rounded-[22px] p-4 shadow-[0_18px_40px_rgba(15,23,42,0.2)]"
+                              style={{
+                                background: 'linear-gradient(135deg, var(--brand-shell-from), var(--brand-shell-via), var(--brand-shell-to))',
+                                color: 'var(--brand-base-contrast)',
+                                boxShadow: `0 18px 40px ${brandTheme.buttonShadow}`,
+                              }}
+                            >
                               <div className="flex items-start justify-between gap-2.5">
                                 <div>
-                                  <div className="text-[10px] uppercase tracking-[0.16em] text-slate-300">
+                                  <div className="text-[10px] uppercase tracking-[0.16em] text-white/70">
                                     Payment Preview
                                   </div>
                                   <h2 className="mt-1.5 text-base font-semibold">실시간 결제 금액</h2>
@@ -3152,10 +3380,10 @@ export default function Index({ params }: any) {
                                 <div className="text-3xl font-semibold tracking-tight">
                                   {selectedKrwAmount?.toLocaleString('ko-KR')}
                                 </div>
-                                <div className="pb-0.5 text-xs text-slate-300">KRW</div>
+                                <div className="pb-0.5 text-xs text-white/70">KRW</div>
                               </div>
 
-                              <div className="mt-2.5 flex items-center gap-2 text-[13px] text-slate-200">
+                              <div className="mt-2.5 flex items-center gap-2 text-[13px] text-white/80">
                                 <Image
                                   src="/logo-tether.png"
                                   alt="USDT"
@@ -3202,7 +3430,13 @@ export default function Index({ params }: any) {
                               </div>
                             </div>
 
-                            <div className="rounded-[22px] border border-slate-200 bg-[#fcfaf6] p-3 shadow-sm">
+                            <div
+                              className="rounded-[22px] border p-3 shadow-sm"
+                              style={{
+                                borderColor: 'var(--brand-card-border)',
+                                backgroundColor: 'var(--brand-card-muted)',
+                              }}
+                            >
                               <div className="flex items-start justify-between gap-2.5">
                                 <div>
                                   <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
@@ -3219,7 +3453,12 @@ export default function Index({ params }: any) {
                                 {(!depositAmountKrw || depositAmountKrw === "0") && (
                                   <button
                                     onClick={() => setSelectedKrwAmount(0)}
-                                    className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                                    className="rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-sm transition hover:brightness-95"
+                                    style={{
+                                      borderColor: 'var(--brand-card-border)',
+                                      backgroundColor: 'var(--brand-card-bg)',
+                                      color: 'var(--brand-accent-text)',
+                                    }}
                                     disabled={loadingStoreInfo}
                                   >
                                     초기화
@@ -3245,15 +3484,29 @@ export default function Index({ params }: any) {
 
                                           setSelectedKrwAmount((prev) => prev + amount);
                                         }}
-                                        className={`
-                                          flex min-h-[64px] flex-col items-start justify-between rounded-[18px] border px-3 py-2.5 text-left transition
-                                          ${loadingStoreInfo || exceedsLimit
-                                            ? 'border-slate-200 bg-slate-100 text-slate-400'
-                                            : 'border-slate-200 bg-white text-slate-900 shadow-sm hover:border-slate-400 hover:shadow-md active:translate-y-px'}
-                                        `}
+                                        className="flex min-h-[64px] flex-col items-start justify-between rounded-[18px] border px-3 py-2.5 text-left transition active:translate-y-px"
+                                        style={loadingStoreInfo || exceedsLimit
+                                          ? {
+                                              borderColor: 'var(--brand-card-border)',
+                                              backgroundColor: '#E2E8F0',
+                                              color: '#94A3B8',
+                                            }
+                                          : {
+                                              borderColor: 'var(--brand-card-border)',
+                                              backgroundColor: 'var(--brand-card-bg)',
+                                              color: '#0F172A',
+                                              boxShadow: `0 10px 22px ${brandTheme.panelShadow}`,
+                                            }}
                                         disabled={loadingStoreInfo}
                                       >
-                                        <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                                        <span
+                                          className="text-[10px] font-semibold uppercase tracking-[0.12em]"
+                                          style={{
+                                            color: loadingStoreInfo || exceedsLimit
+                                              ? '#94A3B8'
+                                              : 'var(--brand-badge-text)',
+                                          }}
+                                        >
                                           Quick Add
                                         </span>
                                         <span className="text-base font-semibold tracking-tight">
@@ -3265,14 +3518,26 @@ export default function Index({ params }: any) {
                                 </div>
                               )}
 
-                              <div className="mt-3 rounded-[18px] border border-slate-200 bg-white px-3 py-2.5 text-sm leading-5 text-slate-500">
+                              <div
+                                className="mt-3 rounded-[18px] border px-3 py-2.5 text-sm leading-5 text-slate-500"
+                                style={{
+                                  borderColor: 'var(--brand-card-border)',
+                                  backgroundColor: 'var(--brand-card-bg)',
+                                }}
+                              >
                                 현재 시세는 <span className="font-semibold text-slate-900">{rate?.toLocaleString('ko-KR')}원</span>이며,
                                 구매 수량은 자동으로 가맹점 결제에 반영됩니다.
                               </div>
                             </div>
                           </div>
 
-                          <div className="rounded-[22px] border border-slate-200 bg-white p-3 shadow-sm">
+                          <div
+                            className="rounded-[22px] border p-3 shadow-sm"
+                            style={{
+                              borderColor: 'var(--brand-card-border)',
+                              backgroundColor: 'var(--brand-card-bg)',
+                            }}
+                          >
                             <div className="flex items-start justify-between gap-2.5">
                               <div>
                                 <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
@@ -3285,13 +3550,25 @@ export default function Index({ params }: any) {
                                   사전 등록된 은행, 계좌번호, 이름으로만 송금됩니다.
                                 </p>
                               </div>
-                              <div className="rounded-full bg-[#eef2f6] px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+                              <div
+                                className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                                style={{
+                                  backgroundColor: 'var(--brand-badge-bg)',
+                                  color: 'var(--brand-badge-text)',
+                                }}
+                              >
                                 Verified
                               </div>
                             </div>
 
                             <div className="mt-4 flex flex-col gap-2.5">
-                              <div className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
+                              <div
+                                className="rounded-[18px] border px-3 py-2.5"
+                                style={{
+                                  borderColor: 'var(--brand-card-border)',
+                                  backgroundColor: 'var(--brand-card-muted)',
+                                }}
+                              >
                                 <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
                                   Bank
                                 </div>
@@ -3300,7 +3577,13 @@ export default function Index({ params }: any) {
                                 </div>
                               </div>
 
-                              <div className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
+                              <div
+                                className="rounded-[18px] border px-3 py-2.5"
+                                style={{
+                                  borderColor: 'var(--brand-card-border)',
+                                  backgroundColor: 'var(--brand-card-muted)',
+                                }}
+                              >
                                 <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
                                   Account Number
                                 </div>
@@ -3309,7 +3592,13 @@ export default function Index({ params }: any) {
                                 </div>
                               </div>
 
-                              <div className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
+                              <div
+                                className="rounded-[18px] border px-3 py-2.5"
+                                style={{
+                                  borderColor: 'var(--brand-card-border)',
+                                  backgroundColor: 'var(--brand-card-muted)',
+                                }}
+                              >
                                 <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
                                   Depositor Name
                                 </div>
@@ -3321,12 +3610,17 @@ export default function Index({ params }: any) {
 
                             <button
                               disabled={isPurchaseDisabled}
-                              className={`
-                                mt-4 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[18px] px-3 text-sm font-semibold transition
-                                ${isPurchaseDisabled
-                                  ? 'bg-slate-200 text-slate-400'
-                                  : 'bg-slate-900 text-white shadow-[0_16px_40px_rgba(15,23,42,0.18)] hover:bg-slate-800'}
-                              `}
+                              className="mt-4 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[18px] px-3 text-sm font-semibold transition hover:brightness-95"
+                              style={isPurchaseDisabled
+                                ? {
+                                    backgroundColor: '#E2E8F0',
+                                    color: '#94A3B8',
+                                  }
+                                : {
+                                    backgroundColor: 'var(--brand-base)',
+                                    color: 'var(--brand-base-contrast)',
+                                    boxShadow: `0 16px 40px ${brandTheme.buttonShadow}`,
+                                  }}
                               onClick={() => {
                                 if (!depositName) {
                                   toast.error(Please_enter_deposit_name);
@@ -3368,8 +3662,17 @@ export default function Index({ params }: any) {
                           </div>
                         </div>
 
-                        <div className="rounded-[18px] border border-amber-200 bg-[#fffaf0] px-3 py-3 text-sm leading-5 text-slate-600">
-                          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-700">
+                        <div
+                          className="rounded-[18px] border px-3 py-3 text-sm leading-5 text-slate-600"
+                          style={{
+                            borderColor: 'var(--brand-card-border)',
+                            backgroundColor: 'var(--brand-card-muted)',
+                          }}
+                        >
+                          <div
+                            className="text-[10px] font-semibold uppercase tracking-[0.14em]"
+                            style={{ color: 'var(--brand-badge-text)' }}
+                          >
                             Transfer Rule
                           </div>
                           <div className="mt-1.5 font-medium text-slate-800">

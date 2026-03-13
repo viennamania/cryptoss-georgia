@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, type CSSProperties } from "react";
 
 
 import { toast } from 'react-hot-toast';
@@ -72,6 +72,7 @@ const Chat = dynamic(() => import('@/components/Chat'), {
 
 import { useSearchParams } from "next/navigation";
 import { on } from "events";
+import { derivePaymentBrandTheme } from "@/lib/payment-branding";
 
 
 
@@ -1742,6 +1743,34 @@ export default function Index({ params }: any) {
   const storeDescription =
     storeInfo?.storeDescription ||
     '거래 상태, 입금 정보, 정산 진행 상황을 한 화면에서 안전하게 확인합니다.';
+  const brandTheme = derivePaymentBrandTheme({
+    backgroundColor: storeInfo?.backgroundColor,
+    seed: [params.clientid, params.center, storeName].filter(Boolean).join(':'),
+  });
+  const brandStyles = {
+    '--brand-base': brandTheme.base,
+    '--brand-base-contrast': brandTheme.baseContrast,
+    '--brand-base-dark': brandTheme.baseDark,
+    '--brand-page-bg': brandTheme.pageBg,
+    '--brand-page-bg-alt': brandTheme.pageBgAlt,
+    '--brand-page-tint': brandTheme.pageTint,
+    '--brand-page-mist': brandTheme.pageMist,
+    '--brand-glow-a': brandTheme.glowA,
+    '--brand-glow-b': brandTheme.glowB,
+    '--brand-shell-from': brandTheme.shellFrom,
+    '--brand-shell-via': brandTheme.shellVia,
+    '--brand-shell-to': brandTheme.shellTo,
+    '--brand-shell-border': brandTheme.shellBorder,
+    '--brand-card-bg': brandTheme.cardBg,
+    '--brand-card-muted': brandTheme.cardMutedBg,
+    '--brand-card-border': brandTheme.cardBorder,
+    '--brand-badge-bg': brandTheme.badgeBg,
+    '--brand-badge-text': brandTheme.badgeText,
+    '--brand-accent-soft': brandTheme.accentSoft,
+    '--brand-accent-text': brandTheme.accentText,
+    '--brand-button-shadow': brandTheme.buttonShadow,
+    '--brand-panel-shadow': brandTheme.panelShadow,
+  } as CSSProperties;
   const formattedBalance = Number(balance).toFixed(2);
   const maskedWalletAddress = address
     ? `${address.slice(0, 6)}...${address.slice(-4)}`
@@ -1825,13 +1854,23 @@ export default function Index({ params }: any) {
 
   return (
 
-    <main className="relative min-h-[100vh] overflow-hidden bg-[#f6f3ec] text-slate-900">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-[#e9eef4] via-[#f8f5ef] to-transparent" />
-      <div className="pointer-events-none absolute -left-16 top-24 h-48 w-48 rounded-full bg-[#dbe4ec] opacity-80 blur-3xl" />
-      <div className="pointer-events-none absolute -right-16 top-40 h-56 w-56 rounded-full bg-[#efe1cc] opacity-80 blur-3xl" />
+    <main
+      className="relative min-h-[100vh] overflow-hidden bg-[var(--brand-page-bg)] text-slate-900"
+      style={brandStyles}
+    >
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-[var(--brand-page-tint)] via-[var(--brand-page-mist)] to-transparent" />
+      <div className="pointer-events-none absolute -left-16 top-24 h-48 w-48 rounded-full bg-[var(--brand-glow-a)] opacity-90 blur-3xl" />
+      <div className="pointer-events-none absolute -right-16 top-40 h-56 w-56 rounded-full bg-[var(--brand-glow-b)] opacity-90 blur-3xl" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-screen-sm flex-col gap-3 px-3 pb-8 pt-3 sm:px-4">
-        <section className="overflow-hidden rounded-[24px] border border-white/80 bg-gradient-to-br from-white via-[#faf7f1] to-[#eef3f7] p-4 shadow-[0_18px_56px_rgba(15,23,42,0.07)]">
+        <section
+          className="overflow-hidden rounded-[24px] border p-4"
+          style={{
+            borderColor: 'var(--brand-shell-border)',
+            background: 'linear-gradient(135deg, var(--brand-page-mist), var(--brand-page-tint), var(--brand-page-bg-alt))',
+            boxShadow: `0 18px 56px ${brandTheme.panelShadow}`,
+          }}
+        >
           <div className="flex items-start justify-between gap-2.5">
             <div className="flex min-w-0 items-center gap-2.5">
               <Image
@@ -1839,10 +1878,18 @@ export default function Index({ params }: any) {
                 alt="Store Logo"
                 width={48}
                 height={48}
-                className="h-12 w-12 rounded-[18px] border border-white bg-white object-cover shadow-sm"
+                className="h-12 w-12 rounded-[18px] border bg-white object-cover shadow-sm"
+                style={{ borderColor: 'var(--brand-card-border)' }}
               />
               <div className="min-w-0">
-                <div className="inline-flex rounded-full border border-slate-200 bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                <div
+                  className="inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]"
+                  style={{
+                    borderColor: 'var(--brand-card-border)',
+                    backgroundColor: 'var(--brand-card-bg)',
+                    color: 'var(--brand-accent-text)',
+                  }}
+                >
                   Secure Payment
                 </div>
                 <h1 className="mt-1.5 text-lg font-semibold tracking-tight text-slate-900">
@@ -1851,6 +1898,20 @@ export default function Index({ params }: any) {
                 <p className="mt-0.5 text-[13px] leading-5 text-slate-600">
                   {storeDescription}
                 </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span
+                    className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]"
+                    style={{
+                      backgroundColor: 'var(--brand-badge-bg)',
+                      color: 'var(--brand-badge-text)',
+                    }}
+                  >
+                    {params.center}
+                  </span>
+                  <span className="rounded-full border border-white/70 bg-white/80 px-2.5 py-1 text-[10px] font-medium text-slate-500">
+                    {storeInfo?.backgroundColor || brandTheme.base}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -1865,7 +1926,13 @@ export default function Index({ params }: any) {
           </div>
 
           {loadingStoreInfo ? (
-            <div className="mt-3 flex items-center gap-2.5 rounded-[18px] border border-dashed border-slate-200 bg-white/70 px-3 py-3 text-sm text-slate-500">
+            <div
+              className="mt-3 flex items-center gap-2.5 rounded-[18px] border border-dashed px-3 py-3 text-sm text-slate-500"
+              style={{
+                borderColor: 'var(--brand-card-border)',
+                backgroundColor: 'var(--brand-card-bg)',
+              }}
+            >
               <Image
                 src="/loading.png"
                 alt="Loading"
@@ -1877,28 +1944,52 @@ export default function Index({ params }: any) {
             </div>
           ) : (
             <div className="mt-4 grid grid-cols-2 gap-2.5">
-              <div className="rounded-[18px] border border-white/80 bg-white/75 p-3 shadow-sm">
+              <div
+                className="rounded-[18px] border p-3 shadow-sm"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-bg)',
+                }}
+              >
                 <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">Order</div>
                 <div className="mt-1.5 text-base font-semibold tracking-tight text-slate-900">
                   #{oneBuyOrder?.tradeId || orderId.slice(-8)}
                 </div>
                 <div className="mt-0.5 text-[11px] text-slate-500">{orderStatusLabel}</div>
               </div>
-              <div className="rounded-[18px] border border-white/80 bg-white/75 p-3 shadow-sm">
+              <div
+                className="rounded-[18px] border p-3 shadow-sm"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-bg)',
+                }}
+              >
                 <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">Amount</div>
                 <div className="mt-1.5 text-xl font-semibold tracking-tight text-slate-900">
                   {formattedUsdtAmount}
                 </div>
                 <div className="mt-0.5 text-[11px] text-slate-500">USDT</div>
               </div>
-              <div className="rounded-[18px] border border-white/80 bg-white/75 p-3 shadow-sm">
+              <div
+                className="rounded-[18px] border p-3 shadow-sm"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-bg)',
+                }}
+              >
                 <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">Settlement</div>
                 <div className="mt-1.5 text-sm font-semibold tracking-tight text-slate-900">
                   {formattedKrwAmount}
                 </div>
                 <div className="mt-0.5 text-[11px] text-slate-500">{paymentMethodLabel}</div>
               </div>
-              <div className="rounded-[18px] border border-white/80 bg-white/75 p-3 shadow-sm">
+              <div
+                className="rounded-[18px] border p-3 shadow-sm"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-bg)',
+                }}
+              >
                 <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">Wallet</div>
                 <div className="mt-1.5 text-xs font-semibold text-slate-900">
                   {address ? '연결 완료' : '연결 대기'}
@@ -1909,7 +2000,13 @@ export default function Index({ params }: any) {
           )}
 
           {loadingUser ? (
-            <div className="mt-4 flex items-center gap-2.5 rounded-[18px] border border-dashed border-slate-200 bg-white/70 px-3 py-3 text-sm text-slate-500">
+            <div
+              className="mt-4 flex items-center gap-2.5 rounded-[18px] border border-dashed px-3 py-3 text-sm text-slate-500"
+              style={{
+                borderColor: 'var(--brand-card-border)',
+                backgroundColor: 'var(--brand-card-bg)',
+              }}
+            >
               <Image
                 src="/loading.png"
                 alt="Loading"
@@ -1921,7 +2018,13 @@ export default function Index({ params }: any) {
             </div>
           ) : (
             user && (
-              <div className="mt-4 rounded-[20px] border border-white/80 bg-white/80 p-3 shadow-sm backdrop-blur-sm">
+              <div
+                className="mt-4 rounded-[20px] border p-3 shadow-sm backdrop-blur-sm"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-bg)',
+                }}
+              >
                 <div className="flex items-start justify-between gap-2.5">
                   <div>
                     <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
@@ -1945,14 +2048,20 @@ export default function Index({ params }: any) {
                     </button>
                   </div>
 
-                  <div className="rounded-[18px] bg-slate-900 px-3 py-2.5 text-right text-white shadow-[0_12px_32px_rgba(15,23,42,0.16)]">
-                    <div className="text-[10px] uppercase tracking-[0.14em] text-slate-300">
+                  <div
+                    className="rounded-[18px] px-3 py-2.5 text-right text-white shadow-[0_12px_32px_rgba(15,23,42,0.16)]"
+                    style={{
+                      background: 'linear-gradient(135deg, var(--brand-shell-from), var(--brand-shell-via), var(--brand-shell-to))',
+                      boxShadow: `0 12px 32px ${brandTheme.buttonShadow}`,
+                    }}
+                  >
+                    <div className="text-[10px] uppercase tracking-[0.14em] text-white/70">
                       Balance
                     </div>
                     <div className="mt-0.5 text-xl font-semibold tracking-tight">
                       {formattedBalance}
                     </div>
-                    <div className="text-[11px] text-slate-300">USDT</div>
+                    <div className="text-[11px] text-white/70">USDT</div>
                   </div>
                 </div>
               </div>
@@ -1960,7 +2069,14 @@ export default function Index({ params }: any) {
           )}
         </section>
 
-        <section className="overflow-hidden rounded-[20px] border border-slate-200/80 bg-white/80 px-3 py-2.5 shadow-[0_14px_36px_rgba(15,23,42,0.05)] backdrop-blur-sm">
+        <section
+          className="overflow-hidden rounded-[20px] border px-3 py-2.5 backdrop-blur-sm"
+          style={{
+            borderColor: 'var(--brand-card-border)',
+            backgroundColor: 'var(--brand-card-bg)',
+            boxShadow: `0 14px 36px ${brandTheme.panelShadow}`,
+          }}
+        >
           <div className="mb-2.5 flex items-center justify-between gap-2">
             <div>
               <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
@@ -1972,7 +2088,12 @@ export default function Index({ params }: any) {
               href="https://upbit.com/exchange?code=CRIX.UPBIT.KRW-USDT"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600"
+              className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
+              style={{
+                borderColor: 'var(--brand-card-border)',
+                backgroundColor: 'var(--brand-card-muted)',
+                color: 'var(--brand-accent-text)',
+              }}
             >
               <Image
                 src="/logo-upbit.jpg"
@@ -1995,7 +2116,14 @@ export default function Index({ params }: any) {
           ></div>
         </section>
 
-        <section className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white/90 p-3 shadow-[0_16px_48px_rgba(15,23,42,0.06)] backdrop-blur-sm sm:p-4">
+        <section
+          className="overflow-hidden rounded-[24px] border p-3 backdrop-blur-sm sm:p-4"
+          style={{
+            borderColor: 'var(--brand-card-border)',
+            backgroundColor: 'var(--brand-card-bg)',
+            boxShadow: `0 16px 48px ${brandTheme.panelShadow}`,
+          }}
+        >
 
         {/*
         <AppBarComponent />
@@ -3008,9 +3136,22 @@ export default function Index({ params }: any) {
 
           </section>
 
-          <section className="mt-2 rounded-[24px] border border-slate-200/80 bg-white/85 p-4 shadow-[0_14px_40px_rgba(15,23,42,0.05)] backdrop-blur-sm">
+          <section
+            className="mt-2 rounded-[24px] border p-4 backdrop-blur-sm"
+            style={{
+              borderColor: 'var(--brand-card-border)',
+              backgroundColor: 'var(--brand-card-bg)',
+              boxShadow: `0 14px 40px ${brandTheme.panelShadow}`,
+            }}
+          >
             <div className="flex items-start gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[18px] bg-slate-900 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+              <div
+                className="flex h-9 w-9 items-center justify-center rounded-[18px] text-[11px] font-semibold uppercase tracking-[0.14em]"
+                style={{
+                  background: 'linear-gradient(135deg, var(--brand-shell-from), var(--brand-shell-via), var(--brand-shell-to))',
+                  color: 'var(--brand-base-contrast)',
+                }}
+              >
                 Safe
               </div>
               <div>
@@ -3022,22 +3163,53 @@ export default function Index({ params }: any) {
             </div>
 
             <ul className="mt-3 flex flex-col gap-2.5 text-sm leading-5 text-slate-600">
-              <li className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
+              <li
+                className="rounded-[18px] border px-3 py-2.5"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-muted)',
+                }}
+              >
                 거래 전 유의사항을 반드시 확인해 주세요. 안내 내용을 숙지하지 않아 발생하는 문제는 회원 본인의 책임입니다.
               </li>
-              <li className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
+              <li
+                className="rounded-[18px] border px-3 py-2.5"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-muted)',
+                }}
+              >
                 코인 전송 완료 후에는 취소 및 환불이 어렵습니다. 계좌와 금액, 지갑 주소를 다시 확인한 뒤 진행해 주세요.
               </li>
-              <li className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
+              <li
+                className="rounded-[18px] border px-3 py-2.5"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-muted)',
+                }}
+              >
                 거래 관련 사기를 방지하기 위해 입금자명과 사전 등록된 정보가 일치해야 하며, 필요 시 추가 인증을 요청할 수 있습니다.
               </li>
-              <li className="rounded-[18px] border border-slate-200 bg-[#faf8f4] px-3 py-2.5">
+              <li
+                className="rounded-[18px] border px-3 py-2.5"
+                style={{
+                  borderColor: 'var(--brand-card-border)',
+                  backgroundColor: 'var(--brand-card-muted)',
+                }}
+              >
                 영업시간은 연중무휴 24시간 운영입니다. 거래 지연이나 문제가 있으면 고객센터를 통해 문의해 주세요.
               </li>
             </ul>
           </section>
 
-          <footer className="mb-8 rounded-[20px] border border-slate-200/80 bg-white/80 p-4 text-sm text-slate-500 shadow-[0_12px_32px_rgba(15,23,42,0.04)]">
+          <footer
+            className="mb-8 rounded-[20px] border p-4 text-sm text-slate-500"
+            style={{
+              borderColor: 'var(--brand-card-border)',
+              backgroundColor: 'var(--brand-card-bg)',
+              boxShadow: `0 12px 32px ${brandTheme.panelShadow}`,
+            }}
+          >
             <div className="flex flex-wrap items-center justify-center gap-2.5">
               <a
                 href="#"
