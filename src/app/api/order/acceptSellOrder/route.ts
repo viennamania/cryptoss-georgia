@@ -4,6 +4,7 @@ import {
   UserProps,
 	acceptSellOrder,
 } from '@lib/api/order';
+import { logPaymentAuditEvent } from "@lib/api/paymentAudit";
 
 // Download the helper library from https://www.twilio.com/docs/node/install
 import twilio from "twilio";
@@ -14,7 +15,21 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json();
 
-  const { lang, chain, orderId, buyerWalletAddress, buyerNickname, buyerAvatar, buyerMobile, buyerMemo, depositName, depositBankName } = body;
+  const {
+    lang,
+    chain,
+    storecode,
+    orderId,
+    buyerWalletAddress,
+    buyerNickname,
+    buyerAvatar,
+    buyerMobile,
+    buyerMemo,
+    depositName,
+    depositBankName,
+    depositBankAccountNumber,
+    auditContext,
+  } = body;
 
   console.log("orderId", orderId);
   
@@ -35,6 +50,12 @@ export async function POST(request: NextRequest) {
 
   ////console.log("result", result);
 
+  if (!result) {
+    return NextResponse.json({
+      result,
+    });
+  }
+
 
 
   const {
@@ -43,10 +64,69 @@ export async function POST(request: NextRequest) {
     buyer: buyer,
     tradeId: tradeId,
   } = result as UserProps;
+  const auditOrder = result as any;
+  const safeAuditContext =
+    auditContext && typeof auditContext === "object" ? auditContext : {};
+
+  try {
+    await logPaymentAuditEvent({
+      eventType: "sell_order_accepted",
+      lang: String(safeAuditContext.lang || lang || ""),
+      pageClientId: String(safeAuditContext.pageClientId || ""),
+      storecode: String(
+        safeAuditContext.storecode
+        || storecode
+        || result?.storecode
+        || chain
+        || "",
+      ),
+      storeUser: String(safeAuditContext.storeUser || ""),
+      memberId: String(safeAuditContext.memberId || buyerNickname || ""),
+      requestedUserType: String(safeAuditContext.requestedUserType || ""),
+      orderNumber: String(safeAuditContext.orderNumber || ""),
+      orderId: String(orderId || auditOrder?._id || ""),
+      walletAddress: String(safeAuditContext.walletAddress || buyerWalletAddress || ""),
+      smartAccountAddress: String(
+        safeAuditContext.smartAccountAddress
+        || safeAuditContext.walletAddress
+        || buyerWalletAddress
+        || "",
+      ),
+      phoneNumber: String(safeAuditContext.phoneNumber || buyerMobile || ""),
+      currentUrl: String(safeAuditContext.currentUrl || ""),
+      pageParams:
+        safeAuditContext.pageParams && typeof safeAuditContext.pageParams === "object"
+          ? safeAuditContext.pageParams
+          : {},
+      browser:
+        safeAuditContext.browser && typeof safeAuditContext.browser === "object"
+          ? safeAuditContext.browser
+          : {},
+      eventSource: String(safeAuditContext.eventSource || "accept_sell_order_route"),
+      buyerNickname: buyerNickname || result?.buyer?.nickname || "",
+      depositName: depositName || result?.buyer?.depositName || "",
+      depositBankName: depositBankName || result?.buyer?.depositBankName || "",
+      depositBankAccountNumber:
+        depositBankAccountNumber
+        || auditOrder?.buyer?.depositBankAccountNumber
+        || "",
+      krwAmount: auditOrder?.krwAmount || 0,
+      usdtAmount: auditOrder?.usdtAmount || 0,
+      rate: auditOrder?.rate || 0,
+      privateSale: Boolean(auditOrder?.privateSale),
+      orderStatus: auditOrder?.status || "accepted",
+      extra: {
+        sellerWalletAddress: auditOrder?.walletAddress || "",
+        tradeId: auditOrder?.tradeId || "",
+      },
+    });
+  } catch (error) {
+    console.error("Failed to save accepted sell order payment audit event:", error);
+  }
 
 
   // if mobile number is not prefix with country code don't send sms
-  if (!mobile.startsWith('+')) {
+  if (!mobile || !mobile.startsWith('+')) {
     return NextResponse.json({
       result,
     });

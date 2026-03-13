@@ -68,6 +68,10 @@ import { add } from 'thirdweb/extensions/farcaster/keyGateway';
 import { useSearchParams } from "next/navigation";
 import { parse } from 'path';
 import { derivePaymentBrandTheme } from "@/lib/payment-branding";
+import {
+  buildPaymentAuditContext,
+  resolveConnectedPhoneNumber,
+} from "@/lib/payment-audit-browser";
 
 
 
@@ -242,6 +246,7 @@ export default function Index({ params }: any) {
     const searchParams = useSearchParams();
 
     const storeUser = searchParams.get('storeUser');
+    const queryString = searchParams.toString();
 
     console.log('storeUser', storeUser);
 
@@ -601,6 +606,25 @@ export default function Index({ params }: any) {
   const [address, setAddress] = useState(
     smartAccount?.address || ""
   );
+  const buildOrderAuditPayload = async (
+    walletAddress: string,
+    eventSource: string,
+  ) => {
+    const phoneNumber = await resolveConnectedPhoneNumber(client);
+
+    return buildPaymentAuditContext({
+      lang: params.lang,
+      pageClientId: params.clientid,
+      storecode: params.center,
+      storeUser: storeUser || '',
+      memberId: memberid || nickname || '',
+      walletAddress,
+      smartAccountAddress: smartAccount?.address || walletAddress,
+      phoneNumber,
+      eventSource,
+      queryString,
+    });
+  };
 
 
 
@@ -1797,6 +1821,10 @@ export default function Index({ params }: any) {
       });
 
       if (order) {
+        const auditContext = await buildOrderAuditPayload(
+          address,
+          'payment_order_page_match_order',
+        );
 
         // accept sell order
 
@@ -1815,6 +1843,7 @@ export default function Index({ params }: any) {
             buyerMobile: '010-1234-5678',
             depositName: depositName,
             depositBankName: depositBankName,
+            auditContext,
           }),
         });
 
@@ -1851,6 +1880,7 @@ export default function Index({ params }: any) {
           },
           body: JSON.stringify({
             lang: params.lang,
+            clientid: params.clientid,
             storecode: params.center,
             walletAddress: address,
             nickname: nickname,
@@ -1861,7 +1891,11 @@ export default function Index({ params }: any) {
             buyer: {
               depositBankName: depositBankName,
               depositName: depositName,
-            }
+            },
+            auditContext: await buildOrderAuditPayload(
+              address,
+              'payment_order_page_create_order',
+            ),
           })
         });
 

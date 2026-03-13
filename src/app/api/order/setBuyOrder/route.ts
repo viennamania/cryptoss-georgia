@@ -13,12 +13,14 @@ import {
   stableUrl10,
   stableUrl11,
 } from "../../../config/stable";
+import { logPaymentAuditEvent } from "@lib/api/paymentAudit";
 
 export async function POST(request: NextRequest) {
 
   const body = await request.json();
 
   const {
+    lang,
     clientid,
     storecode,
     walletAddress,
@@ -29,6 +31,8 @@ export async function POST(request: NextRequest) {
     privateSale,
     buyer,
     returnUrl,
+    orderNumber,
+    auditContext,
   } = body;
 
 
@@ -67,6 +71,7 @@ export async function POST(request: NextRequest) {
         privateSale,
         buyer,
         returnUrl,
+        orderNumber,
       }),
     });
 
@@ -100,6 +105,58 @@ export async function POST(request: NextRequest) {
       }
     }
     */
+
+    if (result?.result) {
+      const safeAuditContext =
+        auditContext && typeof auditContext === "object" ? auditContext : {};
+
+      try {
+        await logPaymentAuditEvent({
+          eventType: "buy_order_created",
+          lang: String(safeAuditContext.lang || lang || ""),
+          pageClientId: String(safeAuditContext.pageClientId || clientid || ""),
+          storecode: String(safeAuditContext.storecode || storecode || ""),
+          storeUser: String(safeAuditContext.storeUser || ""),
+          memberId: String(safeAuditContext.memberId || nickname || ""),
+          requestedUserType: String(safeAuditContext.requestedUserType || ""),
+          orderNumber: String(safeAuditContext.orderNumber || orderNumber || ""),
+          orderId: String(result.result?._id || ""),
+          walletAddress: String(safeAuditContext.walletAddress || walletAddress || ""),
+          smartAccountAddress: String(
+            safeAuditContext.smartAccountAddress
+            || safeAuditContext.walletAddress
+            || walletAddress
+            || "",
+          ),
+          phoneNumber: String(safeAuditContext.phoneNumber || ""),
+          currentUrl: String(safeAuditContext.currentUrl || ""),
+          pageParams:
+            safeAuditContext.pageParams && typeof safeAuditContext.pageParams === "object"
+              ? safeAuditContext.pageParams
+              : {},
+          browser:
+            safeAuditContext.browser && typeof safeAuditContext.browser === "object"
+              ? safeAuditContext.browser
+              : {},
+          eventSource: String(safeAuditContext.eventSource || "set_buy_order_route"),
+          buyerNickname: nickname || "",
+          depositName: buyer?.depositName || "",
+          depositBankName: buyer?.depositBankName || "",
+          depositBankAccountNumber: buyer?.depositBankAccountNumber || "",
+          krwAmount,
+          usdtAmount,
+          rate,
+          privateSale: Boolean(privateSale),
+          orderStatus: "ordered",
+          extra: {
+            returnUrl: returnUrl || "",
+            stableUrl,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to save buy order payment audit event:", error);
+      }
+    }
 
 
     return NextResponse.json({

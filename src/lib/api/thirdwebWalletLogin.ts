@@ -1,5 +1,6 @@
 import clientPromise from "../mongodb";
 import type { GetUserResult } from "thirdweb/wallets";
+import { logPaymentAuditEvent } from "./paymentAudit";
 
 const DATABASE_NAME = process.env.MONGODB_DB_NAME;
 
@@ -17,6 +18,9 @@ export type ThirdwebWalletLoginInput = {
   thirdwebClientId?: string;
   storecode: string;
   storeUser?: string;
+  memberId?: string;
+  requestedUserType?: string;
+  orderNumber?: string;
   walletAddress: string;
   smartAccountAddress?: string;
   adminWalletAddress?: string;
@@ -154,6 +158,9 @@ export async function logThirdwebWalletLogin(input: ThirdwebWalletLoginInput) {
     lang: input.lang || "",
     storecode: input.storecode,
     storeUser: input.storeUser || "",
+    memberId: input.memberId || "",
+    requestedUserType: input.requestedUserType || "",
+    orderNumber: input.orderNumber || "",
     walletAddress: input.walletAddress,
     smartAccountAddress,
     adminWalletAddress: input.adminWalletAddress || "",
@@ -184,6 +191,9 @@ export async function logThirdwebWalletLogin(input: ThirdwebWalletLoginInput) {
     lang: input.lang || "",
     storecode: input.storecode,
     storeUser: input.storeUser || "",
+    memberId: input.memberId || "",
+    requestedUserType: input.requestedUserType || "",
+    orderNumber: input.orderNumber || "",
     walletAddress: input.walletAddress,
     smartAccountAddress,
     adminWalletAddress: input.adminWalletAddress || "",
@@ -227,9 +237,46 @@ export async function logThirdwebWalletLogin(input: ThirdwebWalletLoginInput) {
   );
 
   const sessionResult = await sessionCollection.insertOne(sessionDocument);
+  let paymentAuditResult = null;
+
+  try {
+    paymentAuditResult = await logPaymentAuditEvent({
+      eventType: "wallet_connect",
+      lang: input.lang,
+      pageClientId: input.pageClientId,
+      thirdwebClientId: input.thirdwebClientId,
+      storecode: input.storecode,
+      storeUser: input.storeUser,
+      memberId: input.memberId,
+      requestedUserType: input.requestedUserType,
+      orderNumber: input.orderNumber,
+      walletAddress: input.walletAddress,
+      smartAccountAddress,
+      adminWalletAddress: input.adminWalletAddress,
+      phoneNumber,
+      email,
+      walletId: input.walletId,
+      connectionMethod: input.connectionMethod || "phone",
+      sponsorGas: input.sponsorGas ?? true,
+      currentUrl: sanitizedCurrentUrl,
+      pageParams: sanitizedPageParams,
+      browser: sanitizedBrowser,
+      requestMeta: sanitizedRequestMeta,
+      eventSource: "thirdweb_wallet_login",
+      extra: {
+        thirdwebUserId,
+        thirdwebWalletAddress,
+        thirdwebUserCreatedAt,
+        defaultSmsCountryCode: input.defaultSmsCountryCode || "KR",
+      },
+    });
+  } catch (error) {
+    console.error("Failed to save payment audit wallet_connect event:", error);
+  }
 
   return {
     profileResult,
     sessionResult,
+    paymentAuditResult,
   };
 }

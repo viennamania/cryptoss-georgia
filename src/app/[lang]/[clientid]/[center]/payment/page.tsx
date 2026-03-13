@@ -77,6 +77,10 @@ import { add } from 'thirdweb/extensions/farcaster/keyGateway';
 import { useSearchParams } from "next/navigation";
 import { parse } from 'path';
 import { derivePaymentBrandTheme } from "@/lib/payment-branding";
+import {
+  buildPaymentAuditContext,
+  resolveConnectedPhoneNumber,
+} from "@/lib/payment-audit-browser";
 
 
 
@@ -908,6 +912,32 @@ export default function Index({ params }: any) {
   const [phoneAuthError, setPhoneAuthError] = useState('');
   const [isDisconnectConfirmModalOpen, setIsDisconnectConfirmModalOpen] = useState(false);
 
+  const createPaymentAuditContext = async (
+    walletAddress: string,
+    eventSource: string,
+  ) => {
+    const phoneNumber = connectedPhoneNumber || await resolveConnectedPhoneNumber(client);
+
+    if (phoneNumber && phoneNumber !== connectedPhoneNumber) {
+      setConnectedPhoneNumber(phoneNumber);
+    }
+
+    return buildPaymentAuditContext({
+      lang: params.lang,
+      pageClientId: params.clientid,
+      storecode,
+      storeUser: storeUser || '',
+      memberId: memberid || '',
+      orderNumber,
+      requestedUserType,
+      walletAddress,
+      smartAccountAddress: smartAccount?.address || walletAddress,
+      phoneNumber,
+      eventSource,
+      queryString,
+    });
+  };
+
   if (!phoneWalletRegistryRef.current[clientChain]) {
     phoneWalletRegistryRef.current[clientChain] = createPhoneWallet(paymentChain);
   }
@@ -1098,6 +1128,9 @@ export default function Index({ params }: any) {
             thirdwebClientId,
             storecode,
             storeUser: storeUser || '',
+            memberId: memberid || '',
+            requestedUserType,
+            orderNumber: orderNumber || '',
             walletAddress: smartAccount.address,
             smartAccountAddress: smartAccount.address,
             adminWalletAddress,
@@ -1158,7 +1191,20 @@ export default function Index({ params }: any) {
     return () => {
       mounted = false;
     };
-  }, [activeWallet, clientChain, params?.clientid, params?.lang, paymentChain, queryString, smartAccount?.address, storeUser, storecode]);
+  }, [
+    activeWallet,
+    clientChain,
+    memberid,
+    orderNumber,
+    params?.clientid,
+    params?.lang,
+    paymentChain,
+    queryString,
+    requestedUserType,
+    smartAccount?.address,
+    storeUser,
+    storecode,
+  ]);
 
 
 
@@ -2374,6 +2420,10 @@ export default function Index({ params }: any) {
       });
 
       if (order) {
+        const auditContext = await createPaymentAuditContext(
+          buyerWalletAddress,
+          'payment_page_match_order',
+        );
 
 
         // accept sell order
@@ -2396,6 +2446,7 @@ export default function Index({ params }: any) {
             depositName: depositName,
             depositBankName: depositBankName,
             depositBankAccountNumber: depositBankAccountNumber,
+            auditContext,
           }),
         });
 
@@ -2423,6 +2474,10 @@ export default function Index({ params }: any) {
         const usdtAmount =  parseFloat((krwAmount / rate).toFixed(2));
 
         console.log('usdtAmount', usdtAmount);
+        const auditContext = await createPaymentAuditContext(
+          buyerWalletAddress,
+          'payment_page_create_order',
+        );
 
 
         const response = await fetch('/api/order/setBuyOrder', {
@@ -2447,6 +2502,7 @@ export default function Index({ params }: any) {
             },
             returnUrl: paramReturnUrl,
             orderNumber: orderNumber,
+            auditContext,
           })
         });
 

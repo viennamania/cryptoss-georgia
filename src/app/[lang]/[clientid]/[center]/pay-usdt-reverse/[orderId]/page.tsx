@@ -73,6 +73,10 @@ const Chat = dynamic(() => import('@/components/Chat'), {
 import { useSearchParams } from "next/navigation";
 import { on } from "events";
 import { derivePaymentBrandTheme } from "@/lib/payment-branding";
+import {
+  buildPaymentAuditContext,
+  resolveConnectedPhoneNumber,
+} from "@/lib/payment-audit-browser";
 
 
 
@@ -290,6 +294,7 @@ export default function Index({ params }: any) {
     const searchParams = useSearchParams();
 
     const orderNumber = searchParams.get('orderNumber');
+    const queryString = searchParams.toString();
     const requestedUserType = normalizeUserType(
       searchParams.get('userType')
       || searchParams.get('memberGrade')
@@ -653,6 +658,28 @@ export default function Index({ params }: any) {
   const [address, setAddress] = useState(
     smartAccount?.address || ""
   );
+  const buildOrderAuditPayload = async (
+    walletAddress: string,
+    eventSource: string,
+  ) => {
+    const phoneNumber = await resolveConnectedPhoneNumber(client);
+    const resolvedMemberId = oneBuyOrder?.nickname || user?.nickname || nickname || "";
+
+    return buildPaymentAuditContext({
+      lang: params.lang,
+      pageClientId: params.clientid,
+      storecode: params.center,
+      storeUser: resolvedMemberId,
+      memberId: resolvedMemberId,
+      orderNumber,
+      requestedUserType,
+      walletAddress,
+      smartAccountAddress: smartAccount?.address || walletAddress,
+      phoneNumber,
+      eventSource,
+      queryString,
+    });
+  };
 
   const [oneBuyOrder, setOneBuyOrder] = useState<any>(null);
 
@@ -1578,6 +1605,10 @@ export default function Index({ params }: any) {
       });
 
       if (order) {
+        const auditContext = await buildOrderAuditPayload(
+          address,
+          'pay_usdt_reverse_match_order',
+        );
 
         // accept sell order
 
@@ -1596,6 +1627,7 @@ export default function Index({ params }: any) {
             buyerMobile: '010-1234-5678',
             depositName: depositName,
             depositBankName: depositBankName,
+            auditContext,
           }),
         });
 
@@ -1628,12 +1660,19 @@ export default function Index({ params }: any) {
           },
           body: JSON.stringify({
             lang: params.lang,
+            clientid: params.clientid,
             storecode: params.center,
             walletAddress: address,
+            nickname: nickname,
             usdtAmount: usdtAmount,
             krwAmount: krwAmount,
             rate: rate,
             privateSale: false,
+            orderNumber: orderNumber,
+            auditContext: await buildOrderAuditPayload(
+              address,
+              'pay_usdt_reverse_create_order',
+            ),
           })
         });
 
