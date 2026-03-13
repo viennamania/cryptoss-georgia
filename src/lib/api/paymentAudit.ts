@@ -63,6 +63,25 @@ export type PaymentAuditDashboardInput = {
   endDate?: string;
 };
 
+export type PaymentAuditQueryInput = {
+  lang?: string;
+  clientid?: string;
+  storecode?: string;
+  page?: number;
+  limit?: number;
+  eventType?: string;
+  memberId?: string;
+  walletAddress?: string;
+  phoneNumber?: string;
+  orderNumber?: string;
+  startDate?: string;
+  endDate?: string;
+};
+
+export type PaymentAuditOverviewInput = PaymentAuditQueryInput & {
+  breakdownLimit?: number;
+};
+
 function isSensitiveKey(key: string) {
   return /(token|secret|password|authorization|cookie|signature|jwt)/i.test(key);
 }
@@ -295,7 +314,10 @@ async function ensurePaymentAuditIndexes() {
       const collection = db.collection(PAYMENT_AUDIT_COLLECTION);
 
       await collection.createIndexes([
+        { key: { lang: 1, createdAt: -1 } },
         { key: { storecode: 1, createdAt: -1 } },
+        { key: { pageClientId: 1, createdAt: -1 } },
+        { key: { pageClientId: 1, storecode: 1, createdAt: -1 } },
         { key: { storecode: 1, eventType: 1, createdAt: -1 } },
         { key: { storecode: 1, memberIdNormalized: 1, createdAt: -1 } },
         { key: { storecode: 1, walletAddressNormalized: 1, createdAt: -1 } },
@@ -322,19 +344,31 @@ export async function logPaymentAuditEvent(input: PaymentAuditEventInput) {
   return collection.insertOne(auditDocument);
 }
 
-export async function getPaymentAuditDashboard(input: PaymentAuditDashboardInput) {
-  await ensurePaymentAuditIndexes();
+function getPaginationValues(page?: number, limit?: number) {
+  const normalizedPage = Math.max(1, Number(page || 1));
+  const normalizedLimit = Math.min(100, Math.max(1, Number(limit || 30)));
 
-  const client = await clientPromise;
-  const db = client.db(DATABASE_NAME);
-  const collection = db.collection(PAYMENT_AUDIT_COLLECTION);
-
-  const page = Math.max(1, Number(input.page || 1));
-  const limit = Math.min(100, Math.max(1, Number(input.limit || 30)));
-  const skip = (page - 1) * limit;
-  const match: Record<string, unknown> = {
-    storecode: normalizeText(input.storecode),
+  return {
+    page: normalizedPage,
+    limit: normalizedLimit,
+    skip: (normalizedPage - 1) * normalizedLimit,
   };
+}
+
+function buildPaymentAuditMatch(input: PaymentAuditQueryInput) {
+  const match: Record<string, unknown> = {};
+
+  if (input.lang) {
+    match.lang = normalizeText(input.lang);
+  }
+
+  if (input.clientid) {
+    match.pageClientId = normalizeText(input.clientid);
+  }
+
+  if (input.storecode) {
+    match.storecode = normalizeText(input.storecode);
+  }
 
   if (input.eventType) {
     match.eventType = normalizeText(input.eventType);
@@ -373,6 +407,81 @@ export async function getPaymentAuditDashboard(input: PaymentAuditDashboardInput
     match.createdAt = createdAt;
   }
 
+  return match;
+}
+
+function formatDashboardSummary(
+  dashboard: any,
+  page: number,
+  limit: number,
+  recentEventsKey: string,
+) {
+  const totalCount = dashboard?.totalCount?.[0]?.count || 0;
+  const summary = dashboard?.summary?.[0] || {
+    totalKrwAmount: 0,
+    totalUsdtAmount: 0,
+    latestEventAt: null,
+    uniqueWalletCount: 0,
+    uniqueMemberCount: 0,
+    uniquePhoneCount: 0,
+    uniqueClientCount: 0,
+    uniqueStoreCount: 0,
+  };
+  const countsByEvent = Object.fromEntries(
+    (dashboard?.countsByEvent || []).map((item: { _id: string; count: number }) => [
+      item._id,
+      item.count,
+    ]),
+  );
+  const recentEvents = (dashboard?.[recentEventsKey] || []).map((event: Record<string, unknown>) => ({
+    ...event,
+    id: String(event._id || ""),
+  }));
+
+  return {
+    summary: {
+      totalCount,
+      walletConnectCount: countsByEvent.wallet_connect || 0,
+      buyOrderCreatedCount: countsByEvent.buy_order_created || 0,
+      sellOrderAcceptedCount: countsByEvent.sell_order_accepted || 0,
+      totalKrwAmount: summary.totalKrwAmount || 0,
+      totalUsdtAmount: summary.totalUsdtAmount || 0,
+      uniqueWalletCount: summary.uniqueWalletCount || 0,
+      uniqueMemberCount: summary.uniqueMemberCount || 0,
+      uniquePhoneCount: summary.uniquePhoneCount || 0,
+      uniqueClientCount: summary.uniqueClientCount || 0,
+      uniqueStoreCount: summary.uniqueStoreCount || 0,
+      latestEventAt: summary.latestEventAt || null,
+    },
+    recentEvents,
+    pagination: {
+      page,
+      limit,
+      totalCount,
+      totalPages: Math.max(1, Math.ceil(totalCount / limit)),
+    },
+  };
+}
+
+export async function getPaymentAuditDashboard(input: PaymentAuditDashboardInput) {
+  await ensurePaymentAuditIndexes();
+
+  const client = await clientPromise;
+  const db = client.db(DATABASE_NAME);
+  const collection = db.collection(PAYMENT_AUDIT_COLLECTION);
+
+  const { page, limit, skip } = getPaginationValues(input.page, input.limit);
+  const match = buildPaymentAuditMatch({
+    storecode: input.storecode,
+    eventType: input.eventType,
+    memberId: input.memberId,
+    walletAddress: input.walletAddress,
+    phoneNumber: input.phoneNumber,
+    orderNumber: input.orderNumber,
+    startDate: input.startDate,
+    endDate: input.endDate,
+  });
+
   const [dashboard] = await collection.aggregate<any>([
     {
       $match: match,
@@ -402,6 +511,8 @@ export async function getPaymentAuditDashboard(input: PaymentAuditDashboardInput
               wallets: { $addToSet: "$walletAddressNormalized" },
               members: { $addToSet: "$memberIdNormalized" },
               phones: { $addToSet: "$phoneNumberDigits" },
+              clients: { $addToSet: "$pageClientId" },
+              stores: { $addToSet: "$storecode" },
             },
           },
           {
@@ -410,6 +521,24 @@ export async function getPaymentAuditDashboard(input: PaymentAuditDashboardInput
               totalKrwAmount: 1,
               totalUsdtAmount: 1,
               latestEventAt: 1,
+              uniqueClientCount: {
+                $size: {
+                  $filter: {
+                    input: "$clients",
+                    as: "client",
+                    cond: { $ne: ["$$client", ""] },
+                  },
+                },
+              },
+              uniqueStoreCount: {
+                $size: {
+                  $filter: {
+                    input: "$stores",
+                    as: "store",
+                    cond: { $ne: ["$$store", ""] },
+                  },
+                },
+              },
               uniqueWalletCount: {
                 $size: {
                   $filter: {
@@ -596,6 +725,8 @@ export async function getPaymentAuditDashboard(input: PaymentAuditDashboardInput
               createdAtIso: 1,
               memberId: 1,
               storeUser: 1,
+              pageClientId: 1,
+              storecode: 1,
               requestedUserType: 1,
               orderNumber: 1,
               orderId: 1,
@@ -616,49 +747,523 @@ export async function getPaymentAuditDashboard(input: PaymentAuditDashboardInput
       },
     },
   ]).toArray();
-
-  const totalCount = dashboard?.totalCount?.[0]?.count || 0;
-  const summary = dashboard?.summary?.[0] || {
-    totalKrwAmount: 0,
-    totalUsdtAmount: 0,
-    latestEventAt: null,
-    uniqueWalletCount: 0,
-    uniqueMemberCount: 0,
-    uniquePhoneCount: 0,
-  };
-  const countsByEvent = Object.fromEntries(
-    (dashboard?.countsByEvent || []).map((item: { _id: string; count: number }) => [
-      item._id,
-      item.count,
-    ]),
-  );
-  const recentEvents = (dashboard?.recentEvents || []).map((event: Record<string, unknown>) => ({
-    ...event,
-    id: String(event._id || ""),
-  }));
+  const formatted = formatDashboardSummary(dashboard, page, limit, "recentEvents");
 
   return {
-    summary: {
-      totalCount,
-      walletConnectCount: countsByEvent.wallet_connect || 0,
-      buyOrderCreatedCount: countsByEvent.buy_order_created || 0,
-      sellOrderAcceptedCount: countsByEvent.sell_order_accepted || 0,
-      totalKrwAmount: summary.totalKrwAmount || 0,
-      totalUsdtAmount: summary.totalUsdtAmount || 0,
-      uniqueWalletCount: summary.uniqueWalletCount || 0,
-      uniqueMemberCount: summary.uniqueMemberCount || 0,
-      uniquePhoneCount: summary.uniquePhoneCount || 0,
-      latestEventAt: summary.latestEventAt || null,
-    },
+    summary: formatted.summary,
     daily: dashboard?.daily || [],
     topMembers: dashboard?.topMembers || [],
     topWallets: dashboard?.topWallets || [],
-    recentEvents,
-    pagination: {
-      page,
-      limit,
-      totalCount,
-      totalPages: Math.max(1, Math.ceil(totalCount / limit)),
+    recentEvents: formatted.recentEvents,
+    pagination: formatted.pagination,
+  };
+}
+
+export async function getPaymentAuditOverview(input: PaymentAuditOverviewInput) {
+  await ensurePaymentAuditIndexes();
+
+  const client = await clientPromise;
+  const db = client.db(DATABASE_NAME);
+  const collection = db.collection(PAYMENT_AUDIT_COLLECTION);
+
+  const match = buildPaymentAuditMatch(input);
+  const breakdownLimit = Math.min(100, Math.max(1, Number(input.breakdownLimit || 30)));
+
+  const [overview] = await collection.aggregate<any>([
+    {
+      $match: match,
     },
+    {
+      $facet: {
+        totalCount: [
+          {
+            $count: "count",
+          },
+        ],
+        countsByEvent: [
+          {
+            $group: {
+              _id: "$eventType",
+              count: { $sum: 1 },
+            },
+          },
+        ],
+        summary: [
+          {
+            $group: {
+              _id: null,
+              totalKrwAmount: { $sum: "$krwAmountValue" },
+              totalUsdtAmount: { $sum: "$usdtAmountValue" },
+              latestEventAt: { $max: "$createdAt" },
+              wallets: { $addToSet: "$walletAddressNormalized" },
+              members: { $addToSet: "$memberIdNormalized" },
+              phones: { $addToSet: "$phoneNumberDigits" },
+              clients: { $addToSet: "$pageClientId" },
+              stores: { $addToSet: "$storecode" },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              totalKrwAmount: 1,
+              totalUsdtAmount: 1,
+              latestEventAt: 1,
+              uniqueClientCount: {
+                $size: {
+                  $filter: {
+                    input: "$clients",
+                    as: "client",
+                    cond: { $ne: ["$$client", ""] },
+                  },
+                },
+              },
+              uniqueStoreCount: {
+                $size: {
+                  $filter: {
+                    input: "$stores",
+                    as: "store",
+                    cond: { $ne: ["$$store", ""] },
+                  },
+                },
+              },
+              uniqueWalletCount: {
+                $size: {
+                  $filter: {
+                    input: "$wallets",
+                    as: "wallet",
+                    cond: { $ne: ["$$wallet", ""] },
+                  },
+                },
+              },
+              uniqueMemberCount: {
+                $size: {
+                  $filter: {
+                    input: "$members",
+                    as: "member",
+                    cond: { $ne: ["$$member", ""] },
+                  },
+                },
+              },
+              uniquePhoneCount: {
+                $size: {
+                  $filter: {
+                    input: "$phones",
+                    as: "phone",
+                    cond: { $ne: ["$$phone", ""] },
+                  },
+                },
+              },
+            },
+          },
+        ],
+        daily: [
+          {
+            $group: {
+              _id: {
+                $dateToString: {
+                  format: "%Y-%m-%d",
+                  date: "$createdAt",
+                  timezone: "Asia/Seoul",
+                },
+              },
+              count: { $sum: 1 },
+              walletConnectCount: {
+                $sum: {
+                  $cond: [{ $eq: ["$eventType", "wallet_connect"] }, 1, 0],
+                },
+              },
+              buyOrderCreatedCount: {
+                $sum: {
+                  $cond: [{ $eq: ["$eventType", "buy_order_created"] }, 1, 0],
+                },
+              },
+              sellOrderAcceptedCount: {
+                $sum: {
+                  $cond: [{ $eq: ["$eventType", "sell_order_accepted"] }, 1, 0],
+                },
+              },
+              totalKrwAmount: { $sum: "$krwAmountValue" },
+            },
+          },
+          {
+            $sort: { _id: -1 },
+          },
+          {
+            $limit: 30,
+          },
+          {
+            $sort: { _id: 1 },
+          },
+        ],
+        topMembers: [
+          {
+            $match: {
+              memberIdNormalized: { $ne: "" },
+            },
+          },
+          {
+            $group: {
+              _id: "$memberId",
+              count: { $sum: 1 },
+              latestEventAt: { $max: "$createdAt" },
+              totalKrwAmount: { $sum: "$krwAmountValue" },
+              clientSet: { $addToSet: "$pageClientId" },
+              storeSet: { $addToSet: "$storecode" },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              memberId: "$_id",
+              count: 1,
+              latestEventAt: 1,
+              totalKrwAmount: 1,
+              clientCount: {
+                $size: {
+                  $filter: {
+                    input: "$clientSet",
+                    as: "client",
+                    cond: { $ne: ["$$client", ""] },
+                  },
+                },
+              },
+              storeCount: {
+                $size: {
+                  $filter: {
+                    input: "$storeSet",
+                    as: "store",
+                    cond: { $ne: ["$$store", ""] },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $sort: { count: -1, latestEventAt: -1 },
+          },
+          {
+            $limit: 8,
+          },
+        ],
+        topWallets: [
+          {
+            $match: {
+              walletAddressNormalized: { $ne: "" },
+            },
+          },
+          {
+            $group: {
+              _id: "$walletAddress",
+              count: { $sum: 1 },
+              latestEventAt: { $max: "$createdAt" },
+              totalKrwAmount: { $sum: "$krwAmountValue" },
+              clientSet: { $addToSet: "$pageClientId" },
+              storeSet: { $addToSet: "$storecode" },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              walletAddress: "$_id",
+              count: 1,
+              latestEventAt: 1,
+              totalKrwAmount: 1,
+              clientCount: {
+                $size: {
+                  $filter: {
+                    input: "$clientSet",
+                    as: "client",
+                    cond: { $ne: ["$$client", ""] },
+                  },
+                },
+              },
+              storeCount: {
+                $size: {
+                  $filter: {
+                    input: "$storeSet",
+                    as: "store",
+                    cond: { $ne: ["$$store", ""] },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $sort: { count: -1, latestEventAt: -1 },
+          },
+          {
+            $limit: 8,
+          },
+        ],
+        topClients: [
+          {
+            $match: {
+              pageClientId: { $ne: "" },
+            },
+          },
+          {
+            $group: {
+              _id: "$pageClientId",
+              count: { $sum: 1 },
+              latestEventAt: { $max: "$createdAt" },
+              totalKrwAmount: { $sum: "$krwAmountValue" },
+              storeSet: { $addToSet: "$storecode" },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              clientid: "$_id",
+              count: 1,
+              latestEventAt: 1,
+              totalKrwAmount: 1,
+              storeCount: {
+                $size: {
+                  $filter: {
+                    input: "$storeSet",
+                    as: "store",
+                    cond: { $ne: ["$$store", ""] },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $sort: { count: -1, latestEventAt: -1 },
+          },
+          {
+            $limit: 8,
+          },
+        ],
+        centerBreakdown: [
+          {
+            $group: {
+              _id: {
+                clientid: "$pageClientId",
+                storecode: "$storecode",
+              },
+              count: { $sum: 1 },
+              walletConnectCount: {
+                $sum: {
+                  $cond: [{ $eq: ["$eventType", "wallet_connect"] }, 1, 0],
+                },
+              },
+              buyOrderCreatedCount: {
+                $sum: {
+                  $cond: [{ $eq: ["$eventType", "buy_order_created"] }, 1, 0],
+                },
+              },
+              sellOrderAcceptedCount: {
+                $sum: {
+                  $cond: [{ $eq: ["$eventType", "sell_order_accepted"] }, 1, 0],
+                },
+              },
+              latestEventAt: { $max: "$createdAt" },
+              totalKrwAmount: { $sum: "$krwAmountValue" },
+              totalUsdtAmount: { $sum: "$usdtAmountValue" },
+              walletSet: { $addToSet: "$walletAddressNormalized" },
+              memberSet: { $addToSet: "$memberIdNormalized" },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              clientid: "$_id.clientid",
+              storecode: "$_id.storecode",
+              count: 1,
+              walletConnectCount: 1,
+              buyOrderCreatedCount: 1,
+              sellOrderAcceptedCount: 1,
+              latestEventAt: 1,
+              totalKrwAmount: 1,
+              totalUsdtAmount: 1,
+              uniqueWalletCount: {
+                $size: {
+                  $filter: {
+                    input: "$walletSet",
+                    as: "wallet",
+                    cond: { $ne: ["$$wallet", ""] },
+                  },
+                },
+              },
+              uniqueMemberCount: {
+                $size: {
+                  $filter: {
+                    input: "$memberSet",
+                    as: "member",
+                    cond: { $ne: ["$$member", ""] },
+                  },
+                },
+              },
+            },
+          },
+          {
+            $sort: { count: -1, latestEventAt: -1 },
+          },
+          {
+            $limit: breakdownLimit,
+          },
+        ],
+      },
+    },
+  ]).toArray();
+
+  const formatted = formatDashboardSummary(overview, 1, breakdownLimit, "centerBreakdown");
+
+  return {
+    summary: formatted.summary,
+    daily: overview?.daily || [],
+    topMembers: overview?.topMembers || [],
+    topWallets: overview?.topWallets || [],
+    topClients: overview?.topClients || [],
+    centerBreakdown: formatted.recentEvents,
+  };
+}
+
+export async function getPaymentAuditEvents(input: PaymentAuditQueryInput) {
+  await ensurePaymentAuditIndexes();
+
+  const client = await clientPromise;
+  const db = client.db(DATABASE_NAME);
+  const collection = db.collection(PAYMENT_AUDIT_COLLECTION);
+
+  const { page, limit, skip } = getPaginationValues(input.page, input.limit);
+  const match = buildPaymentAuditMatch(input);
+
+  const [dashboard] = await collection.aggregate<any>([
+    {
+      $match: match,
+    },
+    {
+      $facet: {
+        totalCount: [
+          {
+            $count: "count",
+          },
+        ],
+        countsByEvent: [
+          {
+            $group: {
+              _id: "$eventType",
+              count: { $sum: 1 },
+            },
+          },
+        ],
+        summary: [
+          {
+            $group: {
+              _id: null,
+              totalKrwAmount: { $sum: "$krwAmountValue" },
+              totalUsdtAmount: { $sum: "$usdtAmountValue" },
+              latestEventAt: { $max: "$createdAt" },
+              wallets: { $addToSet: "$walletAddressNormalized" },
+              members: { $addToSet: "$memberIdNormalized" },
+              phones: { $addToSet: "$phoneNumberDigits" },
+              clients: { $addToSet: "$pageClientId" },
+              stores: { $addToSet: "$storecode" },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              totalKrwAmount: 1,
+              totalUsdtAmount: 1,
+              latestEventAt: 1,
+              uniqueClientCount: {
+                $size: {
+                  $filter: {
+                    input: "$clients",
+                    as: "client",
+                    cond: { $ne: ["$$client", ""] },
+                  },
+                },
+              },
+              uniqueStoreCount: {
+                $size: {
+                  $filter: {
+                    input: "$stores",
+                    as: "store",
+                    cond: { $ne: ["$$store", ""] },
+                  },
+                },
+              },
+              uniqueWalletCount: {
+                $size: {
+                  $filter: {
+                    input: "$wallets",
+                    as: "wallet",
+                    cond: { $ne: ["$$wallet", ""] },
+                  },
+                },
+              },
+              uniqueMemberCount: {
+                $size: {
+                  $filter: {
+                    input: "$members",
+                    as: "member",
+                    cond: { $ne: ["$$member", ""] },
+                  },
+                },
+              },
+              uniquePhoneCount: {
+                $size: {
+                  $filter: {
+                    input: "$phones",
+                    as: "phone",
+                    cond: { $ne: ["$$phone", ""] },
+                  },
+                },
+              },
+            },
+          },
+        ],
+        events: [
+          {
+            $sort: { createdAt: -1 },
+          },
+          {
+            $skip: skip,
+          },
+          {
+            $limit: limit,
+          },
+          {
+            $project: {
+              eventType: 1,
+              createdAt: 1,
+              createdAtIso: 1,
+              lang: 1,
+              pageClientId: 1,
+              storecode: 1,
+              memberId: 1,
+              storeUser: 1,
+              requestedUserType: 1,
+              orderNumber: 1,
+              orderId: 1,
+              walletAddress: 1,
+              smartAccountAddress: 1,
+              phoneNumber: 1,
+              buyerNickname: 1,
+              depositName: 1,
+              depositBankName: 1,
+              depositBankAccountNumber: 1,
+              krwAmountValue: 1,
+              usdtAmountValue: 1,
+              rateValue: 1,
+              eventSource: 1,
+              pathname: 1,
+            },
+          },
+        ],
+      },
+    },
+  ]).toArray();
+
+  const formatted = formatDashboardSummary(dashboard, page, limit, "events");
+
+  return {
+    summary: formatted.summary,
+    events: formatted.recentEvents,
+    pagination: formatted.pagination,
   };
 }
