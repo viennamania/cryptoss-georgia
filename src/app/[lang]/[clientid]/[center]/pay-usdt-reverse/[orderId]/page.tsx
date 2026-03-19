@@ -1917,11 +1917,11 @@ export default function Index({ params }: any) {
           <div className="flex items-start justify-between gap-2.5">
             <div className="flex min-w-0 items-center gap-2.5">
               <Image
-                src={storeInfo?.storeLogo || '/logo.png'}
-                alt="Store Logo"
+                src="/icon-payment.png"
+                alt="Iskan9 Payment"
                 width={48}
                 height={48}
-                className="h-12 w-12 rounded-[18px] border bg-white object-cover shadow-sm"
+                className="h-12 w-12 rounded-[18px] border bg-white object-contain p-1 shadow-sm"
                 style={{ borderColor: 'var(--brand-card-border)' }}
               />
               <div className="min-w-0">
@@ -1936,25 +1936,11 @@ export default function Index({ params }: any) {
                   Secure Payment
                 </div>
                 <h1 className="mt-1.5 text-lg font-semibold tracking-tight text-slate-900">
-                  {storeName}
+                  Iskan9 Payment
                 </h1>
                 <p className="mt-0.5 text-[13px] leading-5 text-slate-600">
                   {storeDescription}
                 </p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <span
-                    className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]"
-                    style={{
-                      backgroundColor: 'var(--brand-badge-bg)',
-                      color: 'var(--brand-badge-text)',
-                    }}
-                  >
-                    {params.center}
-                  </span>
-                  <span className="rounded-full border border-white/70 bg-white/80 px-2.5 py-1 text-[10px] font-medium text-slate-500">
-                    {storeInfo?.backgroundColor || brandTheme.base}
-                  </span>
-                </div>
               </div>
             </div>
 
@@ -1995,10 +1981,10 @@ export default function Index({ params }: any) {
                 }}
               >
                 <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">Order</div>
-                <div className="mt-1.5 text-base font-semibold tracking-tight text-slate-900">
+                <div className="mt-1.5 text-right text-base font-semibold tracking-tight text-slate-900">
                   #{oneBuyOrder?.tradeId || orderId.slice(-8)}
                 </div>
-                <div className="mt-0.5 text-[11px] text-slate-500">{orderStatusLabel}</div>
+                <div className="mt-0.5 text-right text-[11px] text-slate-500">{orderStatusLabel}</div>
               </div>
               <div
                 className="rounded-[18px] border p-3 shadow-sm"
@@ -2008,10 +1994,10 @@ export default function Index({ params }: any) {
                 }}
               >
                 <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">Amount</div>
-                <div className="mt-1.5 text-xl font-semibold tracking-tight text-slate-900">
+                <div className="mt-1.5 text-right text-xl font-semibold tracking-tight text-slate-900">
                   {formattedUsdtAmount}
                 </div>
-                <div className="mt-0.5 text-[11px] text-slate-500">USDT</div>
+                <div className="mt-0.5 text-right text-[11px] text-slate-500">USDT</div>
               </div>
               <div
                 className="rounded-[18px] border p-3 shadow-sm"
@@ -2021,10 +2007,10 @@ export default function Index({ params }: any) {
                 }}
               >
                 <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">Settlement</div>
-                <div className="mt-1.5 text-sm font-semibold tracking-tight text-slate-900">
+                <div className="mt-1.5 text-right text-sm font-semibold tracking-tight text-slate-900">
                   {formattedKrwAmount}
                 </div>
-                <div className="mt-0.5 text-[11px] text-slate-500">{paymentMethodLabel}</div>
+                <div className="mt-0.5 text-right text-[11px] text-slate-500">{paymentMethodLabel}</div>
               </div>
               <div
                 className="rounded-[18px] border p-3 shadow-sm"
@@ -2034,10 +2020,10 @@ export default function Index({ params }: any) {
                 }}
               >
                 <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">Wallet</div>
-                <div className="mt-1.5 text-xs font-semibold text-slate-900">
+                <div className="mt-1.5 text-right text-xs font-semibold text-slate-900">
                   {address ? '연결 완료' : '연결 대기'}
                 </div>
-                <div className="mt-0.5 text-[11px] text-slate-500">{maskedWalletAddress}</div>
+                <div className="mt-0.5 text-right text-[11px] text-slate-500">{maskedWalletAddress}</div>
               </div>
             </div>
           )}
@@ -2832,13 +2818,13 @@ export default function Index({ params }: any) {
                                   <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">
                                     Bank Transfer
                                   </div>
-                                  <div className="mt-1 text-sm font-semibold text-slate-900">
+                                  <div className="mt-1 text-right text-sm font-semibold text-slate-900">
                                     {selectedStoreBankInfo?.bankName || '-'}
                                   </div>
-                                  <div className="mt-0.5 text-sm text-slate-600">
+                                  <div className="mt-0.5 text-right text-sm text-slate-600">
                                     {selectedStoreBankInfo?.accountNumber || '-'}
                                   </div>
-                                  <div className="mt-0.5 text-sm text-slate-500">
+                                  <div className="mt-0.5 text-right text-sm text-slate-500">
                                     {selectedStoreBankInfo?.accountHolder || '-'}
                                   </div>
                                 </div>
@@ -2847,16 +2833,16 @@ export default function Index({ params }: any) {
                                   <div className="text-[10px] uppercase tracking-[0.12em] text-slate-400">
                                     Transfer Summary
                                   </div>
-                                  <div className="mt-1 text-sm font-semibold text-slate-900">
+                                  <div className="mt-1 text-right text-sm font-semibold text-slate-900">
                                     {oneBuyOrder.krwAmount?.toLocaleString('ko-KR', {
                                       style: 'currency',
                                       currency: 'KRW',
                                     })}
                                   </div>
-                                  <div className="mt-0.5 text-sm text-slate-600">
+                                  <div className="mt-0.5 text-right text-sm text-slate-600">
                                     입금자명 {depositorName}
                                   </div>
-                                  <div className="mt-0.5 text-sm text-emerald-700">
+                                  <div className="mt-0.5 text-right text-sm text-emerald-700">
                                     정산 상태 완료
                                   </div>
                                 </div>

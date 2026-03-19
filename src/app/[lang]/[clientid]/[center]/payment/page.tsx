@@ -2977,11 +2977,11 @@ export default function Index({ params }: any) {
             <div className="flex items-start justify-between gap-2.5">
               <div className="flex min-w-0 items-center gap-2.5">
                 <Image
-                  src={storeInfo?.storeLogo || '/logo.png'}
-                  alt="Store Logo"
+                  src="/icon-payment.png"
+                  alt="Iskan9 Payment"
                   width={48}
                   height={48}
-                  className="h-12 w-12 rounded-[18px] border bg-white object-cover shadow-sm"
+                  className="h-12 w-12 rounded-[18px] border bg-white object-contain p-1 shadow-sm"
                   style={{ borderColor: 'var(--brand-card-border)' }}
                 />
                 <div className="min-w-0">
@@ -2996,25 +2996,11 @@ export default function Index({ params }: any) {
                     Secure Payment
                   </div>
                   <h1 className="mt-1.5 text-lg font-semibold tracking-tight text-slate-900">
-                    {storeName}
+                    Iskan9 Payment
                   </h1>
                   <p className="mt-0.5 text-[13px] leading-5 text-slate-600">
                     {storeDescription}
                   </p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    <span
-                      className="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]"
-                      style={{
-                        backgroundColor: 'var(--brand-badge-bg)',
-                        color: 'var(--brand-badge-text)',
-                      }}
-                    >
-                      {storecode || params.center}
-                    </span>
-                    <span className="rounded-full border border-white/70 bg-white/80 px-2.5 py-1 text-[10px] font-medium text-slate-500">
-                      {providerName}
-                    </span>
-                  </div>
                 </div>
               </div>
 
