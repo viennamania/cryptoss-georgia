@@ -984,7 +984,7 @@ export default function Index({ params }: any) {
       return;
     }
 
-    toast.error('결제를 진행하려면 thirdweb 지갑을 먼저 연결해 주세요.');
+    toast.error('결제를 진행하려면 스마트 어카운트를 먼저 연결해 주세요.');
     openPhoneAuthModal();
   };
 
@@ -3078,7 +3078,7 @@ export default function Index({ params }: any) {
                       }
                     : undefined}
                 >
-                  {hasConnectedSmartWallet ? '확인 완료' : '휴대폰 확인'}
+                  {hasConnectedSmartWallet ? '스마트 어카운트 연결됨' : '휴대폰 확인'}
                 </div>
               </div>
 
@@ -3090,7 +3090,7 @@ export default function Index({ params }: any) {
                       onClick={openDisconnectConfirmModal}
                       className="flex min-h-[52px] w-full items-center justify-center rounded-[18px] border border-rose-200 bg-rose-50 px-4 text-[14px] font-semibold text-rose-600 shadow-[0_8px_16px_rgba(244,63,94,0.10)] transition hover:bg-rose-100"
                     >
-                      지갑 연결 해제
+                      스마트 어카운트 연결 해제
                     </button>
                   </div>
                 ) : isAutoConnecting ? (
@@ -3149,8 +3149,11 @@ export default function Index({ params }: any) {
                     backgroundColor: 'var(--brand-accent-soft)',
                   }}
                 >
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    Smart Account
+                  </div>
                   <div className="font-semibold text-slate-900">
-                    {connectedPhoneNumber || '휴대폰 본인 확인 완료'}
+                    {connectedPhoneNumber || '스마트 어카운트 연결 완료'}
                   </div>
                   <div className="mt-1 break-all text-[11px] text-slate-500">
                     {connectedSmartWalletAddress}
@@ -3420,7 +3423,7 @@ export default function Index({ params }: any) {
                           Thirdweb Required
                         </div>
                         <div className="mt-1.5 font-semibold text-slate-900">
-                          결제를 진행하려면 상단에서 휴대폰으로 thirdweb 지갑을 먼저 연결해 주세요.
+                          결제를 진행하려면 상단에서 휴대폰으로 스마트 어카운트를 먼저 연결해 주세요.
                         </div>
                         <div className="mt-1 text-slate-500">
                           지갑 연결이 완료되어야 결제 버튼이 활성화됩니다.
@@ -3762,7 +3765,7 @@ export default function Index({ params }: any) {
 
                             {!hasConnectedSmartWallet && (
                               <p className="mt-2.5 text-[11px] leading-5 text-amber-700">
-                                결제를 진행하려면 먼저 상단의 휴대폰 연결로 thirdweb 지갑을 연결해 주세요.
+                                결제를 진행하려면 먼저 상단의 휴대폰 연결로 스마트 어카운트를 연결해 주세요.
                               </p>
                             )}
 
@@ -5130,10 +5133,10 @@ export default function Index({ params }: any) {
             <div className="fixed inset-0 z-[130] flex items-end justify-center bg-slate-900/45 px-4 pb-4 pt-10 sm:items-center">
               <div className="w-full max-w-[340px] rounded-[24px] bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.28)]">
                 <div className="text-[18px] font-semibold text-slate-900">
-                  지갑 연결 해제
+                  스마트 어카운트 연결 해제
                 </div>
                 <div className="mt-2 text-[13px] leading-5 text-slate-600">
-                  현재 연결된 지갑을 해제할까요?
+                  현재 연결된 스마트 어카운트를 해제할까요?
                   해제 후 다시 결제하려면 휴대폰 인증이 필요합니다.
                 </div>
 
