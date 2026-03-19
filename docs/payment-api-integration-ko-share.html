@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>결제 API 연동 문서</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 14mm;
+    }
+
+    :root {
+      --ink: #0f172a;
+      --muted: #475569;
+      --line: #dbe4f0;
+      --line-strong: #c5d3e6;
+      --paper: #ffffff;
+      --canvas: #eef3f9;
+      --navy: #10233f;
+      --blue: #1967d2;
+      --sky: #eaf3ff;
+      --mint: #e8fbf3;
+      --mint-ink: #0f766e;
+      --amber: #fff4db;
+      --amber-ink: #92400e;
+      --rose: #fff1f2;
+      --rose-ink: #be123c;
+      --slate-card: #f8fbff;
+      --shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+      --radius-lg: 24px;
+      --radius-md: 18px;
+      --radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(25, 103, 210, 0.10), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.08), transparent 28%),
+        var(--canvas);
+      color: var(--ink);
+      font-family:
+        "SF Pro Display",
+        "SF Pro Text",
+        "Apple SD Gothic Neo",
+        "Pretendard",
+        "Noto Sans KR",
+        sans-serif;
+      line-height: 1.55;
+    }
+
+    main {
+      width: 210mm;
+      margin: 0 auto;
+      padding: 16px 0;
+    }
+
+    .page {
+      min-height: calc(297mm - 28mm);
+      background: var(--paper);
+      border: 1px solid rgba(197, 211, 230, 0.9);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 26px 28px;
+      margin-bottom: 16px;
+      break-after: page;
+      page-break-after: always;
+    }
+
+    .page:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(16, 35, 63, 0.06);
+      color: var(--navy);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 26px;
+      border-radius: 28px;
+      background:
+        linear-gradient(140deg, rgba(16, 35, 63, 0.98), rgba(25, 103, 210, 0.95));
+      color: #f8fbff;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -40px -60px auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      filter: blur(6px);
+    }
+
+    .hero h1 {
+      margin: 18px 0 10px;
+      font-size: 34px;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p {
+      max-width: 540px;
+      margin: 0;
+      color: rgba(248, 251, 255, 0.86);
+      font-size: 14px;
+    }
+
+    .meta-grid,
+    .info-grid,
+    .summary-grid,
+    .flow-grid,
+    .two-col {
+      display: grid;
+      gap: 14px;
+    }
+
+    .meta-grid {
+      grid-template-columns: repeat(3, 1fr);
+      margin-top: 18px;
+    }
+
+    .summary-grid,
+    .flow-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .info-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .two-col {
+      grid-template-columns: 1.15fr 0.85fr;
+      margin-top: 18px;
+    }
+
+    .card,
+    .metric,
+    .flow-card,
+    .panel,
+    .callout {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .metric {
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .metric .label {
+      color: rgba(248, 251, 255, 0.74);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .metric .value {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 4px 0 16px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+    }
+
+    .section-note {
+      color: var(--muted);
+      font-size: 13px;
+      max-width: 360px;
+      text-align: right;
+    }
+
+    .card,
+    .panel {
+      padding: 18px 18px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff, var(--slate-card));
+    }
+
+    .panel.dark {
+      background: linear-gradient(180deg, #163053, #10233f);
+      color: #f8fbff;
+      border-color: rgba(16, 35, 63, 0.55);
+    }
+
+    .panel h3,
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .panel p,
+    .card p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .panel.dark p {
+      color: rgba(248, 251, 255, 0.82);
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--sky);
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge.mint {
+      background: var(--mint);
+      color: var(--mint-ink);
+    }
+
+    .badge.amber {
+      background: var(--amber);
+      color: var(--amber-ink);
+    }
+
+    .flow-card {
+      position: relative;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      background: #fff;
+      border: 1px solid var(--line);
+      min-height: 126px;
+    }
+
+    .flow-card .step {
+      display: inline-flex;
+      width: 30px;
+      height: 30px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: var(--navy);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .flow-card h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .flow-card p {
+      margin: 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .callout {
+      margin-top: 16px;
+      padding: 16px 18px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(90deg, rgba(25, 103, 210, 0.10), rgba(15, 118, 110, 0.08));
+      border: 1px solid rgba(25, 103, 210, 0.14);
+    }
+
+    .callout strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .callout p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .endpoint-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+
+    .endpoint-table th,
+    .endpoint-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 11px 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    .endpoint-table th {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      background: #f8fbff;
+    }
+
+    .endpoint-table code,
+    .code-chip,
+    pre,
+    .mono {
+      font-family:
+        "SF Mono",
+        "Menlo",
+        "Monaco",
+        "Consolas",
+        monospace;
+    }
+
+    .code-chip {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    pre {
+      margin: 0;
+      overflow: hidden;
+      white-space: pre-wrap;
+      word-break: break-word;
+      border-radius: 16px;
+      border: 1px solid #d7e3f5;
+      background: #f7fbff;
+      color: #0f172a;
+      padding: 14px 16px;
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    ul.clean {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    ul.clean li + li {
+      margin-top: 6px;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .note-box {
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .note-box h4 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      letter-spacing: -0.01em;
+    }
+
+    .note-box p,
+    .note-box li {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .footer-tag {
+      margin-top: 14px;
+      color: #64748b;
+      font-size: 11px;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      main {
+        width: auto;
+        margin: 0;
+        padding: 0;
+      }
+
+      .page {
+        min-height: auto;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="page">
+      <div class="hero">
+        <div class="eyebrow">Payment API Integration</div>
+        <h1>결제 API 연동 문서</h1>
+        <p>
+          외부 연동 업체 전달용 요약본입니다. 현재 운영 중인
+          <span class="mono">/[lang]/[clientid]/[center]/payment</span>
+          흐름을 기준으로, 실제 연동이 필요한 핵심 API와 서버 내부 처리 범위를 분리해 정리했습니다.
+        </p>
+        <div class="meta-grid">
+          <div class="metric">
+            <div class="label">Target Client ID</div>
+            <div class="value">150b53f165222304af7c45dc45c73863</div>
+          </div>
+          <div class="metric">
+            <div class="label">Stable Backend</div>
+            <div class="value">STABLE_API_URL5</div>
+          </div>
+          <div class="metric">
+            <div class="label">Document Date</div>
+            <div class="value">2026-03-19</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel dark">
+          <h3>권장 연동 구조</h3>
+          <p>
+            외부 업체는 가능하면 Next.js API 기준으로 연동하고, Stable 백엔드와 Payaction,
+            thirdweb 관련 처리 및 비밀키 관리는 서버 내부에 두는 방식을 권장합니다.
+          </p>
+          <div class="badge-row">
+            <span class="badge">외부 업체</span>
+            <span class="badge mint">Next.js API</span>
+            <span class="badge amber">Stable / Payaction / thirdweb</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>핵심 운영 포인트</h3>
+          <ul class="clean">
+            <li>현재 결제 페이지에서는 스마트 어카운트 연결 없이도 구매 진행이 가능합니다.</li>
+            <li>핵심 주문 생성 API는 <span class="mono">POST /api/order/setBuyOrder</span> 입니다.</li>
+            <li>결제요청은 서버가 <span class="mono">https://api.payaction.app/order</span> 를 호출합니다.</li>
+            <li>결제확정은 thirdweb SDK 또는 thirdweb engine 으로 처리됩니다.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>권장 전달 문구</strong>
+        <p>
+          현재 결제 연동은 웹에서 Next.js API 를 호출하고, 서버가 Stable 백엔드와 Payaction,
+          thirdweb 관련 처리를 순차 수행하는 구조입니다. 외부 연동은 우선
+          <span class="mono">/api/order/setBuyOrder</span> 중심으로 맞추고,
+          결제요청과 결제확정은 서버 내부 처리로 두는 방식을 권장합니다.
+        </p>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="section-head">
+        <h2>전체 흐름</h2>
+        <div class="section-note">
+          현재 <span class="mono">payment</span> 페이지 기준 구매 여정입니다.
+        </div>
+      </div>
+
+      <div class="flow-grid">
+        <div class="flow-card">
+          <div class="step">1</div>
+          <h3>클라이언트 정보 조회</h3>
+          <p>결제 체인과 기본 환율 정보를 확인합니다.</p>
+        </div>
+        <div class="flow-card">
+          <div class="step">2</div>
+          <h3>가맹점 정보 조회</h3>
+          <p>가맹점 운영 상태와 결제 한도를 읽어옵니다.</p>
+        </div>
+        <div class="flow-card">
+          <div class="step">3</div>
+          <h3>구매자 생성 또는 조회</h3>
+          <p>입금자 정보 기반으로 구매자 지갑 주소를 확보합니다.</p>
+        </div>
+        <div class="flow-card">
+          <div class="step">4</div>
+          <h3>기존 주문 확인</h3>
+          <p>같은 사용자의 진행 중 구매 주문이 있는지 확인합니다.</p>
+        </div>
+        <div class="flow-card">
+          <div class="step">5</div>
+          <h3>판매 주문 매칭</h3>
+          <p>같은 KRW 금액의 오픈 판매 주문이 있으면 즉시 수락합니다.</p>
+        </div>
+        <div class="flow-card">
+          <div class="step">6</div>
+          <h3>구매 주문 생성</h3>
+          <p>매칭 주문이 없으면 신규 구매 주문을 생성합니다.</p>
+        </div>
+      </div>
+
+      <div class="mini-grid">
+        <div class="panel">
+          <h3>주문 생성 후 이동</h3>
+          <p>
+            주문 생성이 완료되면
+            <span class="mono">/pay-usdt-reverse/[orderId]</span>
+            페이지로 이동하여 후속 확인을 진행합니다.
+          </p>
+        </div>
+        <div class="panel">
+          <h3>후속 서버 처리</h3>
+          <p>
+            필요 시 서버가 결제요청, 결제확정, 감사로그 저장까지 이어서 처리합니다.
+          </p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>실무상 핵심 포인트</strong>
+        <p>
+          외부 업체가 직접 맞추면 되는 핵심은 구매자 생성과 주문 생성 구간입니다.
+          Payaction 연동 키, thirdweb 비밀키, 엔진 토큰은 서버 내부에만 보관하는 구조가 안전합니다.
+        </p>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="section-head">
+        <h2>핵심 API 목록</h2>
+        <div class="section-note">
+          외부 업체가 실제로 참고해야 하는 엔드포인트 위주로 정리했습니다.
+        </div>
+      </div>
+
+      <table class="endpoint-table">
+        <thead>
+          <tr>
+            <th style="width: 17%;">API</th>
+            <th style="width: 23%;">목적</th>
+            <th style="width: 30%;">실제 대상</th>
+            <th style="width: 30%;">비고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="code-chip">POST /api/client/getClientInfo</span></td>
+            <td>클라이언트 환경 조회</td>
+            <td><span class="mono">POST {STABLE_API_URL5}/api/client/getClientInfo</span></td>
+            <td>체인, 환율 정보 사용</td>
+          </tr>
+          <tr>
+            <td><span class="code-chip">POST /api/store/getOneStore</span></td>
+            <td>가맹점 정보 조회</td>
+            <td><span class="mono">POST {STABLE_API_URL5}/api/store/getOneStore</span></td>
+            <td>운영 상태, 한도 확인</td>
+          </tr>
+          <tr>
+            <td><span class="code-chip">POST /api/user/setBuyerWithoutWalletAddressByStorecode</span></td>
+            <td>구매자 생성 또는 조회</td>
+            <td><span class="mono">POST {STABLE_API_URL5}/api/user/setBuyerWithoutWalletAddressByStorecode</span></td>
+            <td>구매자 지갑 주소 확보</td>
+          </tr>
+          <tr>
+            <td><span class="code-chip">POST /api/order/getOneBuyOrderByNicknameAndStorecode</span></td>
+            <td>기존 주문 확인</td>
+            <td>로컬 DB</td>
+            <td>진행 중 주문 재진입 처리</td>
+          </tr>
+          <tr>
+            <td><span class="code-chip">POST /api/order/getAllSellOrders</span></td>
+            <td>판매 주문 조회</td>
+            <td>로컬 DB</td>
+            <td>같은 KRW 금액 매칭</td>
+          </tr>
+          <tr>
+            <td><span class="code-chip">POST /api/order/acceptSellOrder</span></td>
+            <td>판매 주문 수락</td>
+            <td>로컬 주문 처리</td>
+            <td>일부 경우 SMS 후처리 포함</td>
+          </tr>
+          <tr>
+            <td><span class="code-chip">POST /api/order/setBuyOrder</span></td>
+            <td>신규 구매 주문 생성</td>
+            <td><span class="mono">POST {STABLE_API_URL5}/api/order/setBuyOrder</span></td>
+            <td>현재 활성 흐름의 핵심 API</td>
+          </tr>
+          <tr>
+            <td><span class="code-chip">POST /api/order/getOneBuyOrderByOrderId</span></td>
+            <td>주문 상태 재조회</td>
+            <td><span class="mono">POST {STABLE_API_URL5}/api/order/getOneBuyOrderByOrderId</span></td>
+            <td>상세 화면 후속 조회용</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="mini-grid">
+        <div class="note-box">
+          <h4>Next.js API 기준 연동 권장</h4>
+          <ul class="clean">
+            <li>외부 업체는 내부 Stable 백엔드 주소를 몰라도 됩니다.</li>
+            <li>Payaction, thirdweb 관련 키를 외부에 노출하지 않습니다.</li>
+            <li>운영 예외처리와 감사로그를 서버에 유지할 수 있습니다.</li>
+          </ul>
+        </div>
+        <div class="note-box">
+          <h4>직접 백엔드 연동 시 주의</h4>
+          <ul class="clean">
+            <li>주문 생성 외의 후속 처리 범위를 별도로 정의해야 합니다.</li>
+            <li>인증 체계와 허용 IP 정책이 추가로 필요할 수 있습니다.</li>
+            <li>응답 포맷 일부가 API 별로 완전히 동일하지 않습니다.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="section-head">
+        <h2>주요 요청 예시와 서버 내부 처리</h2>
+        <div class="section-note">
+          실연동에서 가장 많이 참고하는 요청 예시만 추렸습니다.
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="card">
+          <h3>구매자 생성 또는 조회</h3>
+          <pre>{
+  "clientid": "150b53f165222304af7c45dc45c73863",
+  "storecode": "wmipqryz",
+  "userCode": "merchant-user-001",
+  "userName": "홍길동",
+  "userBankName": "국민은행",
+  "userBankAccountNumber": "12345678901234",
+  "userType": "buyer"
+}</pre>
+        </div>
+        <div class="card">
+          <h3>구매 주문 생성</h3>
+          <pre>{
+  "lang": "kr",
+  "clientid": "150b53f165222304af7c45dc45c73863",
+  "storecode": "wmipqryz",
+  "walletAddress": "0x1234...abcd",
+  "nickname": "merchant-user-001",
+  "usdtAmount": 35.71,
+  "krwAmount": 50000,
+  "rate": 1400,
+  "privateSale": false,
+  "buyer": {
+    "depositBankName": "국민은행",
+    "depositBankAccountNumber": "12345678901234",
+    "depositName": "홍길동"
+  },
+  "returnUrl": "https://merchant.example.com/payment/result",
+  "orderNumber": "ORDER-20260319-0001",
+  "phoneNumber": "01012345678",
+  "mobile": "01012345678"
+}</pre>
+        </div>
+      </div>
+
+      <div class="mini-grid">
+        <div class="panel">
+          <h3>서버 내부 처리 1: 결제요청</h3>
+          <p>
+            <span class="mono">POST /api/order/requestPayment</span> 는 서버가
+            <span class="mono">https://api.payaction.app/order</span> 를 대신 호출하는 구조입니다.
+            <span class="mono">x-api-key</span> 와 <span class="mono">x-mall-id</span> 는 서버 내부에서만 관리해야 합니다.
+          </p>
+        </div>
+        <div class="panel">
+          <h3>서버 내부 처리 2: 결제확정</h3>
+          <p>
+            <span class="mono">POST /api/order/confirmPayment</span> 는 thirdweb SDK 또는
+            thirdweb engine 을 통해 에스크로 전송을 수행합니다. 외부 업체에 공개할 공개 API로 보기보다는
+            서버 내부 오케스트레이션 API 로 보는 것이 적절합니다.
+          </p>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>보안 체크리스트</strong>
+        <p>
+          Payaction API Key, Mall ID, THIRDWEB_SECRET_KEY, THIRDWEB_ENGINE_ACCESS_TOKEN,
+          DB 접속 정보는 반드시 서버에서만 보관해야 합니다. 외부 업체에는 가능하면
+          Next.js API 만 개방하는 방식을 권장합니다.
+        </p>
+      </div>
+
+      <div class="footer-tag">
+        첨부 상세 문서: <span class="mono">docs/payment-api-integration-ko.md</span><br />
+        공유용 원문: <span class="mono">docs/payment-api-integration-ko-share.md</span>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
