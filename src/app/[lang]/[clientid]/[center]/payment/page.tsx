@@ -978,6 +978,16 @@ export default function Index({ params }: any) {
     setIsDisconnectConfirmModalOpen(true);
   };
 
+  const promptSmartWalletConnection = () => {
+    if (isAutoConnecting) {
+      toast.error('지갑 세션을 확인하는 중입니다. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+
+    toast.error('결제를 진행하려면 thirdweb 지갑을 먼저 연결해 주세요.');
+    openPhoneAuthModal();
+  };
+
   const handleSendPhoneVerificationCode = async (phoneNumberOverride?: string) => {
     const rawPhoneNumber = phoneNumberOverride || phoneInput;
     const normalizedPhoneNumber = normalizeKoreanPhoneNumber(rawPhoneNumber);
@@ -2369,6 +2379,11 @@ export default function Index({ params }: any) {
     depositBankName: string,
     depositBankAccountNumber: string,
   ) => {
+    if (!hasConnectedSmartWallet) {
+      promptSmartWalletConnection();
+      return;
+    }
+
     const buyerWalletAddress = user?.walletAddress || address;
     const buyerNickname = user?.nickname || nickname || storeUser || '';
 
@@ -2914,7 +2929,12 @@ export default function Index({ params }: any) {
     user?.buyOrderStatus === 'ordered' || user?.buyOrderStatus === 'paymentRequested';
   const tradeWalletAddress = user?.walletAddress || address;
   const isPurchaseDisabled =
-    !tradeWalletAddress || !user || !selectedKrwAmount || acceptingSellOrderRandom;
+    !hasConnectedSmartWallet
+    || isAutoConnecting
+    || !tradeWalletAddress
+    || !user
+    || !selectedKrwAmount
+    || acceptingSellOrderRandom;
   const formattedBalance = Number(balance).toFixed(2);
   const formattedEstimatedUsdt =
     rate > 0
@@ -3385,6 +3405,29 @@ export default function Index({ params }: any) {
               <div className="w-full">
                 {orderId === '0' && (
                   <div className="flex w-full flex-col gap-3">
+                    {!hasConnectedSmartWallet && (
+                      <div
+                        className="rounded-[20px] border px-3 py-4 text-sm leading-5 text-slate-600"
+                        style={{
+                          borderColor: 'var(--brand-card-border)',
+                          backgroundColor: 'var(--brand-card-muted)',
+                        }}
+                      >
+                        <div
+                          className="text-[10px] font-semibold uppercase tracking-[0.14em]"
+                          style={{ color: 'var(--brand-badge-text)' }}
+                        >
+                          Thirdweb Required
+                        </div>
+                        <div className="mt-1.5 font-semibold text-slate-900">
+                          결제를 진행하려면 상단에서 휴대폰으로 thirdweb 지갑을 먼저 연결해 주세요.
+                        </div>
+                        <div className="mt-1 text-slate-500">
+                          지갑 연결이 완료되어야 결제 버튼이 활성화됩니다.
+                        </div>
+                      </div>
+                    )}
+
                     {isOrderInProgress ? (
                       <div
                         className="rounded-[20px] border px-3 py-4"
@@ -3678,6 +3721,11 @@ export default function Index({ params }: any) {
                                     boxShadow: `0 16px 40px ${brandTheme.buttonShadow}`,
                                   }}
                               onClick={() => {
+                                if (!hasConnectedSmartWallet) {
+                                  promptSmartWalletConnection();
+                                  return;
+                                }
+
                                 if (!depositName) {
                                   toast.error(Please_enter_deposit_name);
                                   return;
@@ -3711,6 +3759,12 @@ export default function Index({ params }: any) {
                                 {acceptingSellOrderRandom ? '구매주문 중입니다.' : '구매하기'}
                               </span>
                             </button>
+
+                            {!hasConnectedSmartWallet && (
+                              <p className="mt-2.5 text-[11px] leading-5 text-amber-700">
+                                결제를 진행하려면 먼저 상단의 휴대폰 연결로 thirdweb 지갑을 연결해 주세요.
+                              </p>
+                            )}
 
                             <p className="mt-2.5 text-[11px] leading-5 text-slate-500">
                               결제 직후 구매 수량은 자동으로 가맹점 결제 화면에 반영됩니다.
