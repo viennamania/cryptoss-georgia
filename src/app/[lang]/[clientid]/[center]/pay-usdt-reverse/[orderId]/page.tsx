@@ -1652,6 +1652,11 @@ export default function Index({ params }: any) {
 
         // if sell order not found, create buy order
 
+        const auditContext = await buildOrderAuditPayload(
+          address,
+          'pay_usdt_reverse_create_order',
+        );
+        const connectedPhoneNumberForOrder = String(auditContext?.phoneNumber || "");
 
         const response = await fetch('/api/order/setBuyOrder', {
           method: 'POST',
@@ -1669,10 +1674,9 @@ export default function Index({ params }: any) {
             rate: rate,
             privateSale: false,
             orderNumber: orderNumber,
-            auditContext: await buildOrderAuditPayload(
-              address,
-              'pay_usdt_reverse_create_order',
-            ),
+            phoneNumber: connectedPhoneNumberForOrder,
+            mobile: connectedPhoneNumberForOrder,
+            auditContext,
           })
         });
 

@@ -32,6 +32,8 @@ export async function POST(request: NextRequest) {
     buyer,
     returnUrl,
     orderNumber,
+    phoneNumber,
+    mobile,
     auditContext,
   } = body;
 
@@ -72,6 +74,8 @@ export async function POST(request: NextRequest) {
         buyer,
         returnUrl,
         orderNumber,
+        phoneNumber,
+        mobile,
       }),
     });
 

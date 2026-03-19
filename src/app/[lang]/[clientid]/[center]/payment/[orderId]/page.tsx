@@ -1873,6 +1873,12 @@ export default function Index({ params }: any) {
         console.log('usdtAmount', usdtAmount);
 
 
+        const auditContext = await buildOrderAuditPayload(
+          address,
+          'payment_order_page_create_order',
+        );
+        const connectedPhoneNumberForOrder = String(auditContext?.phoneNumber || "");
+
         const response = await fetch('/api/order/setBuyOrder', {
           method: 'POST',
           headers: {
@@ -1892,10 +1898,9 @@ export default function Index({ params }: any) {
               depositBankName: depositBankName,
               depositName: depositName,
             },
-            auditContext: await buildOrderAuditPayload(
-              address,
-              'payment_order_page_create_order',
-            ),
+            phoneNumber: connectedPhoneNumberForOrder,
+            mobile: connectedPhoneNumberForOrder,
+            auditContext,
           })
         });
 

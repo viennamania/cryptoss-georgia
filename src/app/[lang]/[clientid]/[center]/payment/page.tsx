@@ -2493,6 +2493,7 @@ export default function Index({ params }: any) {
           buyerWalletAddress,
           'payment_page_create_order',
         );
+        const connectedPhoneNumberForOrder = String(auditContext?.phoneNumber || "");
 
 
         const response = await fetch('/api/order/setBuyOrder', {
@@ -2517,6 +2518,8 @@ export default function Index({ params }: any) {
             },
             returnUrl: paramReturnUrl,
             orderNumber: orderNumber,
+            phoneNumber: connectedPhoneNumberForOrder,
+            mobile: connectedPhoneNumberForOrder,
             auditContext,
           })
         });
