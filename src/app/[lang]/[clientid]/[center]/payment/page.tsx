@@ -901,7 +901,7 @@ export default function Index({ params }: any) {
   const [connectedPhoneNumber, setConnectedPhoneNumber] = useState('');
   const connectedSmartWalletAddress = smartAccount?.address || '';
   const hasConnectedSmartWallet = Boolean(connectedSmartWalletAddress);
-  const requiresSmartAccountConnection = params.center !== 'pelpxvvs';
+  const requiresSmartAccountConnection = false;
   const walletLoginSyncRef = useRef('');
   const [isPhoneAuthModalOpen, setIsPhoneAuthModalOpen] = useState(false);
   const [phoneInput, setPhoneInput] = useState('');
