@@ -901,6 +901,7 @@ export default function Index({ params }: any) {
   const [connectedPhoneNumber, setConnectedPhoneNumber] = useState('');
   const connectedSmartWalletAddress = smartAccount?.address || '';
   const hasConnectedSmartWallet = Boolean(connectedSmartWalletAddress);
+  const requiresSmartAccountConnection = params.center !== 'pelpxvvs';
   const walletLoginSyncRef = useRef('');
   const [isPhoneAuthModalOpen, setIsPhoneAuthModalOpen] = useState(false);
   const [phoneInput, setPhoneInput] = useState('');
@@ -2379,7 +2380,7 @@ export default function Index({ params }: any) {
     depositBankName: string,
     depositBankAccountNumber: string,
   ) => {
-    if (!hasConnectedSmartWallet) {
+    if (requiresSmartAccountConnection && !hasConnectedSmartWallet) {
       promptSmartWalletConnection();
       return;
     }
@@ -2932,8 +2933,7 @@ export default function Index({ params }: any) {
     user?.buyOrderStatus === 'ordered' || user?.buyOrderStatus === 'paymentRequested';
   const tradeWalletAddress = user?.walletAddress || address;
   const isPurchaseDisabled =
-    !hasConnectedSmartWallet
-    || isAutoConnecting
+    (requiresSmartAccountConnection && (!hasConnectedSmartWallet || isAutoConnecting))
     || !tradeWalletAddress
     || !user
     || !selectedKrwAmount
@@ -3061,12 +3061,24 @@ export default function Index({ params }: any) {
                     SAFE
                   </div>
                   <div className="mt-2 text-[16px] font-semibold tracking-tight text-slate-900">
-                    안전 결제를 위해
-                    <br />
-                    휴대폰으로 연결해 주세요
+                    {requiresSmartAccountConnection ? (
+                      <>
+                        안전 결제를 위해
+                        <br />
+                        휴대폰으로 연결해 주세요
+                      </>
+                    ) : (
+                      <>
+                        휴대폰으로 연결하면
+                        <br />
+                        더 안전하게 이용할 수 있습니다
+                      </>
+                    )}
                   </div>
                   <div className="mt-1 text-[12px] leading-5 text-slate-600">
-                    고객 자산 보호를 위한 본인 확인 절차입니다.
+                    {requiresSmartAccountConnection
+                      ? '고객 자산 보호를 위한 본인 확인 절차입니다.'
+                      : '스마트 어카운트 연결 없이도 구매할 수 있으며, 연결 시 추가 확인 정보를 사용할 수 있습니다.'}
                   </div>
                 </div>
 
@@ -3081,7 +3093,11 @@ export default function Index({ params }: any) {
                       }
                     : undefined}
                 >
-                  {hasConnectedSmartWallet ? '스마트 어카운트 연결됨' : '휴대폰 확인'}
+                  {hasConnectedSmartWallet
+                    ? '스마트 어카운트 연결됨'
+                    : requiresSmartAccountConnection
+                    ? '휴대폰 확인'
+                    : '선택 연결'}
                 </div>
               </div>
 
@@ -3116,7 +3132,7 @@ export default function Index({ params }: any) {
                       boxShadow: `0 10px 18px ${brandTheme.buttonShadow}`,
                     }}
                   >
-                    휴대폰으로 연결
+                    {requiresSmartAccountConnection ? '휴대폰으로 연결' : '휴대폰으로 연결(선택)'}
                   </button>
                 )}
               </div>
@@ -3411,7 +3427,7 @@ export default function Index({ params }: any) {
               <div className="w-full">
                 {orderId === '0' && (
                   <div className="flex w-full flex-col gap-3">
-                    {!hasConnectedSmartWallet && (
+                    {requiresSmartAccountConnection && !hasConnectedSmartWallet && (
                       <div
                         className="rounded-[20px] border px-3 py-4 text-sm leading-5 text-slate-600"
                         style={{
@@ -3727,7 +3743,7 @@ export default function Index({ params }: any) {
                                     boxShadow: `0 16px 40px ${brandTheme.buttonShadow}`,
                                   }}
                               onClick={() => {
-                                if (!hasConnectedSmartWallet) {
+                                if (requiresSmartAccountConnection && !hasConnectedSmartWallet) {
                                   promptSmartWalletConnection();
                                   return;
                                 }
@@ -3766,7 +3782,7 @@ export default function Index({ params }: any) {
                               </span>
                             </button>
 
-                            {!hasConnectedSmartWallet && (
+                            {requiresSmartAccountConnection && !hasConnectedSmartWallet && (
                               <p className="mt-2.5 text-[11px] leading-5 text-amber-700">
                                 결제를 진행하려면 먼저 상단의 휴대폰 연결로 스마트 어카운트를 연결해 주세요.
                               </p>
