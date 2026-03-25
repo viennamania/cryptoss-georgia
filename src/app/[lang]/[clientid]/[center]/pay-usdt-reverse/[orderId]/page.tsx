@@ -666,6 +666,8 @@ export default function Index({ params }: any) {
   };
 
   const [oneBuyOrder, setOneBuyOrder] = useState<any>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [hasCelebratedSettlement, setHasCelebratedSettlement] = useState(false);
 
 
 
@@ -1111,6 +1113,28 @@ export default function Index({ params }: any) {
     return () => clearInterval(interval);
 
   } , [params.clientid, orderId]);
+
+  useEffect(() => {
+    setShowCelebration(false);
+    setHasCelebratedSettlement(false);
+  }, [orderId]);
+
+  useEffect(() => {
+    const isSettlementResolved = Boolean(oneBuyOrder?.settlement);
+
+    if (!isSettlementResolved || hasCelebratedSettlement) {
+      return;
+    }
+
+    setShowCelebration(true);
+    setHasCelebratedSettlement(true);
+
+    const timeoutId = window.setTimeout(() => {
+      setShowCelebration(false);
+    }, 8200);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [oneBuyOrder?.settlement, hasCelebratedSettlement]);
 
     
 
@@ -1814,6 +1838,10 @@ export default function Index({ params }: any) {
   const formattedKrwAmount = oneBuyOrder?.krwAmount
     ? `${Number(oneBuyOrder.krwAmount).toLocaleString('ko-KR')}원`
     : '0원';
+  const isSettlementPending =
+    oneBuyOrder?.status === 'paymentConfirmed' && !oneBuyOrder?.settlement;
+  const isSettlementComplete =
+    oneBuyOrder?.status === 'paymentConfirmed' && Boolean(oneBuyOrder?.settlement);
   const orderStatusLabel =
     oneBuyOrder?.status === 'ordered'
       ? '판매자 매칭 중'
@@ -1822,13 +1850,17 @@ export default function Index({ params }: any) {
       : oneBuyOrder?.status === 'paymentRequested'
       ? '입금 대기'
       : oneBuyOrder?.status === 'paymentConfirmed'
-      ? '정산 완료'
+      ? isSettlementComplete
+        ? '결제 완료'
+        : '전송 진행 중'
       : oneBuyOrder?.status === 'cancelled'
       ? '거래 취소'
       : '주문 확인 중';
   const orderStatusTone =
-    oneBuyOrder?.status === 'paymentConfirmed'
+    isSettlementComplete
       ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+      : isSettlementPending
+      ? 'text-sky-700 bg-sky-50 border-sky-200'
       : oneBuyOrder?.status === 'paymentRequested'
       ? 'text-amber-700 bg-amber-50 border-amber-200'
       : oneBuyOrder?.status === 'accepted'
@@ -1885,6 +1917,90 @@ export default function Index({ params }: any) {
       className="relative min-h-[100vh] overflow-hidden bg-[var(--brand-page-bg)] text-slate-900"
       style={brandStyles}
     >
+      {showCelebration && isSettlementComplete && (
+        <div className="pointer-events-none fixed inset-0 z-[90] overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.94),_rgba(254,240,138,0.38)_24%,_rgba(110,231,183,0.26)_48%,_rgba(15,23,42,0.34)_100%)] backdrop-blur-[4px]" />
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(251,191,36,0.14),rgba(16,185,129,0.14),rgba(56,189,248,0.16))]" />
+          <div className="celebration-radiance absolute left-1/2 top-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,_rgba(250,204,21,0.48),_rgba(16,185,129,0.22),_rgba(56,189,248,0.12),_transparent_74%)]" />
+          <div className="absolute inset-0">
+            {Array.from({ length: 46 }).map((_, index) => {
+              const colors = ['#f59e0b', '#10b981', '#38bdf8', '#f97316', '#f43f5e', '#22c55e', '#facc15'];
+
+              return (
+                <span
+                  key={index}
+                  className="celebration-confetti"
+                  style={{
+                    left: `${(index * 9 + 5) % 100}%`,
+                    animationDelay: `${(index % 8) * 0.12}s`,
+                    animationDuration: `${3.8 + (index % 6) * 0.42}s`,
+                    background: colors[index % colors.length],
+                    transform: `rotate(${index * 17}deg)`,
+                  }}
+                />
+              );
+            })}
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center px-5">
+            <div className="celebration-card celebration-shimmer relative w-full max-w-sm overflow-hidden rounded-[34px] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(254,252,232,0.94),rgba(236,253,245,0.9))] p-5 text-center shadow-[0_36px_140px_rgba(15,23,42,0.28)] backdrop-blur-xl">
+              <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-amber-200 bg-[linear-gradient(135deg,rgba(254,249,195,0.98),rgba(254,240,138,0.92))] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700 shadow-[0_8px_24px_rgba(245,158,11,0.18)]">
+                Jackpot
+              </div>
+              <div className="relative mt-4 flex justify-center">
+                <div className="celebration-halo absolute h-28 w-28 rounded-full border border-emerald-200/80" />
+                <div className="celebration-halo celebration-halo-delay absolute h-28 w-28 rounded-full border border-amber-200/80" />
+                <div className="celebration-spark absolute -left-3 top-3 h-4 w-4 rounded-full bg-amber-300" />
+                <div className="celebration-spark celebration-spark-delay absolute right-0 top-8 h-3 w-3 rounded-full bg-sky-300" />
+                <div className="celebration-spark celebration-spark-late absolute bottom-2 left-4 h-3.5 w-3.5 rounded-full bg-emerald-300" />
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-[radial-gradient(circle_at_top,_#fde68a,_#ffffff_42%,_#bbf7d0)] shadow-[0_18px_60px_rgba(16,185,129,0.26)]">
+                  <Image
+                    src="/icon-payment.png"
+                    alt="Payment Complete"
+                    width={56}
+                    height={56}
+                    className="h-14 w-14 object-contain"
+                  />
+                </div>
+              </div>
+              <div className="mt-5 text-[11px] font-semibold uppercase tracking-[0.24em] text-emerald-700">
+                Payment Completed
+              </div>
+              <div className="mt-2 text-[30px] font-semibold tracking-tight text-slate-900">
+                결제가 터졌습니다
+              </div>
+              <div className="mt-1 text-lg font-semibold tracking-tight text-transparent bg-[linear-gradient(135deg,#d97706,#059669,#0284c7)] bg-clip-text">
+                {formattedUsdtAmount} USDT 전송 완료
+              </div>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                settlement 확인이 끝났습니다. 상점 충전 반영을 바로 확인해 보세요.
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-2 text-left">
+                <div className="rounded-[18px] border border-white/80 bg-white/72 px-3 py-2 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                    Order
+                  </div>
+                  <div className="mt-1 text-sm font-semibold text-slate-900">
+                    #{oneBuyOrder?.tradeId}
+                  </div>
+                </div>
+                <div className="rounded-[18px] border border-white/80 bg-white/72 px-3 py-2 shadow-[0_8px_20px_rgba(15,23,42,0.08)]">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+                    Status
+                  </div>
+                  <div className="mt-1 text-sm font-semibold text-emerald-700">
+                    Settlement Complete
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center justify-center gap-2 text-[12px] font-medium text-slate-500">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,0.14)]" />
+                Jackpot celebration active
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-[var(--brand-page-tint)] via-[var(--brand-page-mist)] to-transparent" />
       <div className="pointer-events-none absolute -left-16 top-24 h-48 w-48 rounded-full bg-[var(--brand-glow-a)] opacity-90 blur-3xl" />
       <div className="pointer-events-none absolute -right-16 top-40 h-56 w-56 rounded-full bg-[var(--brand-glow-b)] opacity-90 blur-3xl" />
@@ -2102,59 +2218,98 @@ export default function Index({ params }: any) {
           {!loadingUser && address && (
             <div className="mb-3 w-full flex flex-col items-center gap-2"> 
 
-              {       
-              orderId
-              && oneBuyOrder
-              && oneBuyOrder.status === 'paymentConfirmed'
-              && !oneBuyOrder?.settlement
-              && (
+              {orderId && oneBuyOrder && isSettlementPending && (
+                <div className="w-full overflow-hidden rounded-[22px] border border-sky-200 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(239,246,255,0.98),rgba(224,242,254,0.94))] shadow-[0_20px_50px_rgba(14,165,233,0.12)]">
+                  <div className="flex items-stretch gap-3 px-3 py-3 sm:px-4">
+                    <div className="relative flex w-[88px] shrink-0 items-center justify-center">
+                      <div className="settlement-pulse absolute h-16 w-16 rounded-full bg-sky-200/70 blur-sm" />
+                      <div className="settlement-pulse absolute h-20 w-20 rounded-full border border-sky-200/80" />
+                      <div className="settlement-orbit absolute h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(52,211,153,0.18)]" />
+                      <div className="settlement-orbit absolute h-2 w-2 rounded-full bg-sky-500 shadow-[0_0_0_5px_rgba(56,189,248,0.16)] [animation-duration:3.6s] [animation-direction:reverse]" />
+                      <div className="relative flex h-[72px] w-[72px] items-center justify-center rounded-[24px] border border-white/80 bg-white/90 shadow-[0_14px_36px_rgba(14,165,233,0.16)]">
+                        <Image
+                          src="/icon-payment.png"
+                          alt="Payment in Progress"
+                          width={54}
+                          height={54}
+                          className="h-14 w-14 object-contain"
+                        />
+                      </div>
+                    </div>
 
-                <div className='w-full rounded-[18px] border border-amber-200 bg-[#fff8eb] px-3 py-3'>
-                  <div className='flex flex-row gap-2 items-start justify-start'>
-                    <Image
-                      src="/icon-payment.png"
-                      alt="Payment"
-                      width={80}
-                      height={80}
-                      className="animate-pulse"
-                    />
-                    <span className="text-sm leading-6 text-slate-700">
-                      당신이 구매한 테더 <b>{oneBuyOrder.usdtAmount.toFixed(3).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b> USDT를 상점으로 전송중입니다.
-                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="inline-flex rounded-full border border-sky-200 bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-700">
+                          Payment in Flight
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-sky-100/90 px-2 py-1 text-[11px] font-medium text-sky-700">
+                          <span className="h-2 w-2 rounded-full bg-sky-500 animate-pulse" />
+                          자동 갱신 중
+                        </span>
+                      </div>
+                      <div className="mt-2 text-[17px] font-semibold leading-6 text-slate-900">
+                        {formattedUsdtAmount} USDT가 상점으로 전달되는 중입니다.
+                      </div>
+                      <p className="mt-1 text-sm leading-6 text-slate-600">
+                        입금 확인은 끝났고, 정산 엔진이 상점 반영까지 마무리하는 중입니다. 이 화면은 settlement 값이 잡히는 즉시 완료 상태로 전환됩니다.
+                      </p>
+
+                      <div className="settlement-scan relative mt-3 overflow-hidden rounded-full bg-sky-100/90 p-1">
+                        <div className="flex items-center justify-between gap-1 rounded-full bg-white/80 px-2 py-1 text-[11px] font-medium text-slate-600">
+                          <span className="rounded-full bg-emerald-50 px-2 py-1 text-emerald-700">입금 확인 완료</span>
+                          <span className="rounded-full bg-sky-50 px-2 py-1 text-sky-700">USDT 전송 진행</span>
+                          <span className="rounded-full bg-slate-50 px-2 py-1 text-slate-500">상점 반영 대기</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-slate-500">
+                        <span>구매금액 {formattedKrwAmount}</span>
+                        <span>거래번호 #{oneBuyOrder.tradeId}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
               )}
 
+              {orderId && oneBuyOrder && isSettlementComplete && (
+                <div className="w-full overflow-hidden rounded-[22px] border border-emerald-200 bg-[linear-gradient(135deg,rgba(255,255,255,0.97),rgba(236,253,245,0.98),rgba(220,252,231,0.94))] shadow-[0_20px_50px_rgba(16,185,129,0.14)]">
+                  <div className="flex items-center gap-3 px-3 py-3 sm:px-4">
+                    <div className="relative flex w-[88px] shrink-0 items-center justify-center">
+                      <div className="settlement-pulse absolute h-16 w-16 rounded-full bg-emerald-200/70 blur-sm" />
+                      <div className="relative flex h-[72px] w-[72px] items-center justify-center rounded-[24px] border border-white/80 bg-white/90 shadow-[0_14px_36px_rgba(16,185,129,0.18)]">
+                        <Image
+                          src="/icon-payment.png"
+                          alt="Payment Complete"
+                          width={54}
+                          height={54}
+                          className="h-14 w-14 object-contain"
+                        />
+                      </div>
+                    </div>
 
-              {
-                /*
-              orderId && buyOrders.length > 0
-              && buyOrders[0]?.paymentMethod === 'bank'
-              && buyOrders[0].status === 'paymentConfirmed'
-              && balance === 0
-              && (
-              */
-             
-              orderId && oneBuyOrder?.paymentMethod === 'bank'
-              && oneBuyOrder.status === 'paymentConfirmed'
-              && oneBuyOrder?.settlement
-              && (
-
-                <div className='w-full rounded-[18px] border border-emerald-200 bg-emerald-50 px-3 py-3'>
-                  <div className='flex flex-row gap-2 items-start justify-start'>
-                    <Image
-                      src="/icon-payment.png"
-                      alt="Payment"
-                      width={80}
-                      height={80}
-                    />
-                    <span className="text-sm leading-6 text-slate-700">
-                      당신이 구매한 테더 <b>{oneBuyOrder.usdtAmount.toFixed(3).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</b> USDT가 상점으로 전송되었습니다. 상점에서 충전 상태를 확인할 수 있습니다.
-                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="inline-flex rounded-full border border-emerald-200 bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                          Payment Complete
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100/90 px-2 py-1 text-[11px] font-medium text-emerald-700">
+                          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                          Settlement detected
+                        </span>
+                      </div>
+                      <div className="mt-2 text-[17px] font-semibold leading-6 text-slate-900">
+                        {formattedUsdtAmount} USDT 전송이 완료되었습니다.
+                      </div>
+                      <p className="mt-1 text-sm leading-6 text-slate-600">
+                        상점에서 충전 상태를 확인할 수 있습니다. settlement 값이 확인되어 완료 화면으로 전환되었습니다.
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-slate-500">
+                        <span>구매금액 {formattedKrwAmount}</span>
+                        <span>거래번호 #{oneBuyOrder.tradeId}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
               )}
 
               
@@ -2726,7 +2881,7 @@ export default function Index({ params }: any) {
                         
 
 
-                          {oneBuyOrder.status === 'paymentConfirmed' && oneBuyOrder?.paymentMethod === 'bank' && (
+                          {isSettlementComplete && oneBuyOrder?.paymentMethod === 'bank' && (
                             <div className="mt-3 rounded-[18px] border border-emerald-200 bg-emerald-50/70 p-3">
                               <div className="flex items-start gap-2.5">
                                 <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-white shadow-sm">
@@ -3203,6 +3358,181 @@ export default function Index({ params }: any) {
             </div>
           </footer>
         </div>
+
+        <style jsx global>{`
+          @keyframes settlementPulse {
+            0%, 100% {
+              transform: scale(0.96);
+              opacity: 0.58;
+            }
+            50% {
+              transform: scale(1.08);
+              opacity: 1;
+            }
+          }
+
+          @keyframes settlementOrbit {
+            from {
+              transform: rotate(0deg) translateX(24px) rotate(0deg);
+            }
+            to {
+              transform: rotate(360deg) translateX(24px) rotate(-360deg);
+            }
+          }
+
+          @keyframes settlementScan {
+            from {
+              transform: translateX(-120%);
+            }
+            to {
+              transform: translateX(120%);
+            }
+          }
+
+          @keyframes celebrationDrop {
+            0% {
+              transform: translate3d(0, -16vh, 0) rotate(0deg);
+              opacity: 0;
+            }
+            12% {
+              opacity: 1;
+            }
+            100% {
+              transform: translate3d(0, 112vh, 0) rotate(760deg);
+              opacity: 0;
+            }
+          }
+
+          @keyframes celebrationPop {
+            0% {
+              transform: translateY(22px) scale(0.82);
+              opacity: 0;
+            }
+            55% {
+              transform: translateY(-8px) scale(1.03);
+              opacity: 1;
+            }
+            100% {
+              transform: translateY(0) scale(1);
+              opacity: 1;
+            }
+          }
+
+          @keyframes celebrationGlow {
+            0%, 100% {
+              transform: translate(-50%, -50%) scale(0.94);
+              opacity: 0.34;
+            }
+            50% {
+              transform: translate(-50%, -50%) scale(1.08);
+              opacity: 0.86;
+            }
+          }
+
+          @keyframes celebrationHalo {
+            0% {
+              transform: scale(0.72);
+              opacity: 0.56;
+            }
+            100% {
+              transform: scale(1.55);
+              opacity: 0;
+            }
+          }
+
+          @keyframes celebrationShimmer {
+            0% {
+              transform: translateX(-130%) skewX(-20deg);
+              opacity: 0;
+            }
+            15% {
+              opacity: 0.7;
+            }
+            100% {
+              transform: translateX(130%) skewX(-20deg);
+              opacity: 0;
+            }
+          }
+
+          @keyframes celebrationSpark {
+            0%, 100% {
+              transform: scale(0.7);
+              opacity: 0.35;
+            }
+            50% {
+              transform: scale(1.18);
+              opacity: 1;
+            }
+          }
+
+          .settlement-pulse {
+            animation: settlementPulse 2.2s ease-in-out infinite;
+          }
+
+          .settlement-orbit {
+            left: calc(50% - 5px);
+            top: calc(50% - 5px);
+            transform-origin: center;
+            animation: settlementOrbit 2.8s linear infinite;
+          }
+
+          .settlement-scan::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.82), transparent);
+            animation: settlementScan 2.4s linear infinite;
+          }
+
+          .celebration-radiance {
+            animation: celebrationGlow 2.8s ease-in-out infinite;
+          }
+
+          .celebration-card {
+            animation: celebrationPop 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          }
+
+          .celebration-shimmer::after {
+            content: '';
+            position: absolute;
+            inset: -20%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.62), transparent);
+            animation: celebrationShimmer 2.6s ease-in-out infinite;
+          }
+
+          .celebration-confetti {
+            position: absolute;
+            top: -14vh;
+            width: 14px;
+            height: 34px;
+            border-radius: 999px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+            animation-name: celebrationDrop;
+            animation-timing-function: linear;
+            animation-fill-mode: forwards;
+          }
+
+          .celebration-halo {
+            animation: celebrationHalo 1.9s ease-out infinite;
+          }
+
+          .celebration-halo-delay {
+            animation-delay: 0.5s;
+          }
+
+          .celebration-spark {
+            animation: celebrationSpark 1.4s ease-in-out infinite;
+            box-shadow: 0 0 0 10px rgba(255,255,255,0.18);
+          }
+
+          .celebration-spark-delay {
+            animation-delay: 0.35s;
+          }
+
+          .celebration-spark-late {
+            animation-delay: 0.7s;
+          }
+        `}</style>
 
 
 
