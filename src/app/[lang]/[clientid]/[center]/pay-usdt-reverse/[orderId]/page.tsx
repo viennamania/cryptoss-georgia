@@ -668,6 +668,7 @@ export default function Index({ params }: any) {
   const [oneBuyOrder, setOneBuyOrder] = useState<any>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [hasCelebratedSettlement, setHasCelebratedSettlement] = useState(false);
+  const [isCelebrationFading, setIsCelebrationFading] = useState(false);
 
 
 
@@ -1117,6 +1118,7 @@ export default function Index({ params }: any) {
   useEffect(() => {
     setShowCelebration(false);
     setHasCelebratedSettlement(false);
+    setIsCelebrationFading(false);
   }, [orderId]);
 
   useEffect(() => {
@@ -1128,12 +1130,21 @@ export default function Index({ params }: any) {
 
     setShowCelebration(true);
     setHasCelebratedSettlement(true);
+    setIsCelebrationFading(false);
+
+    const fadeTimeoutId = window.setTimeout(() => {
+      setIsCelebrationFading(true);
+    }, 5200);
 
     const timeoutId = window.setTimeout(() => {
       setShowCelebration(false);
-    }, 8200);
+      setIsCelebrationFading(false);
+    }, 8600);
 
-    return () => window.clearTimeout(timeoutId);
+    return () => {
+      window.clearTimeout(fadeTimeoutId);
+      window.clearTimeout(timeoutId);
+    };
   }, [oneBuyOrder?.settlement, hasCelebratedSettlement]);
 
     
@@ -1918,7 +1929,11 @@ export default function Index({ params }: any) {
       style={brandStyles}
     >
       {showCelebration && isSettlementComplete && (
-        <div className="pointer-events-none fixed inset-0 z-[90] overflow-hidden">
+        <div
+          className={`celebration-overlay pointer-events-none fixed inset-0 z-[90] overflow-hidden ${
+            isCelebrationFading ? 'celebration-overlay-fadeout' : ''
+          }`}
+        >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.94),_rgba(254,240,138,0.38)_24%,_rgba(110,231,183,0.26)_48%,_rgba(15,23,42,0.34)_100%)] backdrop-blur-[4px]" />
           <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(251,191,36,0.14),rgba(16,185,129,0.14),rgba(56,189,248,0.16))]" />
           <div className="celebration-radiance absolute left-1/2 top-1/2 h-[30rem] w-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,_rgba(250,204,21,0.48),_rgba(16,185,129,0.22),_rgba(56,189,248,0.12),_transparent_74%)]" />
@@ -3465,6 +3480,28 @@ export default function Index({ params }: any) {
             }
           }
 
+          @keyframes celebrationOverlayIn {
+            0% {
+              opacity: 0;
+            }
+            100% {
+              opacity: 1;
+            }
+          }
+
+          @keyframes celebrationOverlayOut {
+            0% {
+              opacity: 1;
+              transform: scale(1);
+              filter: blur(0px);
+            }
+            100% {
+              opacity: 0;
+              transform: scale(1.015);
+              filter: blur(6px);
+            }
+          }
+
           .settlement-pulse {
             animation: settlementPulse 2.2s ease-in-out infinite;
           }
@@ -3486,6 +3523,28 @@ export default function Index({ params }: any) {
 
           .celebration-radiance {
             animation: celebrationGlow 2.8s ease-in-out infinite;
+          }
+
+          .celebration-overlay {
+            animation: celebrationOverlayIn 0.45s ease-out forwards;
+          }
+
+          .celebration-overlay-fadeout {
+            animation: celebrationOverlayOut 2.8s ease-in forwards;
+          }
+
+          .celebration-overlay-fadeout .celebration-card {
+            transform: translateY(-8px) scale(0.985);
+            transition: transform 2.8s ease, opacity 2.8s ease;
+            opacity: 0.18;
+          }
+
+          .celebration-overlay-fadeout .celebration-confetti,
+          .celebration-overlay-fadeout .celebration-radiance,
+          .celebration-overlay-fadeout .celebration-halo,
+          .celebration-overlay-fadeout .celebration-spark {
+            opacity: 0.12;
+            transition: opacity 2.8s ease;
           }
 
           .celebration-card {
