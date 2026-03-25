@@ -1131,6 +1131,12 @@ export default function Index({ params }: any) {
     setShowCelebration(true);
     setHasCelebratedSettlement(true);
     setIsCelebrationFading(false);
+  }, [oneBuyOrder?.settlement, hasCelebratedSettlement]);
+
+  useEffect(() => {
+    if (!showCelebration) {
+      return;
+    }
 
     const fadeTimeoutId = window.setTimeout(() => {
       setIsCelebrationFading(true);
@@ -1145,7 +1151,7 @@ export default function Index({ params }: any) {
       window.clearTimeout(fadeTimeoutId);
       window.clearTimeout(timeoutId);
     };
-  }, [oneBuyOrder?.settlement, hasCelebratedSettlement]);
+  }, [showCelebration]);
 
     
 
@@ -1959,7 +1965,7 @@ export default function Index({ params }: any) {
           <div className="absolute inset-0 flex items-center justify-center px-5">
             <div className="celebration-card celebration-shimmer relative w-full max-w-sm overflow-hidden rounded-[34px] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(254,252,232,0.94),rgba(236,253,245,0.9))] p-5 text-center shadow-[0_36px_140px_rgba(15,23,42,0.28)] backdrop-blur-xl">
               <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-amber-200 bg-[linear-gradient(135deg,rgba(254,249,195,0.98),rgba(254,240,138,0.92))] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700 shadow-[0_8px_24px_rgba(245,158,11,0.18)]">
-                Jackpot
+                Completed
               </div>
               <div className="relative mt-4 flex justify-center">
                 <div className="celebration-halo absolute h-28 w-28 rounded-full border border-emerald-200/80" />
@@ -1981,7 +1987,7 @@ export default function Index({ params }: any) {
                 Payment Completed
               </div>
               <div className="mt-2 text-[30px] font-semibold tracking-tight text-slate-900">
-                결제가 터졌습니다
+                결제가 완료되었습니다
               </div>
               <div className="mt-1 text-lg font-semibold tracking-tight text-transparent bg-[linear-gradient(135deg,#d97706,#059669,#0284c7)] bg-clip-text">
                 {formattedUsdtAmount} USDT 전송 완료
@@ -2009,7 +2015,7 @@ export default function Index({ params }: any) {
               </div>
               <div className="mt-4 flex items-center justify-center gap-2 text-[12px] font-medium text-slate-500">
                 <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,0.14)]" />
-                Jackpot celebration active
+                자동으로 닫히는 중
               </div>
             </div>
           </div>
