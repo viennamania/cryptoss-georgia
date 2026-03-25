@@ -320,22 +320,6 @@ export default function Index({ params }: any) {
 
 
   
-
-
-    useEffect(() => {
-      // Dynamically load the Binance widget script
-      const script = document.createElement("script");
-      script.src = "https://public.bnbstatic.com/unpkg/growth-widget/cryptoCurrencyWidget@0.0.20.min.js";
-      script.async = true;
-      document.body.appendChild(script);
-  
-      return () => {
-        // Cleanup the script when the component unmounts
-        document.body.removeChild(script);
-      };
-    }, []);
-
-  
     const [data, setData] = useState({
       title: "",
       description: "",
@@ -2096,53 +2080,6 @@ export default function Index({ params }: any) {
               </div>
             )
           )}
-        </section>
-
-        <section
-          className="overflow-hidden rounded-[20px] border px-3 py-2.5 backdrop-blur-sm"
-          style={{
-            borderColor: 'var(--brand-card-border)',
-            backgroundColor: 'var(--brand-card-bg)',
-            boxShadow: `0 14px 36px ${brandTheme.panelShadow}`,
-          }}
-        >
-          <div className="mb-2.5 flex items-center justify-between gap-2">
-            <div>
-              <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
-                Market Feed
-              </div>
-              <div className="text-xs font-semibold text-slate-800">USDT 주요 시세</div>
-            </div>
-            <a
-              href="https://upbit.com/exchange?code=CRIX.UPBIT.KRW-USDT"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold"
-              style={{
-                borderColor: 'var(--brand-card-border)',
-                backgroundColor: 'var(--brand-card-muted)',
-                color: 'var(--brand-accent-text)',
-              }}
-            >
-              <Image
-                src="/logo-upbit.jpg"
-                alt="upbit"
-                width={20}
-                height={20}
-                className="h-4 w-4 rounded-full"
-              />
-              Upbit KRW-USDT
-            </a>
-          </div>
-
-          <div
-            className="binance-widget-marquee min-h-[38px] w-full"
-            data-cmc-ids="1,1027,52,5426,3408,74,20947,5994,24478,13502,35336,825"
-            data-theme="light"
-            data-transparent="true"
-            data-locale="ko"
-            data-fiat="KRW"
-          ></div>
         </section>
 
         <section
