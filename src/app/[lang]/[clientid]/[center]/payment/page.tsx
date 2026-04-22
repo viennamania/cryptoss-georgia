@@ -207,6 +207,46 @@ function normalizeUserType(value?: string | null) {
     : "";
 }
 
+function decodeQueryParamValue(value?: string | null) {
+  if (value == null) {
+    return null;
+  }
+
+  let decodedValue = value;
+
+  for (let i = 0; i < 2; i += 1) {
+    try {
+      const nextValue = decodeURIComponent(decodedValue);
+
+      if (nextValue === decodedValue) {
+        break;
+      }
+
+      decodedValue = nextValue;
+    } catch {
+      break;
+    }
+  }
+
+  return decodedValue;
+}
+
+function normalizeQueryParam(value?: string | null) {
+  const decodedValue = decodeQueryParamValue(value);
+
+  if (decodedValue == null) {
+    return null;
+  }
+
+  const trimmedValue = decodedValue.trim();
+
+  if (!trimmedValue || trimmedValue === "undefined" || trimmedValue === "null") {
+    return null;
+  }
+
+  return trimmedValue;
+}
+
 function buildReverseOrderUrl({
   lang,
   clientid,
@@ -416,7 +456,7 @@ export default function Index({ params }: any) {
 
     const searchParams = useSearchParams();
 
-    const storeUser = searchParams.get('storeUser');
+    const storeUser = normalizeQueryParam(searchParams.get('storeUser'));
 
     console.log('storeUser', storeUser);
 
@@ -438,15 +478,15 @@ export default function Index({ params }: any) {
 
   
 
-    const paramDepositName = searchParams.get('depositName');
-    const paramDepositBankName = searchParams.get('depositBankName');
-    const paramDepositBankAccountNumber = searchParams.get('depositBankAccountNumber');
+    const paramDepositName = normalizeQueryParam(searchParams.get('depositName'));
+    const paramDepositBankName = normalizeQueryParam(searchParams.get('depositBankName'));
+    const paramDepositBankAccountNumber = normalizeQueryParam(searchParams.get('depositBankAccountNumber'));
     
 
-    const paramDepositAmountKrw = searchParams.get('depositAmountKrw');
+    const paramDepositAmountKrw = normalizeQueryParam(searchParams.get('depositAmountKrw'));
 
 
-    const paramAccessToken = searchParams.get('accessToken');
+    const paramAccessToken = normalizeQueryParam(searchParams.get('accessToken'));
     const requestedUserType = normalizeUserType(
       searchParams.get('userType')
       || searchParams.get('memberGrade')
@@ -456,10 +496,10 @@ export default function Index({ params }: any) {
       || searchParams.get('user_type')
     );
 
-    const orderNumber = searchParams.get('orderNumber');
+    const orderNumber = normalizeQueryParam(searchParams.get('orderNumber'));
 
     // returnUrl
-    const paramReturnUrl = searchParams.get('returnUrl');
+    const paramReturnUrl = normalizeQueryParam(searchParams.get('returnUrl'));
     const queryString = searchParams.toString();
 
 
@@ -1483,6 +1523,7 @@ export default function Index({ params }: any) {
 
     const [loadingUser, setLoadingUser] = useState(false);
     const [user, setUser] = useState<any>(null);
+    const [registrationError, setRegistrationError] = useState<string | null>(null);
 
 
    /*
@@ -1553,6 +1594,7 @@ export default function Index({ params }: any) {
         }
 
         setLoadingUser(true);
+        setRegistrationError(null);
   
         const mobile = '010-1234-5678';
   
@@ -1593,13 +1635,22 @@ export default function Index({ params }: any) {
           });
 
           const data = await response.json().catch(() => null);
+          const registrationMessage =
+            typeof data?.error === 'string'
+              ? data.error
+              : typeof data?.message === 'string'
+              ? data.message
+              : typeof data?.result === 'string'
+              ? data.result
+              : '회원등록에 실패했습니다.';
 
           if (!response.ok || !data?.walletAddress) {
             console.error('setBuyerWithoutWalletAddressByStorecode failed', {
               status: response.status,
               data,
             });
-            toast.error('회원등록에 실패했습니다.');
+            setRegistrationError(registrationMessage);
+            toast.error(registrationMessage);
             return;
           }
 
@@ -1661,6 +1712,7 @@ export default function Index({ params }: any) {
           }
         } catch (error) {
           console.error('fetchWalletAddress failed', error);
+          setRegistrationError('회원정보를 불러오는 데 실패했습니다.');
           toast.error('회원정보를 불러오는 데 실패했습니다.');
         } finally {
           setLoadingUser(false);
@@ -2774,7 +2826,7 @@ export default function Index({ params }: any) {
 
 
     if (orderId === '0'
-    && !loadingUser && !user?.nickname ) {
+    && !loadingUser && registrationError) {
 
     return (
       <div className="w-full h-screen flex items-center justify-center
@@ -2782,10 +2834,10 @@ export default function Index({ params }: any) {
       bg-zinc-50
       text-zinc-500
       ">
-        <h1 className="text-2xl font-bold mb-4">차단되었습니다.</h1>
-        <p>고객센터에 문의하세요.</p>
+        <h1 className="text-2xl font-bold mb-4">회원등록에 실패했습니다.</h1>
+        <p>{registrationError}</p>
         <p className="mt-4 text-sm text-zinc-400">
-          (user nickname not found)
+          회원정보 파라미터와 가맹점 설정을 확인하세요.
         </p>
       </div>
     );
