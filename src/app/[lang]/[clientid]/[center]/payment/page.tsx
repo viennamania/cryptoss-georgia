@@ -1586,9 +1586,7 @@ export default function Index({ params }: any) {
         if (
           !storecode ||
           !storeUser ||
-          !depositName ||
-          !depositBankName ||
-          !depositBankAccountNumber
+          !depositName
         ) {
           return;
         }
@@ -1627,8 +1625,8 @@ export default function Index({ params }: any) {
                 mobile: mobile,
       
                 userName: depositName,
-                userBankName: depositBankName,
-                userBankAccountNumber: depositBankAccountNumber,
+                userBankName: depositBankName || undefined,
+                userBankAccountNumber: depositBankAccountNumber || undefined,
                 userType: requestedUserType,
               }
             ),
@@ -2770,19 +2768,6 @@ export default function Index({ params }: any) {
       </div>
     );
   }
-
-  if (orderId === '0' && !paramDepositBankName) {
-    return (
-      <div>
-        Deposit bank name is invalid
-      </div>
-    );
-  }
-
-
-
-
-  
 
   // CS: georgia(9ed089930921bfaa1bf65aff9a75fc41), center: 라이징(crluonsn)
 
