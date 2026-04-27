@@ -128,6 +128,8 @@ const thirdwebClientId = process.env.NEXT_PUBLIC_TEMPLATE_CLIENT_ID || "";
 const smartAccountConnectConfig = {
   sponsorGas: true,
 };
+const PAYMENT_DEADLINE_MINUTES = 15;
+const PAYMENT_DEADLINE_MS = PAYMENT_DEADLINE_MINUTES * 60 * 1000;
 
 function createPhoneWallet(chain: any) {
   return inAppWallet({
@@ -1518,6 +1520,15 @@ export default function Index({ params }: any) {
    const [depositAmountKrw, setDepositAmountKrw] = useState(
       paramDepositAmountKrw
     );
+   const [currentTime, setCurrentTime] = useState(() => Date.now());
+
+   useEffect(() => {
+     const timer = window.setInterval(() => {
+       setCurrentTime(Date.now());
+     }, 1000);
+
+     return () => window.clearInterval(timer);
+   }, []);
 
 
 
@@ -2990,6 +3001,73 @@ export default function Index({ params }: any) {
       ? `${depositBankAccountNumber.slice(0, 4)}****${depositBankAccountNumber.slice(-4)}`
       : depositBankAccountNumber
     : '사전 등록 계좌 없음';
+
+  const renderPaymentDeadlineCountdown = (item: SellOrder) => {
+    const deadlineSource = item.createdAt || item.paymentRequestedAt;
+    const startedAtMs = deadlineSource ? new Date(deadlineSource).getTime() : 0;
+    const deadlineDate = startedAtMs ? new Date(startedAtMs + PAYMENT_DEADLINE_MS) : null;
+    const remainingMs = deadlineDate ? Math.max(deadlineDate.getTime() - currentTime, 0) : 0;
+    const remainingSeconds = Math.ceil(remainingMs / 1000);
+    const minutesText = String(Math.floor(remainingSeconds / 60)).padStart(2, '0');
+    const secondsText = String(remainingSeconds % 60).padStart(2, '0');
+    const progress = deadlineDate
+      ? Math.max(0, Math.min(100, (remainingMs / PAYMENT_DEADLINE_MS) * 100))
+      : 0;
+    const isExpired = Boolean(deadlineDate && remainingMs <= 0);
+    const isUrgent = Boolean(deadlineDate && remainingMs > 0 && remainingMs <= 5 * 60 * 1000);
+    const deadlineLabel = deadlineDate ? deadlineDate.toLocaleString() : '-';
+
+    return (
+      <div
+        className={`mt-4 w-full rounded-[18px] border px-3 py-3 shadow-[0_16px_38px_rgba(245,158,11,0.18)] animate-pulse ${
+          isExpired
+            ? 'border-rose-300 bg-rose-50'
+            : isUrgent
+            ? 'border-rose-300 bg-[linear-gradient(135deg,rgba(255,241,242,0.98),rgba(254,243,199,0.96))]'
+            : 'border-amber-200 bg-[linear-gradient(135deg,rgba(255,251,235,0.98),rgba(255,247,237,0.94))]'
+        }`}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className={`h-3 w-3 shrink-0 rounded-full ${isExpired ? 'bg-rose-600' : 'bg-amber-500'}`} />
+            <div className="min-w-0">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-700">
+                15분 입금 제한
+              </div>
+              <div className="mt-0.5 text-sm font-semibold text-slate-900">
+                입금 기한 {deadlineLabel}
+              </div>
+            </div>
+          </div>
+          <div
+            className={`rounded-2xl px-3 py-2 text-right font-mono text-3xl font-black leading-none tracking-normal shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] ${
+              isExpired || isUrgent ? 'bg-rose-600 text-white' : 'bg-slate-950 text-amber-200'
+            }`}
+            style={{ fontVariantNumeric: 'tabular-nums' }}
+          >
+            {isExpired ? '00:00' : `${minutesText}:${secondsText}`}
+          </div>
+        </div>
+        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/80 shadow-inner">
+          <div
+            className={`h-full rounded-full transition-[width] duration-700 ease-linear ${
+              isExpired
+                ? 'bg-rose-600'
+                : isUrgent
+                ? 'bg-[linear-gradient(90deg,#fb7185,#f97316,#facc15)]'
+                : 'bg-[linear-gradient(90deg,#f59e0b,#f97316)]'
+            }`}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="mt-2 text-sm font-medium leading-5 text-slate-700">
+          {isExpired
+            ? '입금 기한이 만료되었습니다. 거래가 자동 취소될 수 있습니다.'
+            : `주문시간부터 ${PAYMENT_DEADLINE_MINUTES}분 내 입금해야 합니다. 기한까지 입금하지 않으면 거래가 자동으로 취소됩니다.`}
+        </div>
+      </div>
+    );
+  };
 
 
 
@@ -4889,16 +4967,7 @@ export default function Index({ params }: any) {
 
 
 
-                                    <div className='flex flex-row items-center gap-2'>
-                                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                      <div className="text-sm">
-                                        {Deposit_Deadline}: {
-                                        
-                                          new Date(new Date(item.paymentRequestedAt).getTime() + 1000 * 60 * 60 * 1)?.toLocaleString()
-                                        
-                                        }
-                                      </div>
-                                    </div>
+                                    {renderPaymentDeadlineCountdown(item)}
 
                                     {!address && (
                                   

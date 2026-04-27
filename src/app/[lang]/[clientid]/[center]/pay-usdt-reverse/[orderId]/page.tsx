@@ -126,6 +126,8 @@ interface SellOrder {
 
 
 const APP_ID = "CCD67D05-55A6-4CA2-A6B1-187A5B62EC9D";
+const PAYMENT_DEADLINE_MINUTES = 15;
+const PAYMENT_DEADLINE_MS = PAYMENT_DEADLINE_MINUTES * 60 * 1000;
 
 
 
@@ -926,6 +928,15 @@ export default function Index({ params }: any) {
     const [depositName, setDepositName] = useState("");
 
     const [depositBankName, setDepositBankName] = useState("");
+    const [currentTime, setCurrentTime] = useState(() => Date.now());
+
+    useEffect(() => {
+      const timer = window.setInterval(() => {
+        setCurrentTime(Date.now());
+      }, 1000);
+
+      return () => window.clearInterval(timer);
+    }, []);
 
 
 
@@ -1897,9 +1908,27 @@ export default function Index({ params }: any) {
       ? oneBuyOrder?.store?.bankInfoDDD
       : oneBuyOrder?.store?.bankInfo;
   const depositorName = oneBuyOrder?.buyer?.depositName || oneBuyOrder?.tradeId || '-';
-  const paymentDeadlineDate = oneBuyOrder?.paymentRequestedAt
-    ? new Date(new Date(oneBuyOrder.paymentRequestedAt).getTime() + 1000 * 60 * 30)
+  const paymentDeadlineSource = oneBuyOrder?.createdAt || oneBuyOrder?.paymentRequestedAt;
+  const paymentStartedAtMs = paymentDeadlineSource
+    ? new Date(paymentDeadlineSource).getTime()
+    : 0;
+  const paymentDeadlineDate = paymentStartedAtMs
+    ? new Date(paymentStartedAtMs + PAYMENT_DEADLINE_MS)
     : null;
+  const paymentRemainingMs = paymentDeadlineDate
+    ? Math.max(paymentDeadlineDate.getTime() - currentTime, 0)
+    : 0;
+  const paymentRemainingSeconds = Math.ceil(paymentRemainingMs / 1000);
+  const paymentRemainingMinutesText = String(Math.floor(paymentRemainingSeconds / 60)).padStart(2, '0');
+  const paymentRemainingSecondsText = String(paymentRemainingSeconds % 60).padStart(2, '0');
+  const paymentCountdownLabel = paymentDeadlineDate
+    ? `${paymentRemainingMinutesText}:${paymentRemainingSecondsText}`
+    : '--:--';
+  const paymentCountdownProgress = paymentDeadlineDate
+    ? Math.max(0, Math.min(100, (paymentRemainingMs / PAYMENT_DEADLINE_MS) * 100))
+    : 0;
+  const isPaymentDeadlineExpired = Boolean(paymentDeadlineDate && paymentRemainingMs <= 0);
+  const isPaymentDeadlineUrgent = Boolean(paymentDeadlineDate && paymentRemainingMs > 0 && paymentRemainingMs <= 5 * 60 * 1000);
   const paymentDeadlineLabel = paymentDeadlineDate
     ? `${paymentDeadlineDate.toLocaleDateString()} ${paymentDeadlineDate.toLocaleTimeString()}`
     : '-';
@@ -3199,15 +3228,59 @@ export default function Index({ params }: any) {
                                 </div>
                               )}
 
-                              <div className="rounded-[18px] border border-amber-200 bg-amber-50/80 px-3 py-3">
-                                <div className="flex items-center gap-2">
-                                  <div className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                                  <div className="text-sm font-semibold text-slate-900">
-                                    입금 기한 {paymentDeadlineLabel}
+                              <div
+                                className={`payment-countdown-card rounded-[18px] border px-3 py-3 shadow-[0_16px_38px_rgba(245,158,11,0.18)] ${
+                                  isPaymentDeadlineExpired
+                                    ? 'border-rose-300 bg-rose-50'
+                                    : isPaymentDeadlineUrgent
+                                    ? 'border-rose-300 bg-[linear-gradient(135deg,rgba(255,241,242,0.98),rgba(254,243,199,0.96))]'
+                                    : 'border-amber-200 bg-[linear-gradient(135deg,rgba(255,251,235,0.98),rgba(255,247,237,0.94))]'
+                                }`}
+                              >
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                  <div className="flex min-w-0 items-center gap-2">
+                                    <div
+                                      className={`payment-countdown-dot h-3 w-3 shrink-0 rounded-full ${
+                                        isPaymentDeadlineExpired ? 'bg-rose-600' : 'bg-amber-500'
+                                      }`}
+                                    />
+                                    <div className="min-w-0">
+                                      <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-700">
+                                        15분 입금 제한
+                                      </div>
+                                      <div className="mt-0.5 text-sm font-semibold text-slate-900">
+                                        입금 기한 {paymentDeadlineLabel}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div
+                                    className={`payment-countdown-time rounded-2xl px-3 py-2 text-right font-mono text-3xl font-black leading-none tracking-normal shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] ${
+                                      isPaymentDeadlineExpired
+                                        ? 'bg-rose-600 text-white'
+                                        : isPaymentDeadlineUrgent
+                                        ? 'bg-rose-600 text-white'
+                                        : 'bg-slate-950 text-amber-200'
+                                    }`}
+                                  >
+                                    {isPaymentDeadlineExpired ? '00:00' : paymentCountdownLabel}
                                   </div>
                                 </div>
-                                <div className="mt-1 text-sm leading-5 text-slate-600">
-                                  입금 기한까지 입금하지 않으면 거래가 자동으로 취소됩니다.
+                                <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/80 shadow-inner">
+                                  <div
+                                    className={`h-full rounded-full transition-[width] duration-700 ease-linear ${
+                                      isPaymentDeadlineExpired
+                                        ? 'bg-rose-600'
+                                        : isPaymentDeadlineUrgent
+                                        ? 'payment-countdown-progress-urgent bg-[linear-gradient(90deg,#fb7185,#f97316,#facc15)]'
+                                        : 'bg-[linear-gradient(90deg,#f59e0b,#f97316)]'
+                                    }`}
+                                    style={{ width: `${paymentCountdownProgress}%` }}
+                                  />
+                                </div>
+                                <div className="mt-2 text-sm font-medium leading-5 text-slate-700">
+                                  {isPaymentDeadlineExpired
+                                    ? '입금 기한이 만료되었습니다. 거래가 자동 취소될 수 있습니다.'
+                                    : `주문시간부터 ${PAYMENT_DEADLINE_MINUTES}분 내 입금해야 합니다. 기한까지 입금하지 않으면 거래가 자동으로 취소됩니다.`}
                                 </div>
                               </div>
 
@@ -3486,6 +3559,44 @@ export default function Index({ params }: any) {
             }
           }
 
+          @keyframes paymentCountdownPulse {
+            0%, 100% {
+              box-shadow: 0 16px 38px rgba(245,158,11,0.18), 0 0 0 0 rgba(245,158,11,0.28);
+            }
+            50% {
+              box-shadow: 0 18px 46px rgba(244,63,94,0.24), 0 0 0 8px rgba(244,63,94,0.08);
+            }
+          }
+
+          @keyframes paymentCountdownDot {
+            0%, 100% {
+              transform: scale(1);
+              opacity: 0.72;
+            }
+            50% {
+              transform: scale(1.4);
+              opacity: 1;
+            }
+          }
+
+          @keyframes paymentCountdownTime {
+            0%, 100% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.035);
+            }
+          }
+
+          @keyframes paymentCountdownProgress {
+            0% {
+              background-position: 0% 50%;
+            }
+            100% {
+              background-position: 200% 50%;
+            }
+          }
+
           @keyframes celebrationOverlayIn {
             0% {
               opacity: 0;
@@ -3525,6 +3636,24 @@ export default function Index({ params }: any) {
             inset: 0;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.82), transparent);
             animation: settlementScan 2.4s linear infinite;
+          }
+
+          .payment-countdown-card {
+            animation: paymentCountdownPulse 1.35s ease-in-out infinite;
+          }
+
+          .payment-countdown-dot {
+            animation: paymentCountdownDot 1s ease-in-out infinite;
+          }
+
+          .payment-countdown-time {
+            animation: paymentCountdownTime 1s ease-in-out infinite;
+            font-variant-numeric: tabular-nums;
+          }
+
+          .payment-countdown-progress-urgent {
+            background-size: 200% 100%;
+            animation: paymentCountdownProgress 1.1s linear infinite;
           }
 
           .celebration-radiance {
