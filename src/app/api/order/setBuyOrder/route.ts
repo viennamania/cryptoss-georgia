@@ -15,9 +15,36 @@ import {
 } from "../../../config/stable";
 import { logPaymentAuditEvent } from "@lib/api/paymentAudit";
 
+function firstHeaderValue(value: string | null) {
+  return value?.split(",").map((item) => item.trim()).find(Boolean) || "";
+}
+
+function getRequestMeta(request: NextRequest) {
+  const forwardedFor = request.headers.get("x-forwarded-for") || "";
+  const realIp = request.headers.get("x-real-ip") || "";
+  const clientPublicIp =
+    firstHeaderValue(forwardedFor)
+    || firstHeaderValue(request.headers.get("cf-connecting-ip"))
+    || firstHeaderValue(request.headers.get("true-client-ip"))
+    || firstHeaderValue(realIp)
+    || firstHeaderValue(request.headers.get("x-client-ip"));
+
+  return {
+    userAgent: request.headers.get("user-agent") || "",
+    referer: request.headers.get("referer") || "",
+    origin: request.headers.get("origin") || "",
+    forwardedFor,
+    realIp,
+    clientPublicIp,
+    ipAddress: clientPublicIp,
+  };
+}
+
 export async function POST(request: NextRequest) {
 
   const body = await request.json();
+  const requestMeta = getRequestMeta(request);
+  const clientPublicIp = requestMeta.clientPublicIp;
 
   const {
     lang,
@@ -58,11 +85,21 @@ export async function POST(request: NextRequest) {
       : stableUrl1; // default to stableUrl1 if no match
 
     const apiUrl = `${stableUrl}/api/order/setBuyOrder`;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (requestMeta.forwardedFor || clientPublicIp) {
+      headers['x-forwarded-for'] = requestMeta.forwardedFor || clientPublicIp;
+    }
+
+    if (clientPublicIp) {
+      headers['x-real-ip'] = clientPublicIp;
+    }
+
     const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({
         storecode,
         walletAddress,
@@ -76,6 +113,9 @@ export async function POST(request: NextRequest) {
         orderNumber,
         phoneNumber,
         mobile,
+        publicIp: clientPublicIp,
+        clientPublicIp,
+        requestMeta,
       }),
     });
 
@@ -142,6 +182,7 @@ export async function POST(request: NextRequest) {
             safeAuditContext.browser && typeof safeAuditContext.browser === "object"
               ? safeAuditContext.browser
               : {},
+          requestMeta,
           eventSource: String(safeAuditContext.eventSource || "set_buy_order_route"),
           buyerNickname: nickname || "",
           depositName: buyer?.depositName || "",
@@ -155,6 +196,7 @@ export async function POST(request: NextRequest) {
           extra: {
             returnUrl: returnUrl || "",
             stableUrl,
+            publicIp: clientPublicIp,
           },
         });
       } catch (error) {

@@ -10,10 +10,36 @@ import { logPaymentAuditEvent } from "@lib/api/paymentAudit";
 import twilio from "twilio";
 import { idCounter } from "thirdweb/extensions/farcaster/idRegistry";
 
+function firstHeaderValue(value: string | null) {
+  return value?.split(",").map((item) => item.trim()).find(Boolean) || "";
+}
+
+function getRequestMeta(request: NextRequest) {
+  const forwardedFor = request.headers.get("x-forwarded-for") || "";
+  const realIp = request.headers.get("x-real-ip") || "";
+  const clientPublicIp =
+    firstHeaderValue(forwardedFor)
+    || firstHeaderValue(request.headers.get("cf-connecting-ip"))
+    || firstHeaderValue(request.headers.get("true-client-ip"))
+    || firstHeaderValue(realIp)
+    || firstHeaderValue(request.headers.get("x-client-ip"));
+
+  return {
+    userAgent: request.headers.get("user-agent") || "",
+    referer: request.headers.get("referer") || "",
+    origin: request.headers.get("origin") || "",
+    forwardedFor,
+    realIp,
+    clientPublicIp,
+    ipAddress: clientPublicIp,
+  };
+}
 
 export async function POST(request: NextRequest) {
 
   const body = await request.json();
+  const requestMeta = getRequestMeta(request);
+  const clientPublicIp = requestMeta.clientPublicIp;
 
   const {
     lang,
@@ -45,6 +71,9 @@ export async function POST(request: NextRequest) {
     buyerMemo: buyerMemo,
     depositName: depositName,
     depositBankName: depositBankName,
+    publicIp: clientPublicIp,
+    clientPublicIp,
+    requestMeta,
 
   });
 
@@ -102,6 +131,7 @@ export async function POST(request: NextRequest) {
         safeAuditContext.browser && typeof safeAuditContext.browser === "object"
           ? safeAuditContext.browser
           : {},
+      requestMeta,
       eventSource: String(safeAuditContext.eventSource || "accept_sell_order_route"),
       buyerNickname: buyerNickname || result?.buyer?.nickname || "",
       depositName: depositName || result?.buyer?.depositName || "",
@@ -118,6 +148,7 @@ export async function POST(request: NextRequest) {
       extra: {
         sellerWalletAddress: auditOrder?.walletAddress || "",
         tradeId: auditOrder?.tradeId || "",
+        publicIp: clientPublicIp,
       },
     });
   } catch (error) {

@@ -797,6 +797,16 @@ export async function acceptSellOrder(data: any) {
   const depositName = data.depositName || '';
 
   const depositBankName = data.depositBankName || '';
+  const requestMeta = data.requestMeta && typeof data.requestMeta === 'object'
+    ? data.requestMeta
+    : {};
+  const clientPublicIp =
+    data.clientPublicIp
+    || data.publicIp
+    || data.visitorPublicIp
+    || requestMeta.clientPublicIp
+    || requestMeta.ipAddress
+    || '';
 
 
 
@@ -844,7 +854,12 @@ export async function acceptSellOrder(data: any) {
         memo: buyerMemo,
         depositName: depositName,
         depositBankName: depositBankName,
+        publicIp: clientPublicIp,
+        clientPublicIp: clientPublicIp,
+        requestMeta: requestMeta,
       },
+      buyerPublicIp: clientPublicIp,
+      buyerRequestMeta: requestMeta,
     } }
   );
 
@@ -1551,6 +1566,16 @@ export async function insertBuyOrder(data: any) {
 
 
   const tradeId = Math.floor(Math.random() * 90000000) + 10000000 + '';
+  const requestMeta = data.requestMeta && typeof data.requestMeta === 'object'
+    ? data.requestMeta
+    : {};
+  const clientPublicIp =
+    data.clientPublicIp
+    || data.publicIp
+    || data.visitorPublicIp
+    || requestMeta.clientPublicIp
+    || requestMeta.ipAddress
+    || '';
 
   ///console.log('insertBuyOrder tradeId: ' + tradeId);
 
@@ -1580,8 +1605,12 @@ export async function insertBuyOrder(data: any) {
       createdAt: new Date().toISOString(),
       status: 'ordered',
       privateSale: data.privateSale,
-      
+
       buyer: data.buyer,
+
+      publicIp: clientPublicIp,
+      clientPublicIp: clientPublicIp,
+      requestMeta: requestMeta,
 
       tradeId: tradeId,
     }
