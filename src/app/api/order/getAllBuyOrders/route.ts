@@ -15,6 +15,82 @@ import {
   stableUrl11,
 } from "../../../config/stable";
 
+function getObjectValue(value: any) {
+  return value && typeof value === "object" ? value : {};
+}
+
+function resolveOrderPublicIp(order: any) {
+  const requestMeta = getObjectValue(order?.requestMeta);
+  const createdByRequest = getObjectValue(order?.createdByRequest);
+  const buyer = getObjectValue(order?.buyer);
+  const buyerRequestMeta = getObjectValue(order?.buyerRequestMeta);
+  const buyerNestedRequestMeta = getObjectValue(buyer?.requestMeta);
+
+  return (
+    order?.publicIp
+    || order?.clientPublicIp
+    || requestMeta.clientPublicIp
+    || requestMeta.ipAddress
+    || createdByRequest.publicIp
+    || createdByRequest.clientPublicIp
+    || createdByRequest.ipAddress
+    || order?.buyerPublicIp
+    || buyer?.publicIp
+    || buyer?.clientPublicIp
+    || buyerRequestMeta.clientPublicIp
+    || buyerRequestMeta.ipAddress
+    || buyerNestedRequestMeta.clientPublicIp
+    || buyerNestedRequestMeta.ipAddress
+    || ""
+  );
+}
+
+function normalizeOrderPublicIp(order: any) {
+  if (!order || typeof order !== "object") {
+    return order;
+  }
+
+  const publicIp = resolveOrderPublicIp(order);
+
+  if (!publicIp) {
+    return order;
+  }
+
+  const requestMeta = getObjectValue(order.requestMeta);
+
+  return {
+    ...order,
+    publicIp: order.publicIp || publicIp,
+    clientPublicIp: order.clientPublicIp || publicIp,
+    requestMeta: {
+      ...requestMeta,
+      clientPublicIp: requestMeta.clientPublicIp || publicIp,
+      ipAddress: requestMeta.ipAddress || publicIp,
+    },
+  };
+}
+
+function normalizeBuyOrdersResponse(data: any) {
+  if (Array.isArray(data?.result?.orders)) {
+    return {
+      ...data,
+      result: {
+        ...data.result,
+        orders: data.result.orders.map(normalizeOrderPublicIp),
+      },
+    };
+  }
+
+  if (Array.isArray(data?.orders)) {
+    return {
+      ...data,
+      orders: data.orders.map(normalizeOrderPublicIp),
+    };
+  }
+
+  return data;
+}
+
 
 export async function POST(request: NextRequest) {
 
@@ -99,7 +175,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
     const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json(normalizeBuyOrdersResponse(data));
   } catch (error) {
     console.error("Error fetching buy orders:", error);
     return NextResponse.json({ error: "Failed to fetch buy orders" }, { status: 500 });
