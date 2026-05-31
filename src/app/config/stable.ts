@@ -1,28 +1,9 @@
-// Public Stable API bases. Keep env overrides, but avoid stale aliases that
-// are configured in Vercel yet missing from public DNS.
-function stableUrl(value: string | undefined, fallback: string) {
-  if (!value) {
-    return fallback;
-  }
-
-  try {
-    const { hostname } = new URL(value);
-
-    if (hostname === "stable.makeup" || hostname === "www.stable.makeup") {
-      return "https://www.oasispass.net";
-    }
-  } catch {
-    return fallback;
-  }
-
-  return value;
-}
-
+// Public Stable API bases. Keep env overrides, with defaults for local/dev.
 export const stableUrl1 = process.env.STABLE_API_URL1 || "https://georgia.stable.makeup";
 export const stableUrl2 = process.env.STABLE_API_URL2 || "https://www.cryptopay.beauty";
 export const stableUrl3 = process.env.STABLE_API_URL3 || "https://global.crypto-ex.net";
 export const stableUrl4 = process.env.STABLE_API_URL4 || "https://global.cryptopay.beauty";
-export const stableUrl5 = stableUrl(process.env.STABLE_API_URL5, "https://www.oasispass.net");
+export const stableUrl5 = process.env.STABLE_API_URL5 || "https://www.stable.makeup";
 export const stableUrl6 = process.env.STABLE_API_URL6 || "https://hodings.cryptoss.beauty";
 export const stableUrl7 = process.env.STABLE_API_URL7 || "https://goodpay.stable.makeup";
 export const stableUrl8 = process.env.STABLE_API_URL8 || "https://dubai.stable.makeup";
