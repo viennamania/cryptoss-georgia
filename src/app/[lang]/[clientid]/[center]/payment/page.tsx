@@ -249,6 +249,10 @@ function normalizeQueryParam(value?: string | null) {
   return trimmedValue;
 }
 
+function isActiveBuyOrderStatus(status?: string | null) {
+  return status === 'ordered' || status === 'accepted' || status === 'paymentRequested';
+}
+
 function buildReverseOrderUrl({
   lang,
   clientid,
@@ -1719,6 +1723,15 @@ export default function Index({ params }: any) {
             }));
             return;
           }
+
+          if (isActiveBuyOrderStatus(data.buyOrderStatus)) {
+            setUser((currentUser: any) => currentUser
+              ? {
+                  ...currentUser,
+                  buyOrderStatus: '',
+                }
+              : currentUser);
+          }
         } catch (error) {
           console.error('fetchWalletAddress failed', error);
           setRegistrationError('회원정보를 불러오는 데 실패했습니다.');
@@ -2977,8 +2990,7 @@ export default function Index({ params }: any) {
   }
 
   const quickAmountOptions = [5000, 10000, 50000, 100000, 500000, 1000000];
-  const isOrderInProgress =
-    user?.buyOrderStatus === 'ordered' || user?.buyOrderStatus === 'paymentRequested';
+  const isOrderInProgress = isActiveBuyOrderStatus(user?.buyOrderStatus);
   const tradeWalletAddress = user?.walletAddress || address;
   const isPurchaseDisabled =
     (requiresSmartAccountConnection && (!hasConnectedSmartWallet || isAutoConnecting))
